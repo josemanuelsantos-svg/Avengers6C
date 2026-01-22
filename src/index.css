@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body,
+html,
+#root {
+  background-color: #020617; /* Fondo oscuro S.H.I.E.L.D. */
+  color: white;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
