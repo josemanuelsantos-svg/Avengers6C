@@ -878,8 +878,7 @@ function AvengersTracker() {
 
           <div onClick={() => isAdmin && setModal('mission')} className={`bg-slate-900/80 border border-blue-500/20 rounded-sm p-5 shadow-lg relative overflow-hidden group ${isAdmin?'cursor-pointer hover:border-blue-400':''}`}>
              <h3 className="text-xs font-black text-blue-300 uppercase mb-2 flex gap-2"><ClipboardList size={14}/> Misión Prioritaria</h3>
-             <p className="text-sm font-bold text-white leading-relaxed font-mono">"{mission}"</p>
-             {isAdmin && <span className="absolute top-2 right-2 text-[10px] text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity"><List size={12}/></span>}
+             <p className="text-xs text-white font-mono">"{mission}"</p>
           </div>
         </aside>
 
@@ -907,7 +906,7 @@ function AvengersTracker() {
 
                   <div>
                     <div className="flex justify-between items-start mb-3 relative z-10">
-                      <div className="flex gap-2 items-center"><div className={`w-10 h-10 rounded-full border border-white/20 bg-slate-900 overflow-hidden ${t.accent}`}><img src={t.gif} className="w-full h-full object-cover"/></div><div><div className={`text-[9px] font-black uppercase tracking-widest ${rInfo.color}`}>{rInfo.title}</div><h2 className="text-sm font-black uppercase tracking-wider text-white">{t.name}</h2></div></div>
+                      <div className="flex gap-2 items-center"><div className={`w-10 h-10 rounded-full border border-white/20 bg-slate-900 overflow-hidden ${t.accent}`}><img src={t.gif} className="w-full h-full object-cover"/></div><div><div className={`text-[8px] font-black uppercase tracking-widest ${rInfo.color}`}>{rInfo.title}</div><h2 className="text-sm font-black uppercase tracking-wider text-white">{t.name}</h2></div></div>
                       <span className={`text-2xl font-black font-mono tracking-tighter ${t.points<0?'text-red-400':'text-white'}`}>{t.points}</span>
                     </div>
                     {/* DAILY ENERGY CELLS */}
