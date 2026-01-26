@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, Component } from 'react';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
 import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, arrayUnion } from 'firebase/firestore';
@@ -7,7 +7,7 @@ import {
   Cpu, Atom, Target, Eye, Trophy, Medal, TrendingUp, Info, Crown, Activity, User, 
   Users, ChevronsUp, Hexagon, ClipboardList, Swords, Brain, Volume2, VolumeX, List, 
   CheckCircle2, PlusCircle, Quote, Siren, Award, History, Trash2, X, Package, Dices, 
-  Sparkles, Radio, BookOpen, Timer, Wifi, WifiOff
+  Sparkles, Radio, BookOpen, Timer, Wifi, WifiOff, MessageSquare, ShieldCheck, Flame, Star
 } from 'lucide-react';
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
@@ -38,7 +38,7 @@ const appId = rawAppId.replace(/\//g, '_');
 // --- 3. DATOS CONSTANTES ---
 const INITIAL_TEAMS = [
   { 
-    id: 'ironman', name: 'Iron Man', points: 0, 
+    id: 'ironman', name: 'Iron Man', points: 0, shield: false, badges: [],
     theme: 'bg-red-900/30 shadow-red-500/20', border: 'border-red-500/50', 
     accent: 'text-red-400', barColor: 'bg-red-500', iconKey: 'cpu', 
     password: 'arc_reactor_85', members: ['Juandi', 'Ernesto', 'Carmen', 'Bea'], 
@@ -46,7 +46,7 @@ const INITIAL_TEAMS = [
     gif: "https://i.ibb.co/27K5dCBM/b751779a4a3bbc38f9268036cdb5af5a.gif"
   },
   { 
-    id: 'cap', name: 'Capitán América', points: 0, 
+    id: 'cap', name: 'Capitán América', points: 0, shield: false, badges: [],
     theme: 'bg-blue-900/30 shadow-blue-500/20', border: 'border-blue-500/50', 
     accent: 'text-blue-400', barColor: 'bg-blue-500', iconKey: 'shield', 
     password: 'escudo_vibranium', members: ['Sara', 'Araceli', 'Nagore', 'Alex'], 
@@ -54,7 +54,7 @@ const INITIAL_TEAMS = [
     gif: "https://i.ibb.co/XqT34sz/189868-C0-D40619-AD55-4-B4-C-BE57-9005-D2506967-0-1643400842.gif"
   },
   { 
-    id: 'thor', name: 'Thor', points: 0, 
+    id: 'thor', name: 'Thor', points: 0, shield: false, badges: [],
     theme: 'bg-yellow-900/30 shadow-yellow-500/20', border: 'border-yellow-500/50', 
     accent: 'text-yellow-400', barColor: 'bg-yellow-400', iconKey: 'zap', 
     password: 'stormbreaker_trueno', members: ['Javi', 'Guille', 'Yma', 'Iker'], 
@@ -62,7 +62,7 @@ const INITIAL_TEAMS = [
     gif: "https://i.ibb.co/PsFhhF1g/f604e46c6979b173d319fc064ed5c0dc.gif"
   },
   { 
-    id: 'hulk', name: 'Hulk', points: 0, 
+    id: 'hulk', name: 'Hulk', points: 0, shield: false, badges: [],
     theme: 'bg-green-900/30 shadow-green-500/20', border: 'border-green-500/50', 
     accent: 'text-green-400', barColor: 'bg-green-500', iconKey: 'atom', 
     password: 'gamma_smash_verde', members: ['Oliver', 'Félix', 'Sofía'], 
@@ -70,7 +70,7 @@ const INITIAL_TEAMS = [
     gif: "https://i.ibb.co/BV1dZJCH/tumblr-nkx9ln-Ha8c1tiwiyxo1-640.gif"
   },
   { 
-    id: 'widow', name: 'Viuda Negra', points: 0, 
+    id: 'widow', name: 'Viuda Negra', points: 0, shield: false, badges: [],
     theme: 'bg-gray-800/50 shadow-red-900/20', border: 'border-red-500/50', 
     accent: 'text-red-500', barColor: 'bg-red-600', iconKey: 'target', 
     password: 'sala_roja_007', members: ['Sara', 'Sebas', 'Héctor', 'Alejandro'], 
@@ -78,7 +78,7 @@ const INITIAL_TEAMS = [
     gif: "https://i.ibb.co/JjJQnWcH/0c2a5632830679-569563b0d45b2.gif"
   },
   { 
-    id: 'strange', name: 'Dr. Strange', points: 0, 
+    id: 'strange', name: 'Dr. Strange', points: 0, shield: false, badges: [],
     theme: 'bg-purple-900/30 shadow-purple-500/20', border: 'border-purple-500/50', 
     accent: 'text-purple-400', barColor: 'bg-purple-500', iconKey: 'eye', 
     password: 'sanctum_agomoto', members: ['Derek', 'Liah', 'Dani', 'Cata'], 
@@ -88,6 +88,7 @@ const INITIAL_TEAMS = [
 ];
 
 const REWARDS_LIST = [
+  { id: 99, name: 'Campo de Fuerza', cost: 50, desc: 'Bloquea 1 sanción automáticamente' }, 
   { id: 1, name: 'Suministros', cost: 20, desc: 'Snack en clase' },
   { id: 2, name: 'DJ S.H.I.E.L.D.', cost: 15, desc: 'Elegir canción' },
   { id: 3, name: 'Indulto', cost: 30, desc: 'Perdón de tarea' },
@@ -95,10 +96,8 @@ const REWARDS_LIST = [
   { id: 5, name: 'Archivos', cost: 40, desc: '5 min apuntes examen' },
   { id: 6, name: 'Descanso Táctico', cost: 10, desc: '5 min sin hacer nada' },
   { id: 7, name: 'Comandante', cost: 25, desc: 'Ayudante del profesor' },
-  { id: 8, name: 'Espionaje', cost: 60, desc: 'Pista examen' },
   { id: 9, name: 'Hackeo', cost: 80, desc: 'Fondo pantalla profe' },
   { id: 10, name: 'Cine', cost: 150, desc: 'Película en clase' },
-  { id: 11, name: 'Capitán', cost: 50, desc: 'Juego EF' },
   { id: 12, name: 'Sin Botas', cost: 15, desc: 'Estar en calcetines' }
 ];
 
@@ -106,6 +105,14 @@ const PENALTIES_LIST = [
   "Tablas multiplicar", "Copiar verbos", "Dibujo locomotor", "Capitales Europa", "Recoger clase",
   "Informe de Daños (Redacción)", "Limpieza de Cubierta (Estanterías)", "Silencio de Radio (5 min)",
   "Patrulla (Vuelta al patio)", "Orden Alfabético (Biblioteca)"
+];
+
+const BADGES_LIST = [
+    { icon: <Star size={14}/>, name: "Excelencia", color: "text-yellow-400" },
+    { icon: <Zap size={14}/>, name: "Rapidez", color: "text-blue-400" },
+    { icon: <Brain size={14}/>, name: "Ingenio", color: "text-purple-400" },
+    { icon: <Shield size={14}/>, name: "Defensor", color: "text-green-400" },
+    { icon: <Flame size={14}/>, name: "Racha", color: "text-orange-400" },
 ];
 
 const MISSION_BATTERY = [
@@ -157,7 +164,7 @@ const LOOT_ITEMS = [
   { text: "¡NADA! Inténtalo de nuevo.", val: 0 },
   { text: "1 Punto Extra", val: 1 },
   { text: "5 Puntos Extra", val: 5 },
-  { text: "¡RECOMPENSA! Elegir música.", val: 0 },
+  { text: "¡RECOMPENSA! Elegir música 5 min.", val: 0 },
   { text: "¡PREMIO GORDO! 20 Puntos.", val: 20 }
 ];
 
@@ -174,7 +181,7 @@ const getRankInfo = (p) => {
 };
 
 // --- ERROR BOUNDARY ---
-class ErrorBoundary extends React.Component {
+class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { hasError: false, error: null }; }
   static getDerivedStateFromError(error) { return { hasError: true, error }; }
   componentDidCatch(error, errorInfo) { console.error("ErrorBoundary catch:", error, errorInfo); }
@@ -227,6 +234,9 @@ function AvengersTracker() {
   const [dailyQuestion, setDailyQuestion] = useState(null);
   const [showAnswer, setShowAnswer] = useState(false);
   const [questionAvailable, setQuestionAvailable] = useState(false);
+  const [furyMessage, setFuryMessage] = useState(null);
+  const [newFuryMsg, setNewFuryMsg] = useState("");
+  const [shaking, setShaking] = useState(false); // Efecto visual ataque Thanos
   
   // New States for Features
   const [timerTarget, setTimerTarget] = useState(null); 
@@ -238,10 +248,7 @@ function AvengersTracker() {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        if (!auth) {
-            setUseLocal(true);
-            return;
-        }
+        if (!auth) { setUseLocal(true); return; }
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
            try { await signInWithCustomToken(auth, __initial_auth_token); } 
            catch(e) { await signInAnonymously(auth); }
@@ -258,7 +265,7 @@ function AvengersTracker() {
     return () => unsubscribe();
   }, []);
 
-  // Data Effect
+  // Data Effect (Hybrid)
   useEffect(() => {
     if (useLocal || !user || !db) {
         if (useLocal) setLoading(false);
@@ -274,22 +281,30 @@ function AvengersTracker() {
             await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'avengers_teams', t.id), t);
           });
         } else {
-          const tArr = []; let fMission=null; let fAlert=false; let fHist=[]; let fTimer=null;
+          const tArr = []; let fMission=null; let fAlert=false; let fHist=[]; let fTimer=null; let fFury=null; let fShake=false;
           snap.docs.forEach(d => {
             if (d.id === 'mission_control') {
-              const data = d.data(); fMission=data.text; fAlert=data.alert; fHist=data.history||[]; fTimer=data.timerEnd;
+              const data = d.data(); 
+              fMission=data.text; fAlert=data.alert; fHist=data.history||[]; fTimer=data.timerEnd; fFury=data.furyMsg; fShake=data.shaking;
             } else { tArr.push(d.data()); }
           });
-          const merged = tArr.map(t => ({...INITIAL_TEAMS.find(it=>it.id===t.id)||t, points: t.points})).filter(t=>t.id).sort((a,b)=>b.points-a.points);
+          const merged = tArr.map(t => ({...INITIAL_TEAMS.find(it=>it.id===t.id)||t, points: t.points, shield: t.shield, badges: t.badges || [] })).filter(t=>t.id).sort((a,b)=>b.points-a.points);
           if(merged.length>0) setTeams(merged);
           if(fMission) setMission(fMission);
           if(fAlert!==undefined) setRedAlertMode(fAlert);
           if(fTimer) setTimerTarget(fTimer); else setTimerTarget(null);
+          setFuryMessage(fFury);
+          
+          if(fShake) {
+             setShaking(true);
+             setTimeout(() => setShaking(false), 3000); 
+          }
+          
           setHistory((fHist||[]).reverse().slice(0,50));
         }
         setLoading(false);
       }, (e) => {
-        console.warn("Firebase falló (permisos o red), pasando a local:", e);
+        console.warn("Firebase falló, pasando a local:", e);
         setUseLocal(true);
         setLoading(false);
       });
@@ -348,8 +363,9 @@ function AvengersTracker() {
           if (docId === 'mission_control') {
               if(data.text) setMission(data.text);
               if(data.alert !== undefined) setRedAlertMode(data.alert);
-              if(data.history) setHistory(prev => [...data.history, ...prev]);
+              if(data.history) setHistory(prev => [...(data.history||[]), ...prev]);
               if(data.timerEnd !== undefined) setTimerTarget(data.timerEnd);
+              if(data.furyMsg !== undefined) setFuryMessage(data.furyMsg);
           } else {
               setTeams(prev => prev.map(t => t.id === docId ? {...t, ...data} : t).sort((a,b)=>b.points-a.points));
           }
@@ -388,18 +404,35 @@ function AvengersTracker() {
     if (amt !== 0) logAction(`${t.name}: ${amt > 0 ? '+' : ''}${amt} pts`);
   };
 
-  const handleBuy = async (teamId, cost) => {
+  const handleBadge = async (tid, badge) => {
+      const t = teams.find(i => i.id === tid);
+      if(!t) return;
+      const newBadges = [...(t.badges || []), badge];
+      await safeUpdate(tid, { badges: newBadges });
+      logAction(`${t.name} ganó la medalla ${badge.name}`);
+      speak(`Condecoración para ${t.name}`);
+      triggerSecretConfetti();
+  };
+
+  const handleBuy = async (teamId, cost, itemId) => {
     if (!isAdmin && loggedInId !== teamId) { showToast("Sin permiso", "error"); return false; }
     const t = teams.find(tm => tm.id === teamId);
     if (t.points >= cost) {
       speak(`Compra de ${t.name}`);
-      await handlePts(teamId, -cost);
-      logAction(`${t.name} gastó ${cost} pts`);
+      // Special Item Logic: Shield
+      if (itemId === 99) {
+          await safeUpdate(teamId, { points: t.points - cost, shield: true });
+          logAction(`${t.name} compró ESCUDO DE DEFENSA`);
+      } else {
+          await safeUpdate(teamId, { points: t.points - cost });
+          logAction(`${t.name} gastó ${cost} pts`);
+      }
       if(!modal?.includes('loot')) setModal(null);
       showToast("Compra exitosa", "success");
       return true;
     } else { showToast("Fondos insuficientes", "error"); return false; }
   };
+
   const openLootBox = async (teamId) => {
     const cost = 15;
     const bought = await handleBuy(teamId, cost);
@@ -409,7 +442,7 @@ function AvengersTracker() {
             const item = LOOT_ITEMS[Math.floor(Math.random() * LOOT_ITEMS.length)];
             setLootResult(item);
             if(item.val > 0) handlePts(teamId, item.val);
-            logAction(`${teams.find(t=>t.id===teamId).name} loot: ${it.text}`);
+            logAction(`${teams.find(t=>t.id===teamId).name} loot: ${item.text}`);
         }, 1500); 
     }
   };
@@ -452,6 +485,29 @@ function AvengersTracker() {
         }
      }, 2000);
   };
+  
+  // FURY MESSAGE
+  const sendFuryMessage = async () => {
+      if(!newFuryMsg.trim()) return;
+      await safeUpdate('mission_control', { furyMsg: newFuryMsg });
+      speak("Transmisión Prioritaria de Nick Fury");
+      setNewFuryMsg("");
+  };
+  const clearFuryMessage = async () => {
+      await safeUpdate('mission_control', { furyMsg: null });
+  };
+  
+  // BOSS ATTACK
+  const handleBossAttack = async () => {
+      setShaking(true);
+      speak("¡Thanos está atacando!");
+      await safeUpdate('mission_control', { shaking: true });
+      setTimeout(async () => {
+         setShaking(false);
+         await safeUpdate('mission_control', { shaking: false });
+      }, 3000);
+  };
+
   const checkPass = (e) => {
     e.preventDefault();
     const p = pass.toLowerCase().trim();
@@ -477,8 +533,8 @@ function AvengersTracker() {
   };
   const reset = async () => {
     if (!window.confirm("¿Reiniciar temporada?")) return;
-    teams.forEach(t => safeUpdate(t.id, {points: 0}));
-    safeUpdate('mission_control', { history: [], timerEnd: null });
+    teams.forEach(t => safeUpdate(t.id, {points: 0, shield: false, badges: []}));
+    safeUpdate('mission_control', { history: [], timerEnd: null, furyMsg: null });
     speak("Reinicio completado");
   };
   const updateM = async (txt) => {
@@ -493,6 +549,14 @@ function AvengersTracker() {
     if(s) { speak("Alerta Roja"); logAction("ALERTA ROJA"); } else logAction("Alerta desactivada");
   };
   const spinPenalty = () => {
+    // SHIELD CHECK
+    if (selTeam.shield) {
+        speak("¡Escudo activado! Sanción bloqueada.");
+        safeUpdate(selTeam.id, { shield: false }); 
+        setPenalty("BLOCKED"); 
+        logAction(`${selTeam.name} usó su escudo para bloquear una sanción.`);
+        return;
+    }
     const p = PENALTIES_LIST[Math.floor(Math.random() * PENALTIES_LIST.length)];
     setPenalty(p);
     if (selTeam) logAction(`${selTeam.name} sanción: ${p}`);
@@ -507,7 +571,6 @@ function AvengersTracker() {
     speak("Transmisión entrante.");
   };
 
-  // Variables calculadas
   const totalPoints = teams.reduce((a, b) => a + Math.max(0, b.points), 0);
   const maxPoints = Math.max(...teams.map(t => t.points), 50);
   const bossDefeated = totalPoints >= BOSS_MAX_HP;
@@ -519,7 +582,7 @@ function AvengersTracker() {
   if (loading) return <div className="p-10 text-cyan-500 bg-black h-screen font-mono animate-pulse">CARGANDO SISTEMA S.H.I.E.L.D...</div>;
 
   return (
-    <div className={`min-h-screen bg-[#020617] text-white font-sans pb-20 overflow-x-hidden ${redAlertMode ? 'border-4 border-red-600' : ''}`}>
+    <div className={`min-h-screen bg-[#020617] text-white font-sans pb-20 overflow-x-hidden ${redAlertMode ? 'border-4 border-red-600' : ''} ${shaking ? 'animate-[shake_0.5s_ease-in-out_infinite]' : ''}`}>
       {confetti.active && (<div className="fixed pointer-events-none z-50" style={{left: confetti.x, top: confetti.y}}>{[...Array(40)].map((_,i) => <div key={i} className="absolute w-2 h-2 rounded-full animate-confetti" style={{ backgroundColor: ['#ef4444', '#3b82f6', '#eab308', '#22c55e', '#a855f7'][Math.floor(Math.random() * 5)], '--tx': `${(Math.random() - 0.5) * 300}px`, '--ty': `${(Math.random() - 0.5) * 300}px`, '--r': `${Math.random() * 360}deg` }} />)}</div>)}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
@@ -542,12 +605,26 @@ function AvengersTracker() {
 
         <div className="flex gap-2 items-center">
             {useLocal && <span className="text-[10px] text-orange-500 font-mono bg-orange-900/20 px-2 py-1 rounded border border-orange-500/50 flex items-center gap-1"><WifiOff size={10}/> LOCAL</span>}
-          {isAdmin && (<><button onClick={() => setModal('timerConfig')} className="p-2 rounded border bg-blue-900/50 border-blue-500 hover:text-white"><Timer size={16}/></button><button onClick={startDuel} className="p-2 rounded border bg-orange-900/50 border-orange-500 hover:text-orange-300"><Swords size={16}/></button><button onClick={triggerMultiverse} className="p-2 rounded border bg-purple-900/50 border-purple-500 hover:text-purple-300 animate-pulse"><Dices size={16}/></button><button onClick={toggleAlert} className={`p-2 rounded border ${redAlertMode ? 'bg-red-600 border-white animate-pulse' : 'bg-slate-800 border-slate-600 hover:text-red-400'}`}><Siren size={16}/></button><button onClick={() => setModal('history')} className="p-2 rounded border bg-slate-800 border-slate-600 hover:text-white"><History size={16}/></button><button onClick={reset} className="p-2 rounded border bg-slate-800 border-slate-600 hover:text-red-500"><Trash2 size={16}/></button></>)}
-          <button onClick={() => setSound(!sound)} className={`p-2 rounded border ${sound ? 'bg-cyan-500/20 border-cyan-500' : 'bg-slate-800 border-slate-700'}`}>{sound ? <Volume2 size={16}/> : <VolumeX size={16}/>}</button>
-          <button onClick={activateCerebro} className="flex gap-2 px-3 py-1.5 bg-purple-900/20 border border-purple-500/40 rounded-sm text-purple-300 text-xs font-bold uppercase"><Brain size={14}/> CEREBRO</button>
-          <button onClick={() => setModal('catalog')} className="flex gap-1 px-3 py-1.5 bg-slate-800 border border-slate-600 rounded-sm text-slate-400 text-xs font-bold uppercase"><Info size={14}/> INFO</button>
-          {!isAdmin && !loggedInId && <button onClick={() => setModal('login')} className="flex gap-1 px-3 py-1.5 bg-cyan-900/40 border border-cyan-500/50 rounded-sm text-cyan-300 text-xs font-bold"><Lock size={14}/> LOGIN</button>}
-          {(isAdmin || loggedInId) && <button onClick={() => {setIsAdmin(false); setLoggedInId(null);}} className="flex gap-1 px-3 py-1.5 bg-yellow-900/40 border border-yellow-500/50 rounded-sm text-yellow-400 text-xs font-bold"><Unlock size={14}/> SALIR</button>}
+            {isAdmin ? (
+                <>
+                  <button onClick={handleBossAttack} className="p-2 rounded border bg-red-900/80 border-red-500 text-white hover:scale-110 transition-transform animate-pulse" title="ATAQUE DE THANOS"><Skull size={16}/></button>
+                  <button onClick={()=>setModal('fury')} className="p-2 rounded border bg-slate-800 border-slate-600 hover:text-cyan-400" title="Mensaje Fury"><MessageSquare size={16}/></button>
+                  <button onClick={()=>setModal('timerConfig')} className="p-2 rounded border bg-blue-900/50 border-blue-500 hover:text-white"><Timer size={16}/></button>
+                  <button onClick={startDuel} className="p-2 rounded border bg-orange-900/50 border-orange-500 hover:text-orange-300"><Swords size={16}/></button>
+                  <button onClick={triggerMultiverse} className="p-2 rounded border bg-purple-900/50 border-purple-500 hover:text-purple-300 animate-pulse"><Dices size={16}/></button>
+                  <button onClick={activateCerebro} className="p-2 rounded border bg-pink-900/50 border-pink-500 hover:text-pink-300"><Brain size={16}/></button>
+                  <button onClick={toggleAlert} className={`p-2 rounded border ${redAlertMode ? 'bg-red-600 border-white animate-pulse' : 'bg-slate-800 border-slate-600 hover:text-red-400'}`}><Siren size={16}/></button>
+                  <button onClick={()=>setModal('history')} className="p-2 rounded border bg-slate-800 border-slate-600 hover:text-white"><History size={16}/></button>
+                  <button onClick={reset} className="p-2 rounded border bg-slate-800 border-slate-600 hover:text-red-500"><Trash2 size={16}/></button>
+                  <button onClick={()=>{setIsAdmin(false); setLoggedInId(null);}} className="bg-red-900/50 border border-red-500 px-3 py-1 rounded text-xs font-bold">SALIR</button>
+                </>
+            ) : loggedInId ? (
+                <button onClick={()=>{setIsAdmin(false); setLoggedInId(null);}} className="bg-yellow-900/50 border border-yellow-500 px-3 py-1 rounded text-xs font-bold">SALIR</button>
+            ) : (
+                <button onClick={()=>setModal('login')} className="bg-cyan-900/50 border border-cyan-500 px-3 py-1 rounded text-xs font-bold"><Lock size={12}/> ACCESO</button>
+            )}
+            <button onClick={() => setSound(!sound)} className={`p-2 rounded border ${sound ? 'bg-cyan-500/20 border-cyan-500' : 'bg-slate-800 border-slate-700'}`}>{sound ? <Volume2 size={16}/> : <VolumeX size={16}/>}</button>
+            <button onClick={() => setModal('catalog')} className="flex gap-1 px-3 py-1.5 bg-slate-800 border border-slate-600 rounded-sm text-slate-400 text-xs font-bold uppercase"><Info size={14}/> INFO</button>
         </div>
       </header>
 
@@ -578,14 +655,13 @@ function AvengersTracker() {
                   <div><h3 className="text-sm font-black text-purple-400 uppercase leading-none mb-1">Amenaza: Thanos</h3><span className="text-xs font-mono text-purple-200">{totalPoints}/{BOSS_MAX_HP} DAÑO</span></div>
                </div>
                <div className="h-4 bg-slate-800 rounded-full overflow-hidden border border-purple-900 relative"><div className={`h-full transition-all duration-1000 flex items-center justify-center ${bossDefeated ? 'bg-green-500' : 'bg-gradient-to-r from-purple-600 to-red-500'}`} style={{width: `${bossProgress}%`}}></div></div>
-               {bossDefeated && <p className="text-center text-xs font-bold text-green-400 mt-2 animate-pulse">¡AMENAZA NEUTRALIZADA!</p>}
+               {bossDefeated && <p className="text-center text-xs font-bold text-green-400 mt-1 animate-pulse">¡AMENAZA NEUTRALIZADA!</p>}
             </div>
           </div>
 
           <div onClick={() => isAdmin && setModal('mission')} className={`bg-slate-900/80 border border-blue-500/20 rounded-sm p-5 shadow-lg relative overflow-hidden group ${isAdmin?'cursor-pointer hover:border-blue-400':''}`}>
-             <h3 className="text-xs font-black text-blue-300 uppercase tracking-widest mb-2 flex items-center gap-2"><ClipboardList size={16}/> Misión Prioritaria</h3>
-             <p className="text-sm font-bold text-white leading-relaxed font-mono">"{mission}"</p>
-             {isAdmin && <span className="absolute top-2 right-2 text-[10px] text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity"><List size={12}/></span>}
+             <h3 className="text-xs font-black text-blue-300 uppercase mb-2 flex gap-2"><ClipboardList size={14}/> Misión Prioritaria</h3>
+             <p className="text-xs text-white font-mono">"{mission}"</p>
           </div>
         </aside>
 
@@ -599,34 +675,37 @@ function AvengersTracker() {
             const rInfo = getRankInfo(t.points);
 
             return (
-              <div key={t.id} className={`relative group rounded p-[1px] transition-all duration-300 ${isMine ? 'scale-[1.02] z-10' : 'hover:scale-[1.01]'} ${isCrit ? 'animate-[pulse_1s_ease-in-out_infinite]' : ''}`}>
+              <div key={t.id} className={`relative group rounded p-[1px] transition-all ${isMine?'scale-[1.02] z-10':'hover:scale-[1.01]'}`}>
                 <div className={`absolute inset-0 rounded bg-gradient-to-b ${t.theme} opacity-30`}></div>
-                {isLeader && <div className="absolute -top-3 -right-3 z-30 transform rotate-12"><Crown size={32} className="text-yellow-400 drop-shadow-lg animate-bounce" fill="currentColor" fillOpacity={0.3}/></div>}
-                
-                <div className={`h-full bg-slate-950/90 border ${isMine ? 'border-yellow-500/50' : t.border.split(' ')[0]} p-5 rounded-sm backdrop-blur-xl flex flex-col justify-between shadow-xl relative overflow-hidden`}>
-                  <div className="absolute -right-0 -bottom-0 w-64 h-64 opacity-20 pointer-events-none transition-transform duration-700 group-hover:scale-110" style={{ mixBlendMode: 'luminosity' }}>
-                     <img src={t.gif} alt={t.name} className="w-full h-full object-cover opacity-50" />
-                  </div>
+                <div className={`h-full bg-slate-950/90 border ${isMine?'border-yellow-500':t.border.split(' ')[0]} p-4 rounded backdrop-blur-xl flex flex-col justify-between shadow-xl relative overflow-hidden`}>
+                  <div className="absolute -right-0 -bottom-0 w-40 h-40 opacity-10 pointer-events-none transition-transform group-hover:scale-110" style={{mixBlendMode:'luminosity'}}><img src={t.gif} className="w-full h-full object-cover"/></div>
                   
-                  <div>
-                    <div className="flex justify-between items-start mb-4 relative z-10">
-                      <div className="flex gap-3 items-center">
-                         <div className={`w-12 h-12 rounded-full border-2 border-white/20 bg-slate-900/50 shadow-inner overflow-hidden ${t.accent}`}><img src={t.gif} alt="icon" className="w-full h-full object-cover" /></div>
-                         <div><div className={`text-[9px] font-black uppercase tracking-widest ${rInfo.color}`}>{rInfo.title}</div><h2 className="text-lg font-black uppercase tracking-wider text-white truncate max-w-[120px]">{t.name}</h2></div>
+                  {/* SHIELD OVERLAY */}
+                  {t.shield && (
+                      <div className="absolute top-2 right-2 z-20 text-blue-400 animate-pulse drop-shadow-[0_0_10px_rgba(59,130,246,0.8)]" title="Campo de Fuerza Activo">
+                          <ShieldCheck size={32} strokeWidth={2} fill="rgba(59, 130, 246, 0.2)"/>
                       </div>
-                      <span className={`text-3xl font-black font-mono tracking-tighter ${t.points < 0 ? 'text-red-400' : 'text-white'}`}>{t.points}</span>
+                  )}
+
+                  <div>
+                    <div className="flex justify-between items-start mb-3 relative z-10">
+                      <div className="flex gap-2 items-center"><div className={`w-10 h-10 rounded-full border border-white/20 bg-slate-900 overflow-hidden ${t.accent}`}><img src={t.gif} className="w-full h-full object-cover"/></div><div><div className={`text-[8px] font-black uppercase tracking-widest ${rInfo.color}`}>{rInfo.title}</div><h2 className="text-sm font-black uppercase tracking-wider text-white">{t.name}</h2></div></div>
+                      <span className={`text-2xl font-black font-mono tracking-tighter ${t.points<0?'text-red-400':'text-white'}`}>{t.points}</span>
                     </div>
+                    {/* BADGES ROW */}
+                    {t.badges && t.badges.length > 0 && (
+                        <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
+                            {t.badges.map((b, idx) => (
+                                <div key={idx} className={`p-1 rounded bg-slate-800 border border-white/10 ${b.color}`} title={b.name}>{b.icon}</div>
+                            ))}
+                        </div>
+                    )}
                     <div className="flex gap-1 mb-3 relative z-10">
                        {t.points >= 100 && <Award size={14} className="text-blue-400" />}
                        {t.points >= 300 && <Award size={14} className="text-purple-400" />}
                        {t.points >= 500 && <Award size={14} className="text-yellow-400" />}
                     </div>
-                    <div className="flex justify-between bg-slate-900/50 p-1.5 rounded mb-4 border border-white/5 relative z-10">
-                      {INFINITY_STONES.map((s,i) => {
-                        const isActive = t.points >= s.threshold;
-                        return (<div key={i} title={`${s.name}: ${s.perk}`} className="cursor-help"><Hexagon size={14} className={`transition-all duration-500 ${isActive ? s.color + ' fill-current opacity-100' : 'text-slate-800 fill-slate-900 opacity-50'}`} strokeWidth={isActive ? 0 : 2} /></div>);
-                      })}
-                    </div>
+                    <div className="flex justify-between bg-slate-900/50 p-1 rounded mb-3 border border-white/5 relative z-10">{INFINITY_STONES.map((s,i)=>(<div key={i} title={s.name} className={t.points>=s.threshold?s.color:'text-slate-800'}><Hexagon size={12} fill="currentColor"/></div>))}</div>
                     <div className="mb-4 relative z-10 pl-2 border-l border-white/10"><div className="text-[9px] uppercase tracking-widest opacity-50 font-bold text-slate-300 mb-1">OPERATIVOS</div><div className="text-xs text-slate-300 font-mono leading-relaxed">{t.members.join(' • ')}</div></div>
                   </div>
                   <div className="relative z-10 mt-auto">
@@ -639,23 +718,61 @@ function AvengersTracker() {
                           <button onClick={()=>{setSelTeam(t); setModal('shop');}} className={`${CTRL_BTN_CLASS} bg-yellow-900/20 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500 hover:text-black flex justify-center gap-1`}><ShoppingCart size={12}/> TIENDA</button>
                           <button onClick={()=>{setSelTeam(t); setPenalty(null); setModal('penalty');}} className={`${CTRL_BTN_CLASS} flex items-center justify-center gap-1 ${isNeg ? 'bg-purple-900/20 text-purple-400 border-purple-500/30 hover:bg-purple-500 hover:text-white' : 'bg-slate-800 text-slate-600 border-slate-700 cursor-not-allowed'}`}><Gavel size={12}/> SANCIÓN</button>
                         </div>
+                        <div className="flex gap-1 mt-1">
+                            <button onClick={()=>setModal('badges_' + t.id)} className={`${CTRL_BTN_CLASS} bg-blue-900/20 text-blue-300 border-blue-500/30 hover:bg-blue-600 hover:text-white`}>MEDALLA</button>
+                        </div>
                       </div>
                     )}
-                    {isMine && !isAdmin && <button onClick={()=>{setSelTeam(t); setModal('shop');}} className="w-full py-2 bg-yellow-600 hover:bg-yellow-500 text-black font-bold text-xs rounded-sm shadow-lg transition-colors flex items-center justify-center gap-2 uppercase tracking-wider"><ShoppingCart size={14}/> ARMERÍA</button>}
+                    {isMine && !isAdmin && <button onClick={()=>{setSelTeam(t); setModal('shop');}} className="w-full py-2 bg-yellow-600 hover:bg-yellow-500 text-black font-bold text-xs rounded uppercase shadow-lg">ARMERÍA</button>}
                   </div>
                 </div>
               </div>
             );
           })}
-       </section>
+        </section>
       </main>
 
-      <footer className="fixed bottom-0 w-full bg-slate-950 border-t border-cyan-900 h-8 flex items-center overflow-hidden z-50">
-        <div className="px-4 bg-cyan-900/50 h-full flex items-center text-[10px] font-bold text-cyan-200">NEWS</div>
-        <div className="flex-1 whitespace-nowrap overflow-hidden"><div className="animate-[marquee_25s_linear_infinite] text-[10px] font-mono text-cyan-400/70 pt-1">{TICKER_MESSAGES[tickerIdx]}</div></div>
+      <footer className="fixed bottom-0 w-full bg-slate-950 border-t border-cyan-900 h-6 flex items-center overflow-hidden z-50">
+        <div className="px-4 bg-cyan-900/50 h-full flex items-center text-[9px] font-bold text-cyan-200">NEWS</div>
+        <div className="flex-1 whitespace-nowrap overflow-hidden"><div className="animate-[marquee_20s_linear_infinite] text-[9px] font-mono text-cyan-400/70">{TICKER_MESSAGES[tickerIdx]}</div></div>
       </footer>
 
       {/* --- MODALS --- */}
+      {/* BADGE SELECTION MODAL */}
+      {modal?.startsWith('badges_') && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
+              <div className="bg-slate-900 border border-blue-500/50 p-6 rounded-sm w-full max-w-sm shadow-2xl">
+                  <h3 className="text-xl font-bold text-white mb-4">OTORGAR CONDECORACIÓN</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                      {BADGES_LIST.map((b, idx) => (
+                          <button key={idx} onClick={() => { handleBadge(modal.split('_')[1], b); setModal(null); }} className={`p-3 border border-white/10 rounded flex flex-col items-center gap-2 hover:bg-slate-800 ${b.color}`}>
+                              {b.icon}
+                              <span className="text-xs font-bold">{b.name}</span>
+                          </button>
+                      ))}
+                  </div>
+                  <button onClick={() => setModal(null)} className="mt-4 w-full text-xs text-slate-500">Cancelar</button>
+              </div>
+          </div>
+      )}
+
+      {furyMessage && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-6 animate-in zoom-in duration-300">
+              <div className="max-w-2xl w-full border-4 border-red-600 bg-slate-900 p-8 shadow-[0_0_50px_rgba(220,38,38,0.5)] relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-2 bg-red-600 animate-pulse"></div>
+                  <div className="absolute bottom-0 left-0 w-full h-2 bg-red-600 animate-pulse"></div>
+                  <div className="flex flex-col items-center gap-6 text-center relative z-10">
+                      <div className="bg-red-600 text-black p-3 rounded-full animate-bounce"><Shield size={64} /></div>
+                      <h1 className="text-4xl md:text-6xl font-black text-white tracking-widest uppercase">PRIORIDAD ALPHA</h1>
+                      <div className="w-full h-px bg-red-600/50 my-2"></div>
+                      <p className="text-2xl md:text-3xl font-mono text-red-400 font-bold leading-relaxed typing-effect">{furyMessage}</p>
+                      {isAdmin && <button onClick={clearFuryMessage} className="mt-8 px-8 py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs uppercase tracking-widest rounded border border-slate-600">Cancelar Alerta</button>}
+                  </div>
+                  <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-0 pointer-events-none bg-[length:100%_4px,3px_100%]"></div>
+              </div>
+          </div>
+      )}
+
       {modal === 'multiverse' && multiverseEvent && (
          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
              <div className="text-center animate-in zoom-in max-w-lg w-full relative">
@@ -712,8 +829,20 @@ function AvengersTracker() {
            </div>
         </div>
       )}
+      
+      {modal === 'fury' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+           <div className="bg-slate-900 border border-slate-500 p-6 rounded-sm w-full max-w-md shadow-2xl">
+               <h3 className="text-xl font-black text-white mb-4 flex items-center gap-2"><MessageSquare size={20}/> MENSAJE DE FURY</h3>
+               <textarea value={newFuryMsg} onChange={e=>setNewFuryMsg(e.target.value)} className="w-full bg-black border border-slate-700 p-4 text-white mb-4 font-mono text-sm h-32" placeholder="Escribe el mensaje urgente..." />
+               <button onClick={()=> { sendFuryMessage(); setModal(null); }} className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded uppercase mb-2">ENVIAR A TODOS</button>
+               <button onClick={clearFuryMessage} className="w-full bg-red-900/50 hover:bg-red-900 text-red-300 font-bold py-2 rounded uppercase text-xs mb-2">BORRAR MENSAJE ACTUAL</button>
+               <button onClick={()=>setModal(null)} className="w-full mt-2 text-slate-500 text-xs">Cancelar</button>
+           </div>
+        </div>
+      )}
 
-      {modal === 'dailyQuestion' && dailyQuestion && (
+      {modal === 'dailyQ' && dailyQuestion && (
          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
              <div className="text-center animate-in zoom-in max-w-lg w-full relative">
                 <div className="absolute inset-0 bg-blue-500/10 blur-3xl animate-pulse"></div>
@@ -766,7 +895,7 @@ function AvengersTracker() {
             <div className="p-6 grid gap-4 max-h-[60vh] overflow-y-auto">
               <div className="mb-4 bg-purple-900/20 border border-purple-500/40 p-4 rounded-sm flex justify-between items-center animate-pulse"><div className="flex gap-4"><div className="bg-purple-500/20 p-3 rounded-sm text-purple-300"><Package size={24}/></div><div><h4 className="font-bold text-purple-200">CAJA DE WAKANDA</h4><p className="text-xs text-purple-400">¿Te atreves? Resultado aleatorio.</p></div></div><button onClick={() => openLootBox(selTeam.id)} disabled={selTeam.points < 15} className={`px-6 py-2 rounded-sm font-bold font-mono text-sm border ${selTeam.points >= 15 ? 'bg-purple-600 hover:bg-purple-500 text-white border-purple-400' : 'bg-transparent text-slate-600 border-slate-800'}`}>15 PTS</button></div>
               {lootResult && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95"><div className="text-center animate-in zoom-in"><Package size={64} className="mx-auto text-yellow-400 mb-4 animate-bounce" /><h2 className="text-3xl font-black text-white mb-2">{lootResult.text}</h2><button onClick={()=>setLootResult(null)} className="mt-8 px-6 py-2 bg-slate-700 text-white rounded text-xs uppercase">Cerrar</button></div></div>}
-              {REWARDS_LIST.map((reward) => (<div key={reward.id} className="group relative bg-black/40 border border-white/5 hover:border-yellow-500/50 rounded-sm p-4 transition-all hover:bg-yellow-900/10 flex justify-between items-center"><div className="flex items-start gap-4"><div className="bg-yellow-500/10 p-3 rounded-sm text-yellow-500 group-hover:scale-110 transition-transform"><Zap size={20} /></div><div><h4 className="font-bold text-slate-200 group-hover:text-yellow-400 transition-colors uppercase tracking-wide">{reward.name}</h4><p className="text-xs text-slate-500 mt-1">{reward.desc}</p></div></div><button onClick={() => handleBuy(selTeam.id, reward.cost)} disabled={selTeam.points < reward.cost} className={`px-6 py-2 rounded-sm font-bold font-mono text-sm border transition-all duration-300 ${selTeam.points >= reward.cost ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50 hover:bg-yellow-500 hover:text-black shadow-lg' : 'bg-transparent text-slate-600 border-slate-800 cursor-not-allowed'}`}>{reward.cost} PTS</button></div>))}
+              {REWARDS_LIST.map((reward) => (<div key={reward.id} className="group relative bg-black/40 border border-white/5 hover:border-yellow-500/50 rounded-sm p-4 transition-all hover:bg-yellow-900/10 flex justify-between items-center"><div className="flex items-start gap-4"><div className="bg-yellow-500/10 p-3 rounded-sm text-yellow-500 group-hover:scale-110 transition-transform"><Zap size={20} /></div><div><h4 className="font-bold text-slate-200 group-hover:text-yellow-400 transition-colors uppercase tracking-wide">{reward.name}</h4><p className="text-xs text-slate-500 mt-1">{reward.desc}</p></div></div><button onClick={() => handleBuy(selTeam.id, reward.cost, reward.id)} disabled={selTeam.points < reward.cost} className={`px-6 py-2 rounded-sm font-bold font-mono text-sm border transition-all duration-300 ${selTeam.points >= reward.cost ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50 hover:bg-yellow-500 hover:text-black shadow-lg' : 'bg-transparent text-slate-600 border-slate-800 cursor-not-allowed'}`}>{reward.cost} PTS</button></div>))}
             </div>
           </div>
         </div>
@@ -778,7 +907,7 @@ function AvengersTracker() {
           <div className="relative bg-slate-900 border border-red-500/50 p-6 rounded-sm w-full max-w-lg shadow-2xl">
             <div className="bg-red-950/50 p-8 text-center border-b border-red-900/50"><div className="mx-auto bg-red-500/10 w-20 h-20 rounded-full flex items-center justify-center mb-4 animate-pulse"><Skull size={40} className="text-red-500" /></div><h3 className="text-2xl font-black text-red-500 uppercase tracking-[0.2em] mb-2">Zona de Castigo</h3><p className="text-red-200/60 text-sm">Medidas disciplinarias para {selTeam.name}</p></div>
             <div className="p-8">
-              {!penalty ? (<button onClick={spinPenalty} className="w-full bg-red-600 hover:bg-red-500 text-white font-black py-5 rounded-sm shadow-[0_0_30px_rgba(220,38,38,0.4)] flex justify-center gap-3"><RefreshCw size={20} /> GENERAR SANCIÓN</button>) : (<div className="animate-in zoom-in duration-300"><div className="bg-black/50 p-6 rounded-sm border border-red-500/30 mb-6 text-center"><p className="text-xs text-red-400 mb-3">Sentencia:</p><p className="text-xl font-bold text-white leading-relaxed font-mono">"{penalty}"</p></div><div className="flex gap-3"><button onClick={spinPenalty} className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-sm font-bold text-xs uppercase">Reintentar</button><button onClick={() => setModal(null)} className="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white rounded-sm font-bold text-xs uppercase shadow-lg">Ejecutar</button></div></div>)}
+              {!penalty ? (<button onClick={spinPenalty} className="w-full bg-red-600 hover:bg-red-500 text-white font-black py-5 rounded-sm shadow-[0_0_30px_rgba(220,38,38,0.4)] flex justify-center gap-3"><RefreshCw size={20} /> GENERAR SANCIÓN</button>) : (<div className="animate-in zoom-in duration-300"><div className="bg-black/50 p-6 rounded-sm border border-red-500/30 mb-6 text-center"><p className="text-xs text-red-400 mb-3">Sentencia:</p><div className={`text-xl font-bold font-mono p-2 rounded ${penalty==='BLOCKED'?'text-blue-300 border border-blue-500':'text-white'}`}>{penalty==='BLOCKED'?'¡ESCUDO ACTIVADO! Sanción bloqueada.':penalty}</div></div><div className="flex gap-3"><button onClick={spinPenalty} className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-sm font-bold text-xs uppercase">Reintentar</button><button onClick={() => setModal(null)} className="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white rounded-sm font-bold text-xs uppercase shadow-lg">Ejecutar</button></div></div>)}
             </div>
           </div>
         </div>
@@ -804,7 +933,26 @@ function AvengersTracker() {
           <div className="relative bg-slate-900 border border-blue-500/30 w-full max-w-2xl rounded-sm overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <div className="bg-slate-800/80 p-6 border-b border-blue-500/20 flex justify-between items-center"><h3 className="text-xl font-black text-blue-400 uppercase tracking-widest flex items-center gap-2"><ClipboardList size={24} /> Órdenes Tácticas</h3><button onClick={() => setModal(null)}>✕</button></div>
             <div className="p-6 overflow-y-auto">
-              <div className="mb-6 bg-blue-900/10 border border-blue-500/20 p-4 rounded-sm"><div className="flex gap-2"><input type="text" value={customMission} onChange={(e) => setCustomMission(e.target.value)} placeholder="Escribir misión..." className="flex-1 bg-black/50 border border-blue-500/30 rounded-sm px-3 py-2 text-white outline-none text-sm" /><button onClick={() => updateM(customMission)} className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-sm font-bold text-xs uppercase tracking-wider">Activar</button></div></div>
+              <div className="mb-6 bg-blue-900/10 border border-blue-500/20 p-4 rounded-sm">
+                <label className="block text-xs font-bold text-blue-300 uppercase tracking-widest mb-2">Órdenes Manuales del Director</label>
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    value={customMission} 
+                    onChange={(e) => setCustomMission(e.target.value)} 
+                    placeholder="Escribir misión..." 
+                    className="flex-1 bg-black/50 border border-blue-500/30 rounded-sm px-3 py-2 text-white outline-none text-sm focus:border-blue-400 transition-colors"
+                    onKeyDown={(e) => e.key === 'Enter' && customMission.trim() && updateM(customMission)}
+                  />
+                  <button 
+                    onClick={() => { if (customMission.trim()) updateM(customMission); }} 
+                    className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-sm font-bold text-xs uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={!customMission.trim()}
+                  >
+                    Activar
+                  </button>
+                </div>
+              </div>
               <div className="space-y-6">{['Comportamiento', 'Académico', 'Organización', 'Social', 'Especial'].map(cat => (<div key={cat}><h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 border-b border-white/5 pb-1">{cat}</h4><div className="grid grid-cols-1 md:grid-cols-2 gap-3">{MISSION_BATTERY.filter(m => m.category === cat).map((m, i) => (<button key={i} onClick={() => updateM(m.text)} className="text-left bg-slate-800/50 hover:bg-blue-600/20 border border-white/5 hover:border-blue-500/50 p-3 rounded-sm transition-all group flex items-start gap-3">{mission === m.text ? <CheckCircle2 size={16} className="text-green-400 mt-0.5 shrink-0" /> : <PlusCircle size={16} className="text-slate-500 group-hover:text-blue-400 mt-0.5 shrink-0" />}<span className={`text-sm ${mission === m.text ? 'text-green-300 font-bold' : 'text-slate-300 group-hover:text-white'}`}>{m.text}</span></button>))}</div></div>))}</div>
             </div>
           </div>
