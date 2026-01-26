@@ -189,9 +189,8 @@ const COMBAT_QUESTIONS = [
   { q: "¿Verbo de 'canción'?", a: "CANTAR" }
 ];
 
-const BOSS_MAX_HP = 700;
+const BOSS_MAX_HP = 777;
 const ICONS = { cpu: Cpu, shield: Shield, zap: Zap, atom: Atom, target: Target, eye: Eye };
-// CORREGIDO: Renombrado para que coincida con su uso en el componente
 const DEFAULT_TICKER_MESSAGES = [ "CAPITÁN AMÉRICA: 'PUEDO HACER ESTO TODO EL DÍA'", "TONY STARK: 'YO SOY IRON MAN'", "AVENGERS: ¡REUNÍOS!", "THOR: 'POR LAS BARBAS DE ODÍN'", "BLACK PANTHER: '¡WAKANDA POR SIEMPRE!'", "HULK: ¡APLASTA EL EXAMEN!" ];
 
 const LOOT_ITEMS = [
@@ -447,7 +446,7 @@ function AvengersTracker() {
       setQuestionAvailable(h >= 9 && h <= 12.5);
       if (timerTarget) {
         const diff = timerTarget - Date.now();
-        if (diff <= 0) setTimeLeft("00:00");
+        if (diff <= 0) setTimeLeft(null);
         else setTimeLeft(`${Math.floor(diff/60000).toString().padStart(2,'0')}:${Math.floor((diff%60000)/1000).toString().padStart(2,'0')}`);
       } else setTimeLeft(null);
     }, 3000); 
