@@ -8,7 +8,7 @@ import {
   Users, ChevronsUp, Hexagon, ClipboardList, Swords, Brain, Volume2, VolumeX, List, 
   CheckCircle2, PlusCircle, Quote, Siren, Award, History, Trash2, X, Package, Dices, 
   Sparkles, Radio, BookOpen, Timer, Wifi, WifiOff, MessageSquare, ShieldCheck, Flame, Star, Calculator,
-  Type, Binary, Battery, BatteryCharging, Lightbulb, Book, Rocket
+  Type, Binary, Battery, BatteryCharging, Lightbulb, Book
 } from 'lucide-react';
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
@@ -191,6 +191,7 @@ const COMBAT_QUESTIONS = [
 
 const BOSS_MAX_HP = 700;
 const ICONS = { cpu: Cpu, shield: Shield, zap: Zap, atom: Atom, target: Target, eye: Eye };
+// CORREGIDO: Renombrado para que coincida con su uso en el componente
 const DEFAULT_TICKER_MESSAGES = [ "CAPITÁN AMÉRICA: 'PUEDO HACER ESTO TODO EL DÍA'", "TONY STARK: 'YO SOY IRON MAN'", "AVENGERS: ¡REUNÍOS!", "THOR: 'POR LAS BARBAS DE ODÍN'", "BLACK PANTHER: '¡WAKANDA POR SIEMPRE!'", "HULK: ¡APLASTA EL EXAMEN!" ];
 
 const LOOT_ITEMS = [
@@ -437,7 +438,7 @@ function AvengersTracker() {
   useEffect(() => {
     const t = setInterval(() => {
       setTickerIdx(p => {
-          const historyMsgs = history.slice(0, 5).map(h => `ÚLTIMA HORA: ${h.text.toUpperCase()}`);
+          const historyMsgs = history.slice(0, 5).map(h => `ÚLTIMA HORA: ${h.text?.toUpperCase() || ''}`);
           const allMsgs = [...DEFAULT_TICKER_MESSAGES, ...historyMsgs];
           return (p + 1) % allMsgs.length;
       });
@@ -753,7 +754,7 @@ function AvengersTracker() {
   const loggedInTeam = teams.find(t => t.id === loggedInId);
   const dynamicTickerMessages = [
     ...DEFAULT_TICKER_MESSAGES,
-    ...history.slice(0, 5).map(h => `ÚLTIMA HORA: ${h.text.toUpperCase()}`)
+    ...history.slice(0, 5).map(h => `ÚLTIMA HORA: ${h.text?.toUpperCase() || ''}`)
   ];
 
   if (errorMsg) return <div className="p-10 text-red-500 bg-black h-screen font-mono">ERROR: {errorMsg}</div>;
