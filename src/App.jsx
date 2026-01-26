@@ -8,7 +8,7 @@ import {
   Users, ChevronsUp, Hexagon, ClipboardList, Swords, Brain, Volume2, VolumeX, List, 
   CheckCircle2, PlusCircle, Quote, Siren, Award, History, Trash2, X, Package, Dices, 
   Sparkles, Radio, BookOpen, Timer, Wifi, WifiOff, MessageSquare, ShieldCheck, Flame, Star, Calculator,
-  Type, Binary, Battery, BatteryCharging, Lightbulb
+  Type, Binary, Battery, BatteryCharging, Lightbulb, Book, Rocket
 } from 'lucide-react';
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
@@ -52,7 +52,7 @@ const INITIAL_TEAMS = [
     accent: 'text-blue-400', barColor: 'bg-blue-500', iconKey: 'shield', 
     password: 'escudo_vibranium', members: ['Sara', 'Araceli', 'Nagore', 'Alex'], 
     quote: "Podría hacer esto todo el día.", 
-    gif: "https://i.ibb.co/XqT34sz/189868-C0-D40619-AD55-4-B4-C-BE57-9005-D2506967-0-1643400842.gif"
+    gif: "https://i.ibb.co/Ldv0842m/original-5abda2eb189f94b4fd19af04c660dd9b.gif"
   },
   { 
     id: 'thor', name: 'Thor', points: 0, shield: false, badges: [], daily: 0, lastDaily: '',
@@ -174,9 +174,24 @@ const HYDRA_WORDS = [
     "PLANETA", "RELIEVE", "CLIMA", "EUROPA", "DEMOCRACIA", "CONSTITUCION", "ECOSYSTEMA", "VENGADORES", "ESCUDO"
 ];
 
+const COMBAT_QUESTIONS = [
+  { q: "¿Capital de Alemania?", a: "BERLIN" },
+  { q: "¿Símbolo químico del agua?", a: "H2O" },
+  { q: "¿Cuántos lados tiene un hexágono?", a: "6" },
+  { q: "¿Antónimo de 'frío'?", a: "CALIENTE" },
+  { q: "¿Planeta rojo?", a: "MARTE" },
+  { q: "¿Rey de la selva?", a: "LEON" },
+  { q: "¿Resultado de 7x8?", a: "56" },
+  { q: "¿País de la Torre Eiffel?", a: "FRANCIA" },
+  { q: "¿Hueso más largo del cuerpo?", a: "FEMUR" },
+  { q: "¿Continente de Egipto?", a: "AFRICA" },
+  { q: "¿Cuántas patas tiene una araña?", a: "8" },
+  { q: "¿Verbo de 'canción'?", a: "CANTAR" }
+];
+
 const BOSS_MAX_HP = 700;
 const ICONS = { cpu: Cpu, shield: Shield, zap: Zap, atom: Atom, target: Target, eye: Eye };
-const TICKER_MESSAGES = [ "CAPITÁN AMÉRICA: 'PUEDO HACER ESTO TODO EL DÍA'", "TONY STARK: 'YO SOY IRON MAN'", "AVENGERS: ¡REUNÍOS!", "THOR: 'POR LAS BARBAS DE ODÍN'", "BLACK PANTHER: '¡WAKANDA POR SIEMPRE!'", "HULK: ¡APLASTA EL EXAMEN!" ];
+const DEFAULT_TICKER_MESSAGES = [ "CAPITÁN AMÉRICA: 'PUEDO HACER ESTO TODO EL DÍA'", "TONY STARK: 'YO SOY IRON MAN'", "AVENGERS: ¡REUNÍOS!", "THOR: 'POR LAS BARBAS DE ODÍN'", "BLACK PANTHER: '¡WAKANDA POR SIEMPRE!'", "HULK: ¡APLASTA EL EXAMEN!" ];
 
 const LOOT_ITEMS = [
   { text: "¡NADA! Thanos se lo ha robado.", val: 0 },
@@ -192,10 +207,10 @@ const CTRL_BTN_CLASS = "flex-1 py-1.5 rounded-sm text-[10px] font-bold font-mono
 const ACTION_BTN_CLASS = "w-full py-2 rounded-sm border text-xs font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer select-none";
 
 const getRankInfo = (p) => {
-  if (p < 0) return { title: 'AMENAZA', color: 'text-red-500', glow: 'shadow-red-900/50', iconScale: 1, next: 0, total: 100 };
-  if (p < 100) return { title: 'RECLUTA', color: 'text-slate-400', glow: 'shadow-none', iconScale: 1, next: 100, total: 100 };
-  if (p < 200) return { title: 'AGENTE', color: 'text-blue-300', glow: 'shadow-blue-500/20', iconScale: 1.1, next: 200, total: 200 };
-  if (p < 400) return { title: 'VENGADOR', color: 'text-yellow-400', glow: 'shadow-yellow-500/30', iconScale: 1.25, next: 400, total: 200 };
+  if (p < 0) return { title: 'AMENAZA', color: 'text-red-500', glow: 'shadow-red-900/50', iconScale: 1, next: 0, total: 100, level: 0 };
+  if (p < 100) return { title: 'RECLUTA', color: 'text-slate-400', glow: 'shadow-none', iconScale: 1, next: 100, total: 100, level: 1 };
+  if (p < 200) return { title: 'AGENTE', color: 'text-blue-300', glow: 'shadow-blue-500/20', iconScale: 1.1, next: 200, total: 200, level: 2 };
+  if (p < 400) return { title: 'VENGADOR', color: 'text-yellow-400', glow: 'shadow-yellow-500/30', iconScale: 1.25, next: 400, total: 200, level: 3 };
   return { title: 'LEYENDA', color: 'text-purple-300', glow: 'shadow-[0_0_30px_rgba(168,85,247,0.3)]', iconScale: 1.5, next: 1000, total: 600 };
 };
 
@@ -227,6 +242,12 @@ const playSfx = (type) => {
             osc.type = 'triangle'; osc.frequency.setValueAtTime(600, now); osc.frequency.linearRampToValueAtTime(800, now + 0.2);
             gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 1.5);
             osc.start(now); osc.stop(now + 1.5);
+        } else if (type === 'levelup') {
+            osc.type = 'square'; osc.frequency.setValueAtTime(400, now);
+            osc.frequency.linearRampToValueAtTime(600, now + 0.1);
+            osc.frequency.linearRampToValueAtTime(800, now + 0.2);
+            gain.gain.setValueAtTime(0.3, now); gain.gain.linearRampToValueAtTime(0.01, now + 1.0);
+            osc.start(now); osc.stop(now + 1.0);
         }
     } catch (e) {}
 };
@@ -245,10 +266,9 @@ const Confeti = ({ active, x, y }) => {
 
 const Toast = ({ message, type, onClose }) => {
   useEffect(() => { 
-    // Usamos el timer para cerrar, pero dependemos de que el padre no lo reinicie con cada render
     const t = setTimeout(onClose, 3000); 
     return () => clearTimeout(t); 
-  }, [onClose]); // Si onClose cambia, el timer se reinicia. El padre debe usar useCallback.
+  }, [onClose]); 
   
   const bg = type === 'success' ? 'bg-green-500/20 border-green-500' : type === 'error' ? 'bg-red-500/20 border-red-500' : 'bg-blue-500/20 border-blue-500';
   const icon = type === 'success' ? <CheckCircle2 /> : type === 'error' ? <AlertTriangle /> : <Info />;
@@ -258,6 +278,27 @@ const Toast = ({ message, type, onClose }) => {
       <p className="text-sm font-bold text-white">{message}</p>
     </div>
   );
+};
+
+const ParticleBackground = () => {
+    return (
+        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+            {[...Array(20)].map((_, i) => (
+                <div 
+                    key={i} 
+                    className="absolute bg-white/10 rounded-full animate-pulse"
+                    style={{
+                        top: `${Math.random() * 100}%`,
+                        left: `${Math.random() * 100}%`,
+                        width: `${Math.random() * 3 + 1}px`,
+                        height: `${Math.random() * 3 + 1}px`,
+                        animationDuration: `${Math.random() * 3 + 2}s`,
+                        animationDelay: `${Math.random() * 2}s`
+                    }}
+                />
+            ))}
+        </div>
+    );
 };
 
 class ErrorBoundary extends Component {
@@ -300,8 +341,9 @@ function AvengersTracker() {
   const [newFuryMsg, setNewFuryMsg] = useState("");
   const [shaking, setShaking] = useState(false);
   const [dailyQuote, setDailyQuote] = useState("");
+  const [levelUpEvent, setLevelUpEvent] = useState(null); 
   
-  // Math & Logic Challenge States
+  // Challenge States
   const [mathState, setMathState] = useState({ active: false, questions: [], currentIdx: 0, level: 2 });
   const [mathInput, setMathInput] = useState("");
   const [streak, setStreak] = useState(0);
@@ -309,13 +351,15 @@ function AvengersTracker() {
   const [wordState, setWordState] = useState({ active: false, word: "", scrambled: "" });
   const [wordInput, setWordInput] = useState("");
 
+  const [combatState, setCombatState] = useState({ active: false, questions: [], currentIdx: 0, correctCount: 0 }); 
+  const [combatInput, setCombatInput] = useState("");
+
   // Features
   const [timerTarget, setTimerTarget] = useState(null); 
   const [timeLeft, setTimeLeft] = useState(null); 
   const [timerInput, setTimerInput] = useState(5);
   const [duelData, setDuelData] = useState(null);
 
-  // ESTA ES LA CLAVE: useCallback para que la función no cambie y resetee el timer del toast
   const closeToast = useCallback(() => setToast(null), []);
 
   // Backup local
@@ -389,10 +433,15 @@ function AvengersTracker() {
     } catch { setUseLocal(true); setLoading(false); }
   }, [user, useLocal]);
 
-  // Ticker
+  // Ticker Logic (Dynamic)
   useEffect(() => {
     const t = setInterval(() => {
-      setTickerIdx(p => (p + 1) % TICKER_MESSAGES.length);
+      setTickerIdx(p => {
+          const historyMsgs = history.slice(0, 5).map(h => `ÚLTIMA HORA: ${h.text.toUpperCase()}`);
+          const allMsgs = [...DEFAULT_TICKER_MESSAGES, ...historyMsgs];
+          return (p + 1) % allMsgs.length;
+      });
+
       const h = new Date().getHours() + new Date().getMinutes()/60;
       setQuestionAvailable(h >= 9 && h <= 12.5);
       if (timerTarget) {
@@ -400,9 +449,9 @@ function AvengersTracker() {
         if (diff <= 0) setTimeLeft("00:00");
         else setTimeLeft(`${Math.floor(diff/60000).toString().padStart(2,'0')}:${Math.floor((diff%60000)/1000).toString().padStart(2,'0')}`);
       } else setTimeLeft(null);
-    }, 1000);
+    }, 3000); 
     return () => clearInterval(t);
-  }, [timerTarget]);
+  }, [timerTarget, history]);
 
   // Helpers
   const showToast = (msg, type='info') => setToast({ message: msg, type });
@@ -444,8 +493,21 @@ function AvengersTracker() {
   const handlePts = (tid, amt, e, force = false) => {
     if (!force && !isAdmin && !(loggedInId === tid && amt < 0)) return;
     if (amt > 0) { triggerConfetti(e); playSfx('success'); } else { playSfx('error'); }
+    
     const t = teams.find(i => i.id === tid);
     if (!t) return;
+
+    // LEVEL UP CHECK
+    const oldLevel = Math.floor(t.points / 100);
+    const newLevel = Math.floor((t.points + amt) / 100);
+    
+    if (newLevel > oldLevel) {
+        playSfx('levelup');
+        setLevelUpEvent({ team: t.name, level: newLevel });
+        speak(`Atención. ${t.name} ha ascendido al nivel ${newLevel}.`);
+        setTimeout(() => setLevelUpEvent(null), 4000);
+    }
+
     if (Math.abs(amt) >= 5) speak(`Puntos para ${t.name}`);
     safeUpdate(tid, { points: t.points + amt });
     if (amt !== 0) logAction(`${t.name}: ${amt > 0 ? '+' : ''}${amt} pts`);
@@ -458,8 +520,8 @@ function AvengersTracker() {
       if (newDaily === 4 && (t.daily || 0) < 4) {
           speak("¡Carga diaria completada!");
           triggerSecretConfetti();
-          showToast("¡CARGA AL 100%! +5 Puntos Extra", "success");
-          handlePts(tid, 5, null, true); // Bonus for completion
+          showToast("¡CARGA AL 100%! +2 Puntos Extra", "success");
+          handlePts(tid, 2, null, true); // Bonus for completion
       }
       safeUpdate(tid, { daily: newDaily });
   };
@@ -473,7 +535,7 @@ function AvengersTracker() {
       playSfx('success'); triggerSecretConfetti();
   };
 
-  const handleBuy = (teamId, cost, itemId) => {
+  const handleBuy = async (teamId, cost, itemId) => {
       if (!isAdmin && loggedInId !== teamId) { showToast("Sin permiso", "error"); return false; }
       const t = teams.find(tm => tm.id === teamId);
       if (t.points >= cost) {
@@ -591,7 +653,7 @@ function AvengersTracker() {
          } else {
              handlePts(loggedInId, 3, null, true); // Force add
              handleDailyProgress(loggedInId);
-             logAction(`${teams.find(t=>t.id===loggedInId).name} completó Entrenamiento.`);
+             logAction(`${teams.find(t=>t.id===loggedInId).name} completó el Entrenamiento.`);
              localStorage.setItem(`math_done_${new Date().toDateString()}_${loggedInId}`, 'true');
              setModal(null); showToast("¡Misión Cumplida! +3 Puntos", "success"); speak("Excelente trabajo."); triggerSecretConfetti();
          }
@@ -635,6 +697,52 @@ function AvengersTracker() {
           setWordInput("");
       }
   };
+  
+  // COMBAT CHALLENGE (TRIVIA)
+  const startCombatChallenge = () => {
+      if (!loggedInId) return;
+      const shuffled = [...COMBAT_QUESTIONS].sort(() => 0.5 - Math.random());
+      const selected = shuffled.slice(0, 3);
+      setCombatState({ active: true, questions: selected, currentIdx: 0, correctCount: 0 });
+      setCombatInput("");
+      setModal('combatChallenge');
+      speak("Simulación de combate iniciada. Tanda de 3 objetivos.");
+  };
+  
+  const submitCombatAnswer = () => {
+      const currentQ = combatState.questions[combatState.currentIdx];
+      const isCorrect = combatInput.toUpperCase().trim() === currentQ.a;
+      
+      let newCorrectCount = combatState.correctCount;
+      if (isCorrect) {
+          newCorrectCount++;
+          playSfx('success');
+          showToast("¡Objetivo neutralizado!", "success");
+      } else {
+          playSfx('error');
+          showToast(`Fallo. Era: ${currentQ.a}`, "error");
+      }
+
+      if (combatState.currentIdx < 2) {
+          setCombatState(prev => ({ ...prev, currentIdx: prev.currentIdx + 1, correctCount: newCorrectCount }));
+          setCombatInput("");
+      } else {
+          // FIN DE LA TANDA
+          if (newCorrectCount === 3) {
+              handlePts(loggedInId, 1, null, true);
+              handleDailyProgress(loggedInId);
+              logAction(`${teams.find(t=>t.id===loggedInId).name} superó la simulación (3/3).`);
+              showToast("¡Simulación Perfecta! +1 Punto", "success");
+              speak("Simulación completada con éxito.");
+              triggerSecretConfetti();
+          } else {
+              showToast(`Simulación finalizada. ${newCorrectCount}/3 aciertos. Sin puntos.`, "info");
+              speak("Simulación fallida. Se requiere 100% de efectividad.");
+          }
+          setModal(null);
+          setCombatInput("");
+      }
+  };
 
   // Render Vars
   const totalPoints = teams.reduce((a, b) => a + Math.max(0, b.points), 0);
@@ -643,6 +751,10 @@ function AvengersTracker() {
   const bossProgress = Math.min(100, (totalPoints / BOSS_MAX_HP) * 100);
   const leaderId = teams.length > 0 ? teams[0].id : null;
   const loggedInTeam = teams.find(t => t.id === loggedInId);
+  const dynamicTickerMessages = [
+    ...DEFAULT_TICKER_MESSAGES,
+    ...history.slice(0, 5).map(h => `ÚLTIMA HORA: ${h.text.toUpperCase()}`)
+  ];
 
   if (errorMsg) return <div className="p-10 text-red-500 bg-black h-screen font-mono">ERROR: {errorMsg}</div>;
   if (loading) return <div className="p-10 text-cyan-500 bg-black h-screen font-mono animate-pulse">CARGANDO SISTEMA S.H.I.E.L.D...</div>;
@@ -651,6 +763,18 @@ function AvengersTracker() {
     <div className={`min-h-screen bg-[#020617] text-white font-sans pb-20 overflow-x-hidden ${redAlertMode ? 'border-4 border-red-600' : ''} ${shaking ? 'animate-[shake_0.5s_ease-in-out_infinite]' : ''}`}>
       {confetti.active && (<div className="fixed pointer-events-none z-50" style={{left: confetti.x, top: confetti.y}}>{[...Array(40)].map((_,i) => <div key={i} className="absolute w-2 h-2 rounded-full animate-confetti" style={{ backgroundColor: ['#ef4444', '#3b82f6', '#eab308', '#22c55e', '#a855f7'][Math.floor(Math.random() * 5)], '--tx': `${Math.random()*300-150}px`, '--ty': `${Math.random()*300-150}px`, '--r': `${Math.random() * 360}deg` }} />)}</div>)}
       {toast && <Toast message={toast.message} type={toast.type} onClose={closeToast} />}
+
+      {/* LEVEL UP MODAL OVERLAY */}
+      {levelUpEvent && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 animate-in zoom-in duration-500">
+              <div className="text-center">
+                  <div className="text-6xl mb-4 animate-bounce">⭐</div>
+                  <h1 className="text-5xl font-black text-yellow-400 mb-2 tracking-widest">¡ASCENSO!</h1>
+                  <p className="text-2xl text-white font-mono">EL EQUIPO <span className="text-cyan-400">{levelUpEvent.team}</span></p>
+                  <p className="text-xl text-slate-400 mt-2">ALCANZA EL NIVEL {levelUpEvent.level}</p>
+              </div>
+          </div>
+      )}
 
       <header className={`relative z-20 w-full p-4 border-b flex flex-wrap justify-between items-center gap-4 ${redAlertMode ? 'bg-red-900/90 border-red-500' : 'bg-slate-900/90 border-cyan-500/30'}`}>
         <div className="flex items-center gap-3">
@@ -687,6 +811,9 @@ function AvengersTracker() {
                     </button>
                     <button onClick={startWordChallenge} className="bg-purple-500/20 border border-purple-500 px-3 py-1 rounded text-purple-300 text-xs font-bold flex gap-1 items-center hover:bg-purple-500/40 transition-colors">
                         <Type size={14}/> DESCIFRAR
+                    </button>
+                    <button onClick={startCombatChallenge} className="bg-red-500/20 border border-red-500 px-3 py-1 rounded text-red-300 text-xs font-bold flex gap-1 items-center hover:bg-red-500/40 transition-colors">
+                        <Target size={14}/> COMBATE
                     </button>
                 </div>
             )}
@@ -728,7 +855,7 @@ function AvengersTracker() {
 
                    return (
                       <div key={t.id}>
-                         <div className="flex justify-between items-center mb-1 text-xs font-bold uppercase tracking-wide"><span className={`flex items-center gap-2 ${clr}`}>{i === 0 && <Crown size={12} className="animate-bounce" />} #{i + 1} {t.name}</span><span className={isNeg ? "text-red-400" : "text-cyan-300"}>{t.points}</span></div>
+                         <div className="flex justify-between items-center mb-1 text-xs font-bold uppercase tracking-wide"><span className={`flex items-center gap-2 ${clr}`}>{i === 0 && <Crown size={12} className="animate-bounce" />} #{i + 1} {t.name} <span className="text-[9px] text-slate-500 ml-1 opacity-70">NVL {Math.floor(t.points/100)}</span></span><span className={isNeg ? "text-red-400" : "text-cyan-300"}>{t.points}</span></div>
                          <div className="h-1 bg-slate-800 rounded-full overflow-hidden mb-1"><div className={`h-full transition-all duration-1000 ${isNeg ? 'bg-red-600' : t.barColor}`} style={{ width: `${Math.min(100, Math.max(0, (t.points / (BOSS_MAX_HP/3)) * 100))}%` }}></div></div>
                          {/* XP BAR */}
                          <div className="h-0.5 bg-slate-900 rounded-full overflow-hidden w-full opacity-50"><div className="h-full bg-white/50" style={{ width: `${nextRankPct}%` }}></div></div>
@@ -751,7 +878,8 @@ function AvengersTracker() {
 
           <div onClick={() => isAdmin && setModal('mission')} className={`bg-slate-900/80 border border-blue-500/20 rounded-sm p-5 shadow-lg relative overflow-hidden group ${isAdmin?'cursor-pointer hover:border-blue-400':''}`}>
              <h3 className="text-xs font-black text-blue-300 uppercase mb-2 flex gap-2"><ClipboardList size={14}/> Misión Prioritaria</h3>
-             <p className="text-xs text-white font-mono">"{mission}"</p>
+             <p className="text-sm font-bold text-white leading-relaxed font-mono">"{mission}"</p>
+             {isAdmin && <span className="absolute top-2 right-2 text-[10px] text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity"><List size={12}/></span>}
           </div>
         </aside>
 
@@ -779,7 +907,7 @@ function AvengersTracker() {
 
                   <div>
                     <div className="flex justify-between items-start mb-3 relative z-10">
-                      <div className="flex gap-2 items-center"><div className={`w-10 h-10 rounded-full border border-white/20 bg-slate-900 overflow-hidden ${t.accent}`}><img src={t.gif} className="w-full h-full object-cover"/></div><div><div className={`text-[8px] font-black uppercase tracking-widest ${rInfo.color}`}>{rInfo.title}</div><h2 className="text-sm font-black uppercase tracking-wider text-white">{t.name}</h2></div></div>
+                      <div className="flex gap-2 items-center"><div className={`w-10 h-10 rounded-full border border-white/20 bg-slate-900 overflow-hidden ${t.accent}`}><img src={t.gif} className="w-full h-full object-cover"/></div><div><div className={`text-[9px] font-black uppercase tracking-widest ${rInfo.color}`}>{rInfo.title}</div><h2 className="text-sm font-black uppercase tracking-wider text-white">{t.name}</h2></div></div>
                       <span className={`text-2xl font-black font-mono tracking-tighter ${t.points<0?'text-red-400':'text-white'}`}>{t.points}</span>
                     </div>
                     {/* DAILY ENERGY CELLS */}
@@ -805,7 +933,7 @@ function AvengersTracker() {
                        {t.points >= 500 && <Award size={14} className="text-yellow-400" />}
                     </div>
                     <div className="flex justify-between bg-slate-900/50 p-1 rounded mb-3 border border-white/5 relative z-10">{INFINITY_STONES.map((s,i)=>(<div key={i} title={s.name} className={t.points>=s.threshold?s.color:'text-slate-800'}><Hexagon size={12} fill="currentColor"/></div>))}</div>
-                    <div className="mb-4 relative z-10 pl-2 border-l border-white/10"><div className="text-[9px] uppercase tracking-widest opacity-50 font-bold text-slate-300 mb-1">OPERATIVOS</div><div className="text-xs text-slate-300 font-mono leading-relaxed">{t.members.join(' • ')}</div></div>
+                    <div className="mb-4 relative z-10 pl-2 border-l border-white/10"><div className="text-sm font-bold text-white tracking-wide leading-relaxed drop-shadow-md">{t.members.join(' • ')}</div></div>
                   </div>
                   <div className="relative z-10 mt-auto">
                     <div className="mb-4 relative pl-3 border-l-2 border-white/10 group-hover:border-white/30 transition-colors"><p className={`text-xs italic font-medium leading-tight ${t.accent} opacity-80`}>"{t.quote}"</p></div>
@@ -833,7 +961,7 @@ function AvengersTracker() {
 
       <footer className="fixed bottom-0 w-full bg-slate-950 border-t border-cyan-900 h-6 flex items-center overflow-hidden z-50">
         <div className="px-4 bg-cyan-900/50 h-full flex items-center text-[9px] font-bold text-cyan-200">NEWS</div>
-        <div className="flex-1 whitespace-nowrap overflow-hidden"><div className="animate-[marquee_20s_linear_infinite] text-[9px] font-mono text-cyan-400/70">{TICKER_MESSAGES[tickerIdx]}</div></div>
+        <div className="flex-1 whitespace-nowrap overflow-hidden"><div className="animate-[marquee_20s_linear_infinite] text-[9px] font-mono text-cyan-400/70">{dynamicTickerMessages[tickerIdx]}</div></div>
       </footer>
 
       {/* --- MODALS --- */}
@@ -901,6 +1029,40 @@ function AvengersTracker() {
                   <div className="flex gap-2">
                       <button onClick={() => setModal(null)} className="flex-1 py-3 text-xs text-slate-500 hover:text-white">ABORTAR</button>
                       <button onClick={submitWordAnswer} className="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded uppercase">ENVIAR CÓDIGO</button>
+                  </div>
+              </div>
+          </div>
+      )}
+      
+      {/* COMBAT CHALLENGE MODAL */}
+      {modal === 'combatChallenge' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
+              <div className="bg-slate-900 border-2 border-red-500 p-6 rounded-sm w-full max-w-sm shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-red-500/50 animate-pulse"></div>
+                  <h3 className="text-xl font-black text-red-400 mb-4 flex items-center gap-2"><Target size={24}/> SIMULACIÓN COMBATE</h3>
+                  <div className="flex justify-between items-center mb-4">
+                      <p className="text-[10px] font-mono text-red-400/70">OBJETIVO {combatState.currentIdx + 1} / 3</p>
+                  </div>
+                  
+                  <div className="bg-black p-6 rounded border border-red-900 mb-6 text-center">
+                      <p className="text-lg font-bold text-white leading-relaxed">
+                          {combatState.questions[combatState.currentIdx].q}
+                      </p>
+                  </div>
+
+                  <input 
+                      type="text" 
+                      value={combatInput} 
+                      onChange={(e) => setCombatInput(e.target.value.toUpperCase())}
+                      onKeyDown={(e) => e.key === 'Enter' && submitCombatAnswer()}
+                      className="w-full bg-slate-800 border border-red-700 p-3 text-white text-center font-bold text-xl mb-4 focus:border-red-400 outline-none uppercase"
+                      placeholder="RESPUESTA"
+                      autoFocus
+                  />
+                  
+                  <div className="flex gap-2">
+                      <button onClick={() => setModal(null)} className="flex-1 py-3 text-xs text-slate-500 hover:text-white">ABORTAR</button>
+                      <button onClick={submitCombatAnswer} className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded uppercase">DISPARAR</button>
                   </div>
               </div>
           </div>
