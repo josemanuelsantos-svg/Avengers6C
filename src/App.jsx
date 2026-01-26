@@ -1,4 +1,4 @@
-import { useState, useEffect, Component } from 'react';
+import { useState, useEffect, Component, useCallback } from 'react';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
 import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, arrayUnion } from 'firebase/firestore';
@@ -7,7 +7,8 @@ import {
   Cpu, Atom, Target, Eye, Trophy, Medal, TrendingUp, Info, Crown, Activity, User, 
   Users, ChevronsUp, Hexagon, ClipboardList, Swords, Brain, Volume2, VolumeX, List, 
   CheckCircle2, PlusCircle, Quote, Siren, Award, History, Trash2, X, Package, Dices, 
-  Sparkles, Radio, BookOpen, Timer, Wifi, WifiOff, MessageSquare, ShieldCheck, Flame, Star
+  Sparkles, Radio, BookOpen, Timer, Wifi, WifiOff, MessageSquare, ShieldCheck, Flame, Star, Calculator,
+  Type, Binary, Battery, BatteryCharging, Lightbulb
 } from 'lucide-react';
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
@@ -38,7 +39,7 @@ const appId = rawAppId.replace(/\//g, '_');
 // --- 3. DATOS CONSTANTES ---
 const INITIAL_TEAMS = [
   { 
-    id: 'ironman', name: 'Iron Man', points: 0, shield: false, badges: [],
+    id: 'ironman', name: 'Iron Man', points: 0, shield: false, badges: [], daily: 0, lastDaily: '',
     theme: 'bg-red-900/30 shadow-red-500/20', border: 'border-red-500/50', 
     accent: 'text-red-400', barColor: 'bg-red-500', iconKey: 'cpu', 
     password: 'arc_reactor_85', members: ['Juandi', 'Ernesto', 'Carmen', 'Bea'], 
@@ -46,7 +47,7 @@ const INITIAL_TEAMS = [
     gif: "https://i.ibb.co/27K5dCBM/b751779a4a3bbc38f9268036cdb5af5a.gif"
   },
   { 
-    id: 'cap', name: 'Capitán América', points: 0, shield: false, badges: [],
+    id: 'cap', name: 'Capitán América', points: 0, shield: false, badges: [], daily: 0, lastDaily: '',
     theme: 'bg-blue-900/30 shadow-blue-500/20', border: 'border-blue-500/50', 
     accent: 'text-blue-400', barColor: 'bg-blue-500', iconKey: 'shield', 
     password: 'escudo_vibranium', members: ['Sara', 'Araceli', 'Nagore', 'Alex'], 
@@ -54,7 +55,7 @@ const INITIAL_TEAMS = [
     gif: "https://i.ibb.co/XqT34sz/189868-C0-D40619-AD55-4-B4-C-BE57-9005-D2506967-0-1643400842.gif"
   },
   { 
-    id: 'thor', name: 'Thor', points: 0, shield: false, badges: [],
+    id: 'thor', name: 'Thor', points: 0, shield: false, badges: [], daily: 0, lastDaily: '',
     theme: 'bg-yellow-900/30 shadow-yellow-500/20', border: 'border-yellow-500/50', 
     accent: 'text-yellow-400', barColor: 'bg-yellow-400', iconKey: 'zap', 
     password: 'stormbreaker_trueno', members: ['Javi', 'Guille', 'Yma', 'Iker'], 
@@ -62,7 +63,7 @@ const INITIAL_TEAMS = [
     gif: "https://i.ibb.co/PsFhhF1g/f604e46c6979b173d319fc064ed5c0dc.gif"
   },
   { 
-    id: 'hulk', name: 'Hulk', points: 0, shield: false, badges: [],
+    id: 'hulk', name: 'Hulk', points: 0, shield: false, badges: [], daily: 0, lastDaily: '',
     theme: 'bg-green-900/30 shadow-green-500/20', border: 'border-green-500/50', 
     accent: 'text-green-400', barColor: 'bg-green-500', iconKey: 'atom', 
     password: 'gamma_smash_verde', members: ['Oliver', 'Félix', 'Sofía'], 
@@ -70,7 +71,7 @@ const INITIAL_TEAMS = [
     gif: "https://i.ibb.co/BV1dZJCH/tumblr-nkx9ln-Ha8c1tiwiyxo1-640.gif"
   },
   { 
-    id: 'widow', name: 'Viuda Negra', points: 0, shield: false, badges: [],
+    id: 'widow', name: 'Viuda Negra', points: 0, shield: false, badges: [], daily: 0, lastDaily: '',
     theme: 'bg-gray-800/50 shadow-red-900/20', border: 'border-red-500/50', 
     accent: 'text-red-500', barColor: 'bg-red-600', iconKey: 'target', 
     password: 'sala_roja_007', members: ['Sara', 'Sebas', 'Héctor', 'Alejandro'], 
@@ -78,7 +79,7 @@ const INITIAL_TEAMS = [
     gif: "https://i.ibb.co/JjJQnWcH/0c2a5632830679-569563b0d45b2.gif"
   },
   { 
-    id: 'strange', name: 'Dr. Strange', points: 0, shield: false, badges: [],
+    id: 'strange', name: 'Dr. Strange', points: 0, shield: false, badges: [], daily: 0, lastDaily: '',
     theme: 'bg-purple-900/30 shadow-purple-500/20', border: 'border-purple-500/50', 
     accent: 'text-purple-400', barColor: 'bg-purple-500', iconKey: 'eye', 
     password: 'sanctum_agomoto', members: ['Derek', 'Liah', 'Dani', 'Cata'], 
@@ -113,6 +114,19 @@ const BADGES_LIST = [
     { icon: <Brain size={14}/>, name: "Ingenio", color: "text-purple-400" },
     { icon: <Shield size={14}/>, name: "Defensor", color: "text-green-400" },
     { icon: <Flame size={14}/>, name: "Racha", color: "text-orange-400" },
+];
+
+const DAILY_QUOTES = [
+    "Un gran poder conlleva una gran responsabilidad.",
+    "No es sobre cuánto golpeamos, sino cuánto podemos resistir.",
+    "Vengadores, ¡Reuníos!",
+    "Solo si trabajamos juntos podremos vencer.",
+    "El conocimiento es la mejor arma.",
+    "Hasta el infinito y más allá.",
+    "Lo que hacemos ahora define nuestro futuro.",
+    "La paciencia es la clave de la victoria.",
+    "Nunca te rindas, incluso cuando las probabilidades estén en contra.",
+    "La verdadera fuerza está en el corazón."
 ];
 
 const MISSION_BATTERY = [
@@ -155,6 +169,11 @@ const ACADEMIC_QUESTIONS = [
   { q: "¿Cuántos minutos hay en 2 horas y media?", a: "150 minutos" }
 ];
 
+const HYDRA_WORDS = [
+    "SUJETO", "PREDICADO", "VERBO", "ADJETIVO", "CELULA", "FOTOSINTESIS", "ENERGIA", "MATERIA", 
+    "PLANETA", "RELIEVE", "CLIMA", "EUROPA", "DEMOCRACIA", "CONSTITUCION", "ECOSYSTEMA", "VENGADORES", "ESCUDO"
+];
+
 const BOSS_MAX_HP = 700;
 const ICONS = { cpu: Cpu, shield: Shield, zap: Zap, atom: Atom, target: Target, eye: Eye };
 const TICKER_MESSAGES = [ "CAPITÁN AMÉRICA: 'PUEDO HACER ESTO TODO EL DÍA'", "TONY STARK: 'YO SOY IRON MAN'", "AVENGERS: ¡REUNÍOS!", "THOR: 'POR LAS BARBAS DE ODÍN'", "BLACK PANTHER: '¡WAKANDA POR SIEMPRE!'", "HULK: ¡APLASTA EL EXAMEN!" ];
@@ -173,38 +192,81 @@ const CTRL_BTN_CLASS = "flex-1 py-1.5 rounded-sm text-[10px] font-bold font-mono
 const ACTION_BTN_CLASS = "w-full py-2 rounded-sm border text-xs font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer select-none";
 
 const getRankInfo = (p) => {
-  if (p < 0) return { title: 'AMENAZA', color: 'text-red-500', glow: 'shadow-red-900/50', iconScale: 1 };
-  if (p < 100) return { title: 'RECLUTA', color: 'text-slate-400', glow: 'shadow-none', iconScale: 1 };
-  if (p < 200) return { title: 'AGENTE', color: 'text-blue-300', glow: 'shadow-blue-500/20', iconScale: 1.1 };
-  if (p < 400) return { title: 'VENGADOR', color: 'text-yellow-400', glow: 'shadow-yellow-500/30', iconScale: 1.25 };
-  return { title: 'LEYENDA', color: 'text-purple-300', glow: 'shadow-[0_0_30px_rgba(168,85,247,0.3)]', iconScale: 1.5 };
+  if (p < 0) return { title: 'AMENAZA', color: 'text-red-500', glow: 'shadow-red-900/50', iconScale: 1, next: 0, total: 100 };
+  if (p < 100) return { title: 'RECLUTA', color: 'text-slate-400', glow: 'shadow-none', iconScale: 1, next: 100, total: 100 };
+  if (p < 200) return { title: 'AGENTE', color: 'text-blue-300', glow: 'shadow-blue-500/20', iconScale: 1.1, next: 200, total: 200 };
+  if (p < 400) return { title: 'VENGADOR', color: 'text-yellow-400', glow: 'shadow-yellow-500/30', iconScale: 1.25, next: 400, total: 200 };
+  return { title: 'LEYENDA', color: 'text-purple-300', glow: 'shadow-[0_0_30px_rgba(168,85,247,0.3)]', iconScale: 1.5, next: 1000, total: 600 };
 };
 
-// --- ERROR BOUNDARY ---
+// SFX
+const playSfx = (type) => {
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        const now = ctx.currentTime;
+        
+        if (type === 'success') {
+            osc.type = 'sine'; osc.frequency.setValueAtTime(500, now); osc.frequency.exponentialRampToValueAtTime(1000, now + 0.1);
+            gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+            osc.start(now); osc.stop(now + 0.5);
+        } else if (type === 'error') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(50, now + 0.3);
+            gain.gain.setValueAtTime(0.3, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+            osc.start(now); osc.stop(now + 0.3);
+        } else if (type === 'click') {
+            osc.type = 'square'; osc.frequency.setValueAtTime(800, now);
+            gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+            osc.start(now); osc.stop(now + 0.05);
+        } else if (type === 'alarm') {
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(600, now); osc.frequency.linearRampToValueAtTime(800, now + 0.2);
+            gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 1.5);
+            osc.start(now); osc.stop(now + 1.5);
+        }
+    } catch (e) {}
+};
+
+// COMPONENTES AUXILIARES
+const Confeti = ({ active, x, y }) => {
+  if (!active) return null;
+  return (
+    <div className="pointer-events-none fixed z-50" style={{ left: x, top: y }}>
+      {[...Array(40)].map((_, i) => (
+        <div key={i} className="absolute w-2 h-2 rounded-full animate-confetti" style={{ backgroundColor: ['#ef4444', '#3b82f6', '#eab308'][i%3], '--tx': `${Math.random()*300-150}px`, '--ty': `${Math.random()*300-150}px`}} />
+      ))}
+    </div>
+  );
+};
+
+const Toast = ({ message, type, onClose }) => {
+  useEffect(() => { 
+    // Usamos el timer para cerrar, pero dependemos de que el padre no lo reinicie con cada render
+    const t = setTimeout(onClose, 3000); 
+    return () => clearTimeout(t); 
+  }, [onClose]); // Si onClose cambia, el timer se reinicia. El padre debe usar useCallback.
+  
+  const bg = type === 'success' ? 'bg-green-500/20 border-green-500' : type === 'error' ? 'bg-red-500/20 border-red-500' : 'bg-blue-500/20 border-blue-500';
+  const icon = type === 'success' ? <CheckCircle2 /> : type === 'error' ? <AlertTriangle /> : <Info />;
+  return (
+    <div className={`fixed top-24 right-4 z-50 flex items-center gap-3 p-4 rounded-lg border ${bg} backdrop-blur-md shadow-2xl animate-in slide-in-from-right fade-in duration-300 max-w-sm`}>
+      <div className={type === 'success' ? 'text-green-400' : type === 'error' ? 'text-red-400' : 'text-blue-400'}>{icon}</div>
+      <p className="text-sm font-bold text-white">{message}</p>
+    </div>
+  );
+};
+
 class ErrorBoundary extends Component {
-  constructor(props) { super(props); this.state = { hasError: false, error: null }; }
-  static getDerivedStateFromError(error) { return { hasError: true, error }; }
-  componentDidCatch(error, errorInfo) { console.error("ErrorBoundary catch:", error, errorInfo); }
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="p-8 bg-red-900 text-white font-mono h-screen flex flex-col justify-center items-center">
-          <h1 className="text-3xl font-bold mb-4">⚠️ ERROR DEL SISTEMA</h1>
-          <p className="mb-4">Ha ocurrido un fallo crítico. Por favor, recarga la página.</p>
-          <pre className="bg-black p-4 rounded border border-red-500 overflow-auto max-w-2xl text-xs">
-            {this.state.error?.toString()}
-          </pre>
-          <button onClick={() => window.location.reload()} className="mt-6 px-6 py-3 bg-white text-red-900 font-bold rounded hover:bg-gray-200">
-            REINICIAR SISTEMA
-          </button>
-        </div>
-      );
-    }
-    return this.props.children; 
-  }
+  constructor(props) { super(props); this.state = { hasError: false }; }
+  static getDerivedStateFromError(error) { return { hasError: true }; }
+  render() { if (this.state.hasError) return <div className="p-10 text-red-500 bg-black">Error crítico. Recarga la página.</div>; return this.props.children; }
 }
 
-// --- COMPONENTE PRINCIPAL ---
+// --- APP PRINCIPAL ---
 function AvengersTracker() {
   const [teams, setTeams] = useState(INITIAL_TEAMS);
   const [user, setUser] = useState(null);
@@ -221,7 +283,7 @@ function AvengersTracker() {
   const [penalty, setPenalty] = useState(null);
   const [lootResult, setLootResult] = useState(null);
   const [multiverseEvent, setMultiverseEvent] = useState(null);
-  const [mission, setMission] = useState(MISSION_BATTERY[0].text);
+  const [mission, setMission] = useState(() => localStorage.getItem('avengers_mission') || MISSION_BATTERY[0].text);
   const [customMission, setCustomMission] = useState('');
   const [history, setHistory] = useState([]);
   const [tickerIdx, setTickerIdx] = useState(0);
@@ -236,19 +298,50 @@ function AvengersTracker() {
   const [questionAvailable, setQuestionAvailable] = useState(false);
   const [furyMessage, setFuryMessage] = useState(null);
   const [newFuryMsg, setNewFuryMsg] = useState("");
-  const [shaking, setShaking] = useState(false); // Efecto visual ataque Thanos
+  const [shaking, setShaking] = useState(false);
+  const [dailyQuote, setDailyQuote] = useState("");
   
-  // New States for Features
+  // Math & Logic Challenge States
+  const [mathState, setMathState] = useState({ active: false, questions: [], currentIdx: 0, level: 2 });
+  const [mathInput, setMathInput] = useState("");
+  const [streak, setStreak] = useState(0);
+
+  const [wordState, setWordState] = useState({ active: false, word: "", scrambled: "" });
+  const [wordInput, setWordInput] = useState("");
+
+  // Features
   const [timerTarget, setTimerTarget] = useState(null); 
   const [timeLeft, setTimeLeft] = useState(null); 
   const [timerInput, setTimerInput] = useState(5);
   const [duelData, setDuelData] = useState(null);
 
-  // Auth Effect
+  // ESTA ES LA CLAVE: useCallback para que la función no cambie y resetee el timer del toast
+  const closeToast = useCallback(() => setToast(null), []);
+
+  // Backup local
+  useEffect(() => {
+    localStorage.setItem('avengers_teams', JSON.stringify(teams));
+    localStorage.setItem('avengers_mission', mission);
+  }, [teams, mission]);
+
+  // Daily Quote & Reset Logic
+  useEffect(() => {
+      const day = new Date().getDate();
+      setDailyQuote(DAILY_QUOTES[day % DAILY_QUOTES.length]);
+      const today = new Date().toDateString();
+      const lastRunDate = localStorage.getItem('avengers_last_run_date');
+      if (lastRunDate !== today) {
+          const updatedTeams = teams.map(t => ({ ...t, daily: 0, lastDaily: today }));
+          setTeams(updatedTeams);
+          localStorage.setItem('avengers_last_run_date', today);
+      }
+  }, []);
+
+  // Auth
   useEffect(() => {
     const initAuth = async () => {
       try {
-        if (!auth) { setUseLocal(true); return; }
+        if (!auth) { setUseLocal(true); setLoading(false); return; }
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
            try { await signInWithCustomToken(auth, __initial_auth_token); } 
            catch(e) { await signInAnonymously(auth); }
@@ -260,305 +353,162 @@ function AvengersTracker() {
       }
     };
     initAuth();
-    
-    const unsubscribe = onAuthStateChanged(auth, setUser);
-    return () => unsubscribe();
+    if(auth) onAuthStateChanged(auth, setUser);
   }, []);
 
-  // Data Effect (Hybrid)
+  // Data Hybrid
   useEffect(() => {
-    if (useLocal || !user || !db) {
-        if (useLocal) setLoading(false);
-        return;
-    }
-
-    let unsub;
+    if (useLocal || !user || !db) { if (useLocal) setLoading(false); return; }
     try {
-      const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'avengers_teams');
-      unsub = onSnapshot(colRef, (snap) => {
-        if (snap.empty) {
-          INITIAL_TEAMS.forEach(async (t) => {
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'avengers_teams', t.id), t);
-          });
-        } else {
-          const tArr = []; let fMission=null; let fAlert=false; let fHist=[]; let fTimer=null; let fFury=null; let fShake=false;
+      const unsub = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'avengers_teams'), (snap) => {
+        if (snap.empty) { INITIAL_TEAMS.forEach(t => setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'avengers_teams', t.id), t)); }
+        else {
+          const tArr = []; let fMission=null, fAlert=false, fHist=[], fTimer=null, fFury=null, fShake=false;
           snap.docs.forEach(d => {
-            if (d.id === 'mission_control') {
-              const data = d.data(); 
-              fMission=data.text; fAlert=data.alert; fHist=data.history||[]; fTimer=data.timerEnd; fFury=data.furyMsg; fShake=data.shaking;
-            } else { tArr.push(d.data()); }
+            if (d.id === 'mission_control') { const data=d.data(); fMission=data.text; fAlert=data.alert; fHist=data.history||[]; fTimer=data.timerEnd; fFury=data.furyMsg; fShake=data.shaking; }
+            else { tArr.push(d.data()); }
           });
-          const merged = tArr.map(t => ({...INITIAL_TEAMS.find(it=>it.id===t.id)||t, points: t.points, shield: t.shield, badges: t.badges || [] })).filter(t=>t.id).sort((a,b)=>b.points-a.points);
+          const merged = tArr.map(t => ({
+              ...INITIAL_TEAMS.find(it=>it.id===t.id)||t, 
+              points: t.points, 
+              shield: t.shield, 
+              badges: t.badges||[],
+              daily: t.daily || 0 
+          })).filter(t=>t.id).sort((a,b)=>b.points-a.points);
           if(merged.length>0) setTeams(merged);
           if(fMission) setMission(fMission);
           if(fAlert!==undefined) setRedAlertMode(fAlert);
           if(fTimer) setTimerTarget(fTimer); else setTimerTarget(null);
           setFuryMessage(fFury);
-          
-          if(fShake) {
-             setShaking(true);
-             setTimeout(() => setShaking(false), 3000); 
-          }
-          
+          if(fShake) { setShaking(true); setTimeout(() => setShaking(false), 3000); playSfx('alarm'); }
           setHistory((fHist||[]).reverse().slice(0,50));
         }
         setLoading(false);
-      }, (e) => {
-        console.warn("Firebase falló, pasando a local:", e);
-        setUseLocal(true);
-        setLoading(false);
-      });
-    } catch (e) {
-        setUseLocal(true);
-        setLoading(false);
-    }
-    return () => unsub && unsub();
+      }, () => { setUseLocal(true); setLoading(false); });
+      return () => unsub();
+    } catch { setUseLocal(true); setLoading(false); }
   }, [user, useLocal]);
 
-  // Main Loop
+  // Ticker
   useEffect(() => {
     const t = setInterval(() => {
-      setTickerIdx(prev => (prev + 1) % TICKER_MESSAGES.length);
-      
-      const now = new Date();
-      const timeVal = now.getHours() + now.getMinutes()/60;
-      if (timeVal >= 9 && timeVal <= 12.5) setQuestionAvailable(true); else setQuestionAvailable(false);
-
+      setTickerIdx(p => (p + 1) % TICKER_MESSAGES.length);
+      const h = new Date().getHours() + new Date().getMinutes()/60;
+      setQuestionAvailable(h >= 9 && h <= 12.5);
       if (timerTarget) {
         const diff = timerTarget - Date.now();
-        if (diff <= 0) {
-            setTimeLeft("00:00");
-        } else {
-            const m = Math.floor(diff / 60000);
-            const s = Math.floor((diff % 60000) / 1000);
-            setTimeLeft(`${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
-        }
-      } else {
-          setTimeLeft(null);
-      }
+        if (diff <= 0) setTimeLeft("00:00");
+        else setTimeLeft(`${Math.floor(diff/60000).toString().padStart(2,'0')}:${Math.floor((diff%60000)/1000).toString().padStart(2,'0')}`);
+      } else setTimeLeft(null);
     }, 1000);
     return () => clearInterval(t);
   }, [timerTarget]);
 
-  // LOGIC
-  const showToast = (msg, type = 'info') => setToast({ message: msg, type });
+  // Helpers
+  const showToast = (msg, type='info') => setToast({ message: msg, type });
+  const triggerConfetti = (e) => { if(e) { setConfetti({active:true, x:e.clientX, y:e.clientY}); setTimeout(()=>setConfetti({active:false,x:0,y:0}), 1000); }};
+  const triggerSecretConfetti = () => { setConfetti({ active: true, x: window.innerWidth / 2, y: window.innerHeight / 2 }); setTimeout(() => setConfetti({ active: false, x: 0, y: 0 }), 1000); };
+  
+  // Data Logic
+  const updateLocal = (docId, data) => {
+      if (docId === 'mission_control') {
+          if(data.text) setMission(data.text);
+          if(data.alert !== undefined) setRedAlertMode(data.alert);
+          if(data.history) setHistory(prev => [...(data.history||[]), ...prev]);
+          if(data.timerEnd !== undefined) setTimerTarget(data.timerEnd);
+          if(data.furyMsg !== undefined) setFuryMessage(data.furyMsg);
+      } else {
+          setTeams(prev => prev.map(t => t.id === docId ? {...t, ...data} : t).sort((a,b)=>b.points-a.points));
+      }
+  };
+
+  const safeUpdate = async (docId, data, merge=true) => {
+      if (useLocal || !db) { updateLocal(docId, data); return; }
+      try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'avengers_teams', docId), data, {merge:true}); }
+      catch (e) { setUseLocal(true); updateLocal(docId, data); showToast("Modo Offline", "error"); }
+  };
+
+  const logAction = (txt) => {
+    const time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    if (useLocal || !db) { setHistory(prev => [{time, text:txt}, ...prev]); return; }
+    const ref = doc(db, 'artifacts', appId, 'public', 'data', 'avengers_teams', 'mission_control');
+    updateDoc(ref, { history: arrayUnion({time, text:txt}) }).catch(() => setHistory(prev => [{time, text:txt}, ...prev]));
+  };
+
   const speak = (text) => {
     if (!sound || !window.speechSynthesis) return;
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'es-ES'; u.rate = 1.1; window.speechSynthesis.speak(u);
   };
-  const triggerConfetti = (e) => {
-    if(!e) return;
-    setConfetti({ active: true, x: e.clientX, y: e.clientY });
-    setTimeout(() => setConfetti({ active: false, x: 0, y: 0 }), 1000);
-  };
-  const triggerSecretConfetti = () => {
-    setConfetti({ active: true, x: window.innerWidth / 2, y: window.innerHeight / 2 });
-    setTimeout(() => setConfetti({ active: false, x: 0, y: 0 }), 1000);
-  };
-  
-  // Data Handlers (Hybrid)
-  const safeUpdate = async (docId, data, merge=true) => {
-      if (useLocal) {
-          if (docId === 'mission_control') {
-              if(data.text) setMission(data.text);
-              if(data.alert !== undefined) setRedAlertMode(data.alert);
-              if(data.history) setHistory(prev => [...(data.history||[]), ...prev]);
-              if(data.timerEnd !== undefined) setTimerTarget(data.timerEnd);
-              if(data.furyMsg !== undefined) setFuryMessage(data.furyMsg);
-          } else {
-              setTeams(prev => prev.map(t => t.id === docId ? {...t, ...data} : t).sort((a,b)=>b.points-a.points));
-          }
-          return;
-      }
-      try {
-        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'avengers_teams', docId), data, {merge});
-      } catch(e) {
-          console.error("Write error", e);
-          setUseLocal(true); // Fallback if write fails
-          showToast("Error de conexión. Pasando a modo Local.", "error");
-      }
-  };
 
-  const logAction = async (txt) => {
-    const time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-    if(useLocal) {
-        setHistory(prev => [{time, text:txt}, ...prev]);
-    } else {
-        const ref = doc(db, 'artifacts', appId, 'public', 'data', 'avengers_teams', 'mission_control');
-        try { 
-            await updateDoc(ref, { history: arrayUnion({ time, text: txt }) }).catch(async () => {
-                 await setDoc(ref, { history: [{ time, text: txt }] }, { merge: true });
-            });
-        } catch (e) {}
-    }
-  };
-
-  const handlePts = async (tid, amt, e) => {
-    if (!isAdmin && !(loggedInId === tid && amt < 0)) return;
-    if (amt > 0) triggerConfetti(e);
+  const handlePts = (tid, amt, e, force = false) => {
+    if (!force && !isAdmin && !(loggedInId === tid && amt < 0)) return;
+    if (amt > 0) { triggerConfetti(e); playSfx('success'); } else { playSfx('error'); }
     const t = teams.find(i => i.id === tid);
     if (!t) return;
-    if (amt > 0) speak(`Puntos para ${t.name}`);
-    await safeUpdate(tid, { points: t.points + amt });
+    if (Math.abs(amt) >= 5) speak(`Puntos para ${t.name}`);
+    safeUpdate(tid, { points: t.points + amt });
     if (amt !== 0) logAction(`${t.name}: ${amt > 0 ? '+' : ''}${amt} pts`);
   };
 
-  const handleBadge = async (tid, badge) => {
+  const handleDailyProgress = (tid) => {
+      const t = teams.find(i => i.id === tid);
+      if(!t) return;
+      const newDaily = Math.min((t.daily || 0) + 1, 4);
+      if (newDaily === 4 && (t.daily || 0) < 4) {
+          speak("¡Carga diaria completada!");
+          triggerSecretConfetti();
+          showToast("¡CARGA AL 100%! +5 Puntos Extra", "success");
+          handlePts(tid, 5, null, true); // Bonus for completion
+      }
+      safeUpdate(tid, { daily: newDaily });
+  };
+
+  const handleBadge = (tid, badge) => {
       const t = teams.find(i => i.id === tid);
       if(!t) return;
       const newBadges = [...(t.badges || []), badge];
-      await safeUpdate(tid, { badges: newBadges });
-      logAction(`${t.name} ganó la medalla ${badge.name}`);
-      speak(`Condecoración para ${t.name}`);
-      triggerSecretConfetti();
+      safeUpdate(tid, { badges: newBadges });
+      logAction(`${t.name} ganó medalla ${badge.name}`);
+      playSfx('success'); triggerSecretConfetti();
   };
 
-  const handleBuy = async (teamId, cost, itemId) => {
-    if (!isAdmin && loggedInId !== teamId) { showToast("Sin permiso", "error"); return false; }
-    const t = teams.find(tm => tm.id === teamId);
-    if (t.points >= cost) {
-      speak(`Compra de ${t.name}`);
-      // Special Item Logic: Shield
-      if (itemId === 99) {
-          await safeUpdate(teamId, { points: t.points - cost, shield: true });
-          logAction(`${t.name} compró ESCUDO DE DEFENSA`);
-      } else {
-          await safeUpdate(teamId, { points: t.points - cost });
-          logAction(`${t.name} gastó ${cost} pts`);
-      }
-      if(!modal?.includes('loot')) setModal(null);
-      showToast("Compra exitosa", "success");
-      return true;
-    } else { showToast("Fondos insuficientes", "error"); return false; }
+  const handleBuy = (teamId, cost, itemId) => {
+      if (!isAdmin && loggedInId !== teamId) { showToast("Sin permiso", "error"); return false; }
+      const t = teams.find(tm => tm.id === teamId);
+      if (t.points >= cost) {
+          playSfx('click');
+          if (itemId === 99) { safeUpdate(teamId, { points: t.points - cost, shield: true }); logAction(`${t.name} compró Escudo`); }
+          else { safeUpdate(teamId, { points: t.points - cost }); logAction(`${t.name} gastó ${cost} pts`); }
+          if(!modal?.includes('loot')) setModal(null);
+          showToast("Compra exitosa", "success");
+          return true;
+      } else { showToast("Fondos insuficientes", "error"); playSfx('error'); return false; }
   };
 
-  const openLootBox = async (teamId) => {
-    const cost = 15;
-    const bought = await handleBuy(teamId, cost);
-    if(bought) {
-        speak("Abriendo caja...");
-        setTimeout(() => {
-            const item = LOOT_ITEMS[Math.floor(Math.random() * LOOT_ITEMS.length)];
-            setLootResult(item);
-            if(item.val > 0) handlePts(teamId, item.val);
-            logAction(`${teams.find(t=>t.id===teamId).name} loot: ${item.text}`);
-        }, 1500); 
-    }
-  };
-  const startDuel = () => {
-    if (teams.length < 2) return;
-    const shuffled = [...teams].sort(() => 0.5 - Math.random());
-    const t1 = shuffled[0];
-    const t2 = shuffled[1];
-    const challenge = DUEL_CHALLENGES[Math.floor(Math.random() * DUEL_CHALLENGES.length)];
-    setDuelData({ t1, t2, challenge });
-    setModal('duel');
-    speak("Protocolo Civil War iniciado");
-  };
-  const resolveDuel = (winnerId) => {
-    if (!winnerId) { setModal(null); return; }
-    const winner = teams.find(t => t.id === winnerId);
-    handlePts(winnerId, 5);
-    logAction(`CIVIL WAR: ${winner.name} ganó el duelo`);
-    speak(`Victoria para ${winner.name}`);
-    setModal(null);
-  };
-  const setTimer = async (minutes) => {
-    const end = Date.now() + (minutes * 60 * 1000);
-    await safeUpdate('mission_control', { timerEnd: end });
-    setModal(null); speak(`Cuenta atrás de ${minutes} minutos`);
-  };
-  const stopTimer = async () => {
-    await safeUpdate('mission_control', { timerEnd: null });
-  };
-  const triggerMultiverse = () => {
-     setModal('multiverse');
-     speak("Brecha detectada...");
-     setTimeout(() => {
-        const event = MULTIVERSE_EVENTS[Math.floor(Math.random() * MULTIVERSE_EVENTS.length)];
-        setMultiverseEvent(event);
-        speak(event.title);
-        if (event.points !== 0) {
-            teams.forEach(t => handlePts(t.id, event.points));
-            logAction(`MULTIVERSO: ${event.title} (${event.points} pts)`);
-        }
-     }, 2000);
-  };
-  
-  // FURY MESSAGE
-  const sendFuryMessage = async () => {
-      if(!newFuryMsg.trim()) return;
-      await safeUpdate('mission_control', { furyMsg: newFuryMsg });
-      speak("Transmisión Prioritaria de Nick Fury");
-      setNewFuryMsg("");
-  };
-  const clearFuryMessage = async () => {
-      await safeUpdate('mission_control', { furyMsg: null });
-  };
-  
-  // BOSS ATTACK
-  const handleBossAttack = async () => {
-      setShaking(true);
-      speak("¡Thanos está atacando!");
-      await safeUpdate('mission_control', { shaking: true });
-      setTimeout(async () => {
-         setShaking(false);
-         await safeUpdate('mission_control', { shaking: false });
-      }, 3000);
-  };
-
-  const checkPass = (e) => {
-    e.preventDefault();
-    const p = pass.toLowerCase().trim();
-    if (p === 'director_fury_00') { setIsAdmin(true); setLoggedInId(null); setModal(null); setPass(''); speak("Hola Director"); return; }
-    const t = INITIAL_TEAMS.find(tm => tm.password === p);
-    if (t) { setLoggedInId(t.id); setIsAdmin(false); setModal(null); setPass(''); speak(`Hola ${t.name}`); return; }
-    window.alert("Acceso denegado"); 
-  };
-  const handleLogoClick = () => {
-    setSecretCount(prev => prev + 1);
-    if (secretCount + 1 >= 5) { speak("Protocolo Fiesta"); triggerSecretConfetti(); setSecretCount(0); }
-  };
-  const activateCerebro = () => {
-    setCerebro({ active: true, target: null, searching: true });
-    speak("Buscando sujeto");
-    const all = teams.flatMap(t => t.members);
-    let i = 0;
-    const interval = setInterval(() => {
-      setCerebro(prev => ({ ...prev, target: all[Math.floor(Math.random() * all.length)] }));
-      i++;
-      if (i > 20) { clearInterval(interval); setCerebro(prev => ({ ...prev, searching: false })); speak("Sujeto localizado"); }
-    }, 100);
-  };
-  const reset = async () => {
-    if (!window.confirm("¿Reiniciar temporada?")) return;
-    teams.forEach(t => safeUpdate(t.id, {points: 0, shield: false, badges: []}));
-    safeUpdate('mission_control', { history: [], timerEnd: null, furyMsg: null });
-    speak("Reinicio completado");
-  };
-  const updateM = async (txt) => {
-    if(!isAdmin) return;
-    await safeUpdate('mission_control', { text: txt });
-    setModal(null); speak("Misión actualizada");
-  };
-  const toggleAlert = async () => {
-    if(!isAdmin) return;
-    const s = !redAlertMode; setRedAlertMode(s);
-    await safeUpdate('mission_control', { alert: s });
-    if(s) { speak("Alerta Roja"); logAction("ALERTA ROJA"); } else logAction("Alerta desactivada");
-  };
+  const openLootBox = async (tid) => { if(handleBuy(tid, 15)) { speak("Abriendo..."); setTimeout(() => { const it=LOOT_ITEMS[Math.floor(Math.random()*LOOT_ITEMS.length)]; setLootResult(it); if(it.val>0) handlePts(tid, it.val, null, true); logAction(`${teams.find(t=>t.id===tid).name} loot: ${it.text}`); if(it.val>0) playSfx('success'); }, 1500); }};
+  const startDuel = () => { const s=[...teams].sort(()=>0.5-Math.random()); setDuelData({t1:s[0], t2:s[1], challenge:DUEL_CHALLENGES[Math.floor(Math.random()*DUEL_CHALLENGES.length)]}); setModal('duel'); playSfx('alarm'); speak("Civil War"); };
+  const resolveDuel = (wid) => { if(wid){ const w=teams.find(t=>t.id===wid); handlePts(wid,5, null, true); logAction(`Civil War: Gana ${w.name}`); speak(`Gana ${w.name}`); playSfx('success'); } setModal(null); };
+  const setTimer = (m) => { const end=Date.now()+m*60000; safeUpdate('mission_control', {timerEnd:end}); setModal(null); speak(`${m} minutos`); playSfx('click'); };
+  const triggerMultiverse = () => { setModal('multiverse'); playSfx('alarm'); speak("Brecha"); setTimeout(() => { const e=MULTIVERSE_EVENTS[Math.floor(Math.random()*MULTIVERSE_EVENTS.length)]; setMultiverseEvent(e); speak(e.title); if(e.points!==0) { teams.forEach(t=>handlePts(t.id, e.points, null, true)); logAction(`Multiverso: ${e.title}`); } }, 2000); };
+  const sendFuryMessage = () => { if(newFuryMsg.trim()) { safeUpdate('mission_control', { furyMsg: newFuryMsg }); playSfx('alarm'); speak("Mensaje de Fury"); setNewFuryMsg(""); }};
+  const handleBossAttack = () => { setShaking(true); playSfx('alarm'); speak("Thanos ataca"); safeUpdate('mission_control', { shaking: true }); setTimeout(() => { setShaking(false); safeUpdate('mission_control', { shaking: false }); }, 3000); };
+  const checkPass = (e) => { e.preventDefault(); const p = pass.toLowerCase().trim(); if (p === 'director_fury_00') { setIsAdmin(true); setLoggedInId(null); setModal(null); setPass(''); playSfx('success'); speak("Hola Director"); return; } const t = INITIAL_TEAMS.find(tm => tm.password === p); if (t) { setLoggedInId(t.id); setIsAdmin(false); setModal(null); setPass(''); playSfx('success'); speak(`Hola ${t.name}`); return; } playSfx('error'); showToast("Acceso denegado", "error"); };
+  const handleLogoClick = () => { setSecretCount(p=>p+1); if(secretCount>4) { speak("Fiesta"); triggerSecretConfetti(); setSecretCount(0); } };
+  const activateCerebro = () => { setCerebro({ active: true, target: null, searching: true }); speak("Buscando"); const all = teams.flatMap(t => t.members); let i = 0; const interval = setInterval(() => { setCerebro(prev => ({ ...prev, target: all[Math.floor(Math.random() * all.length)] })); i++; if (i > 20) { clearInterval(interval); setCerebro(prev => ({ ...prev, searching: false })); speak("Localizado"); playSfx('success'); } }, 100); };
+  const reset = async () => { if (!window.confirm("¿Reiniciar temporada?")) return; teams.forEach(t => safeUpdate(t.id, {points: 0, shield: false, badges: [], daily: 0})); safeUpdate('mission_control', { history: [], timerEnd: null, furyMsg: null }); speak("Reinicio"); };
+  const updateM = async (txt) => { if(!isAdmin) return; await safeUpdate('mission_control', { text: txt }); setModal(null); speak("Misión actualizada"); };
+  const toggleAlert = async () => { if(!isAdmin) return; const s = !redAlertMode; setRedAlertMode(s); await safeUpdate('mission_control', { alert: s }); if(s) { speak("Alerta Roja"); logAction("ALERTA ROJA"); playSfx('alarm'); } else logAction("Alerta desactivada"); };
   const spinPenalty = () => {
-    // SHIELD CHECK
     if (selTeam.shield) {
-        speak("¡Escudo activado! Sanción bloqueada.");
+        speak("Escudo activado"); playSfx('success');
         safeUpdate(selTeam.id, { shield: false }); 
         setPenalty("BLOCKED"); 
-        logAction(`${selTeam.name} usó su escudo para bloquear una sanción.`);
+        logAction(`${selTeam.name} bloqueó sanción`);
         return;
     }
     const p = PENALTIES_LIST[Math.floor(Math.random() * PENALTIES_LIST.length)];
-    setPenalty(p);
+    setPenalty(p); playSfx('error');
     if (selTeam) logAction(`${selTeam.name} sanción: ${p}`);
   };
 
@@ -571,6 +521,122 @@ function AvengersTracker() {
     speak("Transmisión entrante.");
   };
 
+  // --- ADAPTIVE MATH CHALLENGE ---
+  const generateMathQuestion = (lvl) => {
+      // LVL 1: Simple (Int < 50, Dec 1 digit, Frac common)
+      if (lvl === 1) {
+          const type = Math.random() > 0.5 ? 'int' : 'dec';
+          if (type === 'int') {
+              const op = Math.random()>0.5?'+':'-';
+              const n1=Math.floor(Math.random()*40)+10; const n2=Math.floor(Math.random()*9)+1;
+              const ans = op==='+'?n1+n2:n1-n2;
+              return { q: `${n1} ${op} ${n2}`, a: ans.toString() };
+          } else {
+              const n1=(Math.random()*5).toFixed(1); const n2=(Math.random()*5).toFixed(1);
+              const ans=(parseFloat(n1)+parseFloat(n2)).toFixed(1);
+              return { q: `${n1} + ${n2}`, a: ans };
+          }
+      }
+      // LVL 2: Standard (6th Grade)
+      if (lvl === 2) {
+          const type = ['int', 'dec'][Math.floor(Math.random()*2)];
+          if (type === 'int') {
+              const op = Math.random()>0.5?'+':'-';
+              const n1=Math.floor(Math.random()*500)+100; const n2=Math.floor(Math.random()*500)+50;
+              const ans = op==='+'?n1+n2:n1-n2;
+              return { q: `${n1} ${op} ${n2}`, a: ans.toString() };
+          } else {
+              const n1=(Math.random()*50).toFixed(2); const n2=(Math.random()*20).toFixed(2);
+              const ans=(parseFloat(n1)-parseFloat(n2)).toFixed(2);
+              return { q: `${n1} - ${n2}`, a: ans };
+          }
+      }
+      // LVL 3: Hard (Complex ops)
+      const op = ['*','/'][Math.floor(Math.random()*2)];
+      if (op === '*') {
+          const n1=Math.floor(Math.random()*50)+10; const n2=Math.floor(Math.random()*9)+2;
+          return { q: `${n1} * ${n2}`, a: (n1*n2).toString() };
+      } else {
+          const n2=Math.floor(Math.random()*9)+2; const ans=Math.floor(Math.random()*20)+5; const n1=n2*ans;
+          return { q: `${n1} / ${n2}`, a: ans.toString() };
+      }
+  };
+
+  const startMathChallenge = () => {
+      if (!loggedInId) return;
+      const today = new Date().toDateString();
+      if(localStorage.getItem(`math_done_${today}_${loggedInId}`)) { showToast("Ya entrenado hoy", "error"); playSfx('error'); return; }
+      // Reset to Level 2 (Medium) on start
+      setMathState({ active: true, questions: [generateMathQuestion(2)], currentIdx: 0, level: 2 });
+      setStreak(0); setModal('mathChallenge'); speak("Iniciando entrenamiento.");
+  };
+
+  const submitMathAnswer = () => {
+     const currentQ = mathState.questions[mathState.currentIdx];
+     const cleanInput = mathInput.trim().replace(',', '.'); 
+     
+     if (cleanInput === currentQ.a) {
+         setStreak(s => s + 1); playSfx('success');
+         let nextLevel = mathState.level;
+         if (streak > 1 && nextLevel < 3) nextLevel++;
+
+         if (mathState.currentIdx < 4) {
+             setMathState(prev => ({ 
+                 ...prev, 
+                 level: nextLevel,
+                 currentIdx: prev.currentIdx + 1,
+                 questions: [...prev.questions, generateMathQuestion(nextLevel)] 
+             }));
+             setMathInput("");
+         } else {
+             handlePts(loggedInId, 3, null, true); // Force add
+             handleDailyProgress(loggedInId);
+             logAction(`${teams.find(t=>t.id===loggedInId).name} completó Entrenamiento.`);
+             localStorage.setItem(`math_done_${new Date().toDateString()}_${loggedInId}`, 'true');
+             setModal(null); showToast("¡Misión Cumplida! +3 Puntos", "success"); speak("Excelente trabajo."); triggerSecretConfetti();
+         }
+     } else {
+         let nextLevel = Math.max(1, mathState.level - 1);
+         playSfx('error');
+         speak("Fallo. Recalibrando nivel.");
+         showToast(`Incorrecto. Era ${currentQ.a}. Bajando dificultad...`, "info");
+         setMathState({ 
+             active: true, 
+             questions: [generateMathQuestion(nextLevel)], 
+             currentIdx: 0, 
+             level: nextLevel 
+         });
+         setMathInput("");
+         setStreak(0);
+     }
+  };
+
+  // HYDRA WORD CHALLENGE
+  const startWordChallenge = () => {
+      const word = HYDRA_WORDS[Math.floor(Math.random() * HYDRA_WORDS.length)];
+      const scrambled = word.split('').sort(() => 0.5 - Math.random()).join('');
+      setWordState({ active: true, word: word, scrambled: scrambled });
+      setWordInput("");
+      setModal('wordChallenge');
+      speak("Desencriptando transmisión de Hydra.");
+  };
+
+  const submitWordAnswer = () => {
+      if (wordInput.toUpperCase().trim() === wordState.word) {
+          handlePts(loggedInId, 2, null, true); // Force add
+          handleDailyProgress(loggedInId);
+          playSfx('success');
+          logAction(`${teams.find(t=>t.id===loggedInId).name} desencriptó ${wordState.word}`);
+          setModal(null);
+          showToast("¡Código Descifrado! +2 Puntos", "success");
+      } else {
+          playSfx('error');
+          showToast("Código incorrecto", "error");
+          setWordInput("");
+      }
+  };
+
+  // Render Vars
   const totalPoints = teams.reduce((a, b) => a + Math.max(0, b.points), 0);
   const maxPoints = Math.max(...teams.map(t => t.points), 50);
   const bossDefeated = totalPoints >= BOSS_MAX_HP;
@@ -583,8 +649,8 @@ function AvengersTracker() {
 
   return (
     <div className={`min-h-screen bg-[#020617] text-white font-sans pb-20 overflow-x-hidden ${redAlertMode ? 'border-4 border-red-600' : ''} ${shaking ? 'animate-[shake_0.5s_ease-in-out_infinite]' : ''}`}>
-      {confetti.active && (<div className="fixed pointer-events-none z-50" style={{left: confetti.x, top: confetti.y}}>{[...Array(40)].map((_,i) => <div key={i} className="absolute w-2 h-2 rounded-full animate-confetti" style={{ backgroundColor: ['#ef4444', '#3b82f6', '#eab308', '#22c55e', '#a855f7'][Math.floor(Math.random() * 5)], '--tx': `${(Math.random() - 0.5) * 300}px`, '--ty': `${(Math.random() - 0.5) * 300}px`, '--r': `${Math.random() * 360}deg` }} />)}</div>)}
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      {confetti.active && (<div className="fixed pointer-events-none z-50" style={{left: confetti.x, top: confetti.y}}>{[...Array(40)].map((_,i) => <div key={i} className="absolute w-2 h-2 rounded-full animate-confetti" style={{ backgroundColor: ['#ef4444', '#3b82f6', '#eab308', '#22c55e', '#a855f7'][Math.floor(Math.random() * 5)], '--tx': `${Math.random()*300-150}px`, '--ty': `${Math.random()*300-150}px`, '--r': `${Math.random() * 360}deg` }} />)}</div>)}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={closeToast} />}
 
       <header className={`relative z-20 w-full p-4 border-b flex flex-wrap justify-between items-center gap-4 ${redAlertMode ? 'bg-red-900/90 border-red-500' : 'bg-slate-900/90 border-cyan-500/30'}`}>
         <div className="flex items-center gap-3">
@@ -592,7 +658,13 @@ function AvengersTracker() {
             <div className={`absolute inset-0 blur-lg opacity-40 group-hover:opacity-80 transition-opacity rounded-full ${redAlertMode ? 'bg-red-500' : 'bg-cyan-500'}`}></div>
             <img src="https://i.ibb.co/Ndt35H2Z/SHIELD-CSB.png" alt="S.H.I.E.L.D." className="w-10 h-10 object-contain relative z-10 active:scale-95 transition-transform" />
           </div>
-          <div><h1 className="text-xl font-black tracking-[0.2em] leading-none">AVENGERS <span className={redAlertMode ? "text-red-300" : "text-cyan-500"}>INITIATIVE</span></h1><div className={`flex items-center gap-2 text-[10px] font-mono mt-0.5 ${redAlertMode ? 'text-red-300' : 'text-cyan-400/70'}`}><span className="animate-pulse">● {redAlertMode ? 'ALERTA MÁXIMA' : 'ONLINE'}</span> | <span>CLASE 6ºC</span></div></div>
+          <div>
+            <h1 className="text-xl font-black tracking-[0.2em] leading-none">AVENGERS <span className={redAlertMode ? "text-red-300" : "text-cyan-500"}>INITIATIVE</span></h1>
+            {/* DAILY QUOTE BANNER */}
+            <div className="hidden md:block text-[10px] text-cyan-400/80 font-mono mt-1 overflow-hidden whitespace-nowrap">
+                <span className="animate-pulse">▮</span> {dailyQuote}
+            </div>
+          </div>
         </div>
         
         {timeLeft && (
@@ -605,6 +677,20 @@ function AvengersTracker() {
 
         <div className="flex gap-2 items-center">
             {useLocal && <span className="text-[10px] text-orange-500 font-mono bg-orange-900/20 px-2 py-1 rounded border border-orange-500/50 flex items-center gap-1"><WifiOff size={10}/> LOCAL</span>}
+            {questionAvailable && <button onClick={()=>{setDailyQuestion(ACADEMIC_QUESTIONS[new Date().getDay()%ACADEMIC_QUESTIONS.length]); setShowAnswer(false); setModal('dailyQ'); speak("Transmisión entrante");}} className="animate-bounce bg-yellow-500/20 border border-yellow-500 px-3 py-1 rounded text-yellow-300 text-xs font-bold flex gap-1"><Radio size={12}/> MENSAJE</button>}
+            
+            {/* STUDENT TRAINING BUTTONS */}
+            {loggedInId && (
+                <div className="flex gap-1">
+                    <button onClick={startMathChallenge} className="bg-green-500/20 border border-green-500 px-3 py-1 rounded text-green-300 text-xs font-bold flex gap-1 items-center hover:bg-green-500/40 transition-colors">
+                        <Calculator size={14}/> MATES
+                    </button>
+                    <button onClick={startWordChallenge} className="bg-purple-500/20 border border-purple-500 px-3 py-1 rounded text-purple-300 text-xs font-bold flex gap-1 items-center hover:bg-purple-500/40 transition-colors">
+                        <Type size={14}/> DESCIFRAR
+                    </button>
+                </div>
+            )}
+
             {isAdmin ? (
                 <>
                   <button onClick={handleBossAttack} className="p-2 rounded border bg-red-900/80 border-red-500 text-white hover:scale-110 transition-transform animate-pulse" title="ATAQUE DE THANOS"><Skull size={16}/></button>
@@ -635,13 +721,17 @@ function AvengersTracker() {
              <h3 className="text-lg font-black text-cyan-400 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-cyan-500/20 pb-2"><TrendingUp size={20} /> Clasificación</h3>
              <div className="space-y-3 flex-1">
                 {teams.map((t, i) => {
-                   const pct = Math.max((t.points / maxPoints) * 100, 0);
+                   const rInfo = getRankInfo(t.points);
                    const isNeg = t.points < 0;
                    const clr = i === 0 ? "text-yellow-400" : i === 1 ? "text-slate-300" : i === 2 ? "text-orange-400" : "text-slate-500";
+                   const nextRankPct = Math.min(100, Math.max(0, ((t.points - (rInfo.next - rInfo.total)) / rInfo.total) * 100));
+
                    return (
                       <div key={t.id}>
                          <div className="flex justify-between items-center mb-1 text-xs font-bold uppercase tracking-wide"><span className={`flex items-center gap-2 ${clr}`}>{i === 0 && <Crown size={12} className="animate-bounce" />} #{i + 1} {t.name}</span><span className={isNeg ? "text-red-400" : "text-cyan-300"}>{t.points}</span></div>
-                         <div className="h-1 bg-slate-800 rounded-full overflow-hidden"><div className={`h-full transition-all duration-1000 ${isNeg ? 'bg-red-600' : t.barColor}`} style={{ width: `${Math.min(pct, 100)}%` }}></div></div>
+                         <div className="h-1 bg-slate-800 rounded-full overflow-hidden mb-1"><div className={`h-full transition-all duration-1000 ${isNeg ? 'bg-red-600' : t.barColor}`} style={{ width: `${Math.min(100, Math.max(0, (t.points / (BOSS_MAX_HP/3)) * 100))}%` }}></div></div>
+                         {/* XP BAR */}
+                         <div className="h-0.5 bg-slate-900 rounded-full overflow-hidden w-full opacity-50"><div className="h-full bg-white/50" style={{ width: `${nextRankPct}%` }}></div></div>
                       </div>
                    );
                 })}
@@ -692,6 +782,15 @@ function AvengersTracker() {
                       <div className="flex gap-2 items-center"><div className={`w-10 h-10 rounded-full border border-white/20 bg-slate-900 overflow-hidden ${t.accent}`}><img src={t.gif} className="w-full h-full object-cover"/></div><div><div className={`text-[8px] font-black uppercase tracking-widest ${rInfo.color}`}>{rInfo.title}</div><h2 className="text-sm font-black uppercase tracking-wider text-white">{t.name}</h2></div></div>
                       <span className={`text-2xl font-black font-mono tracking-tighter ${t.points<0?'text-red-400':'text-white'}`}>{t.points}</span>
                     </div>
+                    {/* DAILY ENERGY CELLS */}
+                    <div className="flex gap-1 mb-2 items-center">
+                        <div className="text-[9px] text-cyan-500 font-bold uppercase mr-1">CARGA DIARIA</div>
+                        {[...Array(4)].map((_, idx) => (
+                             <div key={idx} className={`w-3 h-3 rounded-full border border-cyan-800 ${idx < (t.daily || 0) ? 'bg-cyan-400 shadow-[0_0_5px_rgba(34,211,238,0.8)] animate-pulse' : 'bg-black/50'}`}></div>
+                        ))}
+                        {(t.daily >= 4) && <BatteryCharging size={12} className="text-green-400 animate-bounce ml-1"/>}
+                    </div>
+
                     {/* BADGES ROW */}
                     {t.badges && t.badges.length > 0 && (
                         <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
@@ -716,7 +815,7 @@ function AvengersTracker() {
                         <div className="flex gap-1">{[-1,-5,-10].map(v => <button key={v} onClick={(e)=>handlePts(t.id, v, e)} className={`${CTRL_BTN_CLASS} bg-red-900/20 text-red-400 border-red-500/30 hover:bg-red-500 hover:text-black`}>{v}</button>)}</div>
                         <div className="flex gap-1 mt-1">
                           <button onClick={()=>{setSelTeam(t); setModal('shop');}} className={`${CTRL_BTN_CLASS} bg-yellow-900/20 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500 hover:text-black flex justify-center gap-1`}><ShoppingCart size={12}/> TIENDA</button>
-                          <button onClick={()=>{setSelTeam(t); setPenalty(null); setModal('penalty');}} className={`${CTRL_BTN_CLASS} flex items-center justify-center gap-1 ${isNeg ? 'bg-purple-900/20 text-purple-400 border-purple-500/30 hover:bg-purple-500 hover:text-white' : 'bg-slate-800 text-slate-600 border-slate-700 cursor-not-allowed'}`}><Gavel size={12}/> SANCIÓN</button>
+                          <button onClick={()=>{setSelTeam(t); setPenalty(null); setModal('penalty');}} className={`${CTRL_BTN_CLASS} flex items-center justify-center gap-1 ${isNeg ? 'bg-purple-900/20 text-purple-400 border-purple-500/30 hover:bg-purple-500 hover:text-white' : 'bg-slate-600 text-slate-600 border-slate-700 cursor-not-allowed'}`}><Gavel size={12}/> SANCIÓN</button>
                         </div>
                         <div className="flex gap-1 mt-1">
                             <button onClick={()=>setModal('badges_' + t.id)} className={`${CTRL_BTN_CLASS} bg-blue-900/20 text-blue-300 border-blue-500/30 hover:bg-blue-600 hover:text-white`}>MEDALLA</button>
@@ -738,6 +837,75 @@ function AvengersTracker() {
       </footer>
 
       {/* --- MODALS --- */}
+
+      {/* MATH CHALLENGE MODAL (STUDENT TRAINING) */}
+      {modal === 'mathChallenge' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
+              <div className="bg-slate-900 border-2 border-green-500 p-6 rounded-sm w-full max-w-sm shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-green-500/50 animate-pulse"></div>
+                  <h3 className="text-xl font-black text-green-400 mb-1 flex items-center gap-2"><Brain size={24}/> ENTRENAMIENTO MATEMÁTICO</h3>
+                  <div className="flex justify-between items-center mb-4">
+                      <p className="text-[10px] font-mono text-green-600/70">NIVEL {mathState.level} | FASE {mathState.currentIdx + 1} / 5</p>
+                      {streak > 1 && <div className="text-orange-500 text-xs font-bold flex items-center animate-pulse"><Flame size={12}/> x{streak}</div>}
+                  </div>
+
+                  <div className="bg-black p-6 rounded border border-green-900 mb-6 text-center flex flex-col gap-2">
+                      <p className="text-4xl font-mono font-bold text-white tracking-widest">
+                          {mathState.questions[mathState.currentIdx].q}
+                      </p>
+                      {mathState.questions[mathState.currentIdx].hint && <p className="text-[10px] text-slate-500">{mathState.questions[mathState.currentIdx].hint}</p>}
+                  </div>
+
+                  <input 
+                      type="text" 
+                      value={mathInput} 
+                      onChange={(e) => setMathInput(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && submitMathAnswer()}
+                      className="w-full bg-slate-800 border border-green-700 p-3 text-white text-center font-bold text-xl mb-4 focus:border-green-400 outline-none"
+                      placeholder="Resultado"
+                      autoFocus
+                  />
+                  
+                  <div className="flex gap-2">
+                      <button onClick={() => setModal(null)} className="flex-1 py-3 text-xs text-slate-500 hover:text-white">ABORTAR</button>
+                      <button onClick={submitMathAnswer} className="flex-1 bg-green-600 hover:bg-green-500 text-black font-bold py-3 rounded uppercase">CONFIRMAR</button>
+                  </div>
+              </div>
+          </div>
+      )}
+
+      {/* WORD CHALLENGE MODAL */}
+      {modal === 'wordChallenge' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
+              <div className="bg-slate-900 border-2 border-purple-500 p-6 rounded-sm w-full max-w-sm shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-purple-500/50 animate-pulse"></div>
+                  <h3 className="text-xl font-black text-purple-400 mb-4 flex items-center gap-2"><Binary size={24}/> DESCIFRADO HYDRA</h3>
+                  
+                  <div className="bg-black p-6 rounded border border-purple-900 mb-6 text-center">
+                      <p className="text-3xl font-mono font-bold text-purple-200 tracking-[0.5em] animate-pulse">
+                          {wordState.scrambled}
+                      </p>
+                      <p className="text-[10px] text-slate-500 mt-2">ORDENA LAS LETRAS</p>
+                  </div>
+
+                  <input 
+                      type="text" 
+                      value={wordInput} 
+                      onChange={(e) => setWordInput(e.target.value.toUpperCase())}
+                      onKeyDown={(e) => e.key === 'Enter' && submitWordAnswer()}
+                      className="w-full bg-slate-800 border border-purple-700 p-3 text-white text-center font-bold text-xl mb-4 focus:border-purple-400 outline-none uppercase"
+                      placeholder="SOLUCIÓN"
+                      autoFocus
+                  />
+                  
+                  <div className="flex gap-2">
+                      <button onClick={() => setModal(null)} className="flex-1 py-3 text-xs text-slate-500 hover:text-white">ABORTAR</button>
+                      <button onClick={submitWordAnswer} className="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded uppercase">ENVIAR CÓDIGO</button>
+                  </div>
+              </div>
+          </div>
+      )}
+
       {/* BADGE SELECTION MODAL */}
       {modal?.startsWith('badges_') && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
@@ -795,15 +963,9 @@ function AvengersTracker() {
                  <h2 className="text-2xl font-black text-orange-400 uppercase tracking-widest mb-2">CIVIL WAR</h2>
                  <p className="text-white text-lg font-bold mb-6">{duelData.challenge}</p>
                  <div className="flex justify-between items-center gap-4 mb-6">
-                    <div className="text-center">
-                        <div className={`w-16 h-16 rounded-full mx-auto mb-2 border-2 ${duelData.t1.accent} overflow-hidden`}><img src={duelData.t1.gif} className="w-full h-full object-cover"/></div>
-                        <p className="text-xs font-bold text-white">{duelData.t1.name}</p>
-                    </div>
+                    <div className="text-center"><div className={`w-16 h-16 rounded-full mx-auto mb-2 border-2 ${duelData.t1.accent} overflow-hidden`}><img src={duelData.t1.gif} className="w-full h-full object-cover"/></div><p className="text-xs font-bold text-white">{duelData.t1.name}</p></div>
                     <div className="text-2xl font-black text-white">VS</div>
-                    <div className="text-center">
-                        <div className={`w-16 h-16 rounded-full mx-auto mb-2 border-2 ${duelData.t2.accent} overflow-hidden`}><img src={duelData.t2.gif} className="w-full h-full object-cover"/></div>
-                        <p className="text-xs font-bold text-white">{duelData.t2.name}</p>
-                    </div>
+                    <div className="text-center"><div className={`w-16 h-16 rounded-full mx-auto mb-2 border-2 ${duelData.t2.accent} overflow-hidden`}><img src={duelData.t2.gif} className="w-full h-full object-cover"/></div><p className="text-xs font-bold text-white">{duelData.t2.name}</p></div>
                  </div>
                  <div className="grid grid-cols-2 gap-4">
                     <button onClick={()=>resolveDuel(duelData.t1.id)} className="py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded">GANA {duelData.t1.name}</button>
@@ -974,6 +1136,7 @@ function AvengersTracker() {
         .animate-confetti { animation: confetti 1s ease-out forwards; }
         @keyframes confetti { 0% { transform: translate(0,0) rotate(0deg); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) rotate(var(--r)); opacity: 0; } }
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
       `}</style>
     </div>
   );
