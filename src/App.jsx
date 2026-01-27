@@ -1,4 +1,4 @@
-import { useState, useEffect, Component, useCallback } from 'react';
+import React, { useState, useEffect, Component, useCallback } from 'react';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
 import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, arrayUnion } from 'firebase/firestore';
@@ -8,7 +8,7 @@ import {
   Users, ChevronsUp, Hexagon, ClipboardList, Swords, Brain, Volume2, VolumeX, List, 
   CheckCircle2, PlusCircle, Quote, Siren, Award, History, Trash2, X, Package, Dices, 
   Sparkles, Radio, BookOpen, Timer, Wifi, WifiOff, MessageSquare, ShieldCheck, Flame, Star, Calculator,
-  Type, Binary, Battery, BatteryCharging, Lightbulb, Book
+  Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand
 } from 'lucide-react';
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
@@ -39,7 +39,8 @@ const appId = rawAppId.replace(/\//g, '_');
 // --- 3. DATOS CONSTANTES ---
 const INITIAL_TEAMS = [
   { 
-    id: 'ironman', name: 'Iron Man', points: 0, shield: false, badges: [], daily: 0, lastDaily: '',
+    id: 'ironman', name: 'Iron Man', points: 0, shield: false, badges: [], 
+    dailyMath: 0, dailyWord: 0, dailyCombat: 0, lastDaily: '',
     theme: 'bg-red-900/30 shadow-red-500/20', border: 'border-red-500/50', 
     accent: 'text-red-400', barColor: 'bg-red-500', iconKey: 'cpu', 
     password: 'arc_reactor_85', members: ['Juandi', 'Ernesto', 'Carmen', 'Bea'], 
@@ -47,15 +48,17 @@ const INITIAL_TEAMS = [
     gif: "https://i.ibb.co/27K5dCBM/b751779a4a3bbc38f9268036cdb5af5a.gif"
   },
   { 
-    id: 'cap', name: 'Capitán América', points: 0, shield: false, badges: [], daily: 0, lastDaily: '',
+    id: 'cap', name: 'Capitán América', points: 0, shield: false, badges: [], 
+    dailyMath: 0, dailyWord: 0, dailyCombat: 0, lastDaily: '',
     theme: 'bg-blue-900/30 shadow-blue-500/20', border: 'border-blue-500/50', 
     accent: 'text-blue-400', barColor: 'bg-blue-500', iconKey: 'shield', 
     password: 'escudo_vibranium', members: ['Sara', 'Araceli', 'Nagore', 'Alex'], 
     quote: "Podría hacer esto todo el día.", 
-    gif: "https://i.ibb.co/Ldv0842m/original-5abda2eb189f94b4fd19af04c660dd9b.gif"
+    gif: "https://i.ibb.co/XqT34sz/189868-C0-D40619-AD55-4-B4-C-BE57-9005-D2506967-0-1643400842.gif"
   },
   { 
-    id: 'thor', name: 'Thor', points: 0, shield: false, badges: [], daily: 0, lastDaily: '',
+    id: 'thor', name: 'Thor', points: 0, shield: false, badges: [], 
+    dailyMath: 0, dailyWord: 0, dailyCombat: 0, lastDaily: '',
     theme: 'bg-yellow-900/30 shadow-yellow-500/20', border: 'border-yellow-500/50', 
     accent: 'text-yellow-400', barColor: 'bg-yellow-400', iconKey: 'zap', 
     password: 'stormbreaker_trueno', members: ['Javi', 'Guille', 'Yma', 'Iker'], 
@@ -63,7 +66,8 @@ const INITIAL_TEAMS = [
     gif: "https://i.ibb.co/PsFhhF1g/f604e46c6979b173d319fc064ed5c0dc.gif"
   },
   { 
-    id: 'hulk', name: 'Hulk', points: 0, shield: false, badges: [], daily: 0, lastDaily: '',
+    id: 'hulk', name: 'Hulk', points: 0, shield: false, badges: [], 
+    dailyMath: 0, dailyWord: 0, dailyCombat: 0, lastDaily: '',
     theme: 'bg-green-900/30 shadow-green-500/20', border: 'border-green-500/50', 
     accent: 'text-green-400', barColor: 'bg-green-500', iconKey: 'atom', 
     password: 'gamma_smash_verde', members: ['Oliver', 'Félix', 'Sofía'], 
@@ -71,7 +75,8 @@ const INITIAL_TEAMS = [
     gif: "https://i.ibb.co/BV1dZJCH/tumblr-nkx9ln-Ha8c1tiwiyxo1-640.gif"
   },
   { 
-    id: 'widow', name: 'Viuda Negra', points: 0, shield: false, badges: [], daily: 0, lastDaily: '',
+    id: 'widow', name: 'Viuda Negra', points: 0, shield: false, badges: [], 
+    dailyMath: 0, dailyWord: 0, dailyCombat: 0, lastDaily: '',
     theme: 'bg-gray-800/50 shadow-red-900/20', border: 'border-red-500/50', 
     accent: 'text-red-500', barColor: 'bg-red-600', iconKey: 'target', 
     password: 'sala_roja_007', members: ['Sara', 'Sebas', 'Héctor', 'Alejandro'], 
@@ -79,7 +84,8 @@ const INITIAL_TEAMS = [
     gif: "https://i.ibb.co/JjJQnWcH/0c2a5632830679-569563b0d45b2.gif"
   },
   { 
-    id: 'strange', name: 'Dr. Strange', points: 0, shield: false, badges: [], daily: 0, lastDaily: '',
+    id: 'strange', name: 'Dr. Strange', points: 0, shield: false, badges: [], 
+    dailyMath: 0, dailyWord: 0, dailyCombat: 0, lastDaily: '',
     theme: 'bg-purple-900/30 shadow-purple-500/20', border: 'border-purple-500/50', 
     accent: 'text-purple-400', barColor: 'bg-purple-500', iconKey: 'eye', 
     password: 'sanctum_agomoto', members: ['Derek', 'Liah', 'Dani', 'Cata'], 
@@ -90,6 +96,7 @@ const INITIAL_TEAMS = [
 
 const REWARDS_LIST = [
   { id: 99, name: 'Campo de Fuerza', cost: 50, desc: 'Bloquea 1 sanción automáticamente' }, 
+  { id: 66, name: 'El Chasquido', cost: 50, desc: 'Quita 50% pts a 2 rivales al azar' },
   { id: 1, name: 'Suministros', cost: 20, desc: 'Snack en clase' },
   { id: 2, name: 'DJ S.H.I.E.L.D.', cost: 15, desc: 'Elegir canción' },
   { id: 3, name: 'Indulto', cost: 30, desc: 'Perdón de tarea' },
@@ -174,102 +181,50 @@ const HYDRA_WORDS = [
     "PLANETA", "RELIEVE", "CLIMA", "EUROPA", "DEMOCRACIA", "CONSTITUCION", "ECOSYSTEMA", "VENGADORES", "ESCUDO"
 ];
 
-// NUEVO: BASE DE DATOS DE COMBATE (AMPLIADA)
-const COMBAT_QUESTIONS = [
-  // GEOGRAFÍA (Capitales y Relieve)
-  { q: "¿Capital de Alemania?", a: "BERLIN" },
-  { q: "¿Capital de Portugal?", a: "LISBOA" },
-  { q: "¿Capital de Italia?", a: "ROMA" },
-  { q: "¿Capital de Bélgica?", a: "BRUSELAS" },
-  { q: "¿Capital de Reino Unido?", a: "LONDRES" },
-  { q: "¿Capital de Grecia?", a: "ATENAS" },
-  { q: "¿Capital de Países Bajos?", a: "AMSTERDAM" },
-  { q: "¿Capital de Francia?", a: "PARIS" },
-  { q: "¿Capital de Rusia?", a: "MOSCU" },
-  { q: "¿Capital de China?", a: "PEKIN" },
-  { q: "¿Capital de Japón?", a: "TOKIO" },
-  { q: "¿Capital de EEUU?", a: "WASHINGTON" },
-  { q: "¿Capital de Turquía?", a: "ANKARA" },
-  { q: "¿Capital de Suecia?", a: "ESTOCOLMO" },
-  { q: "¿Capital de Noruega?", a: "OSLO" },
-  { q: "¿Capital de Irlanda?", a: "DUBLIN" },
-  { q: "¿Río más largo de la Península?", a: "TAJO" },
-  { q: "¿Río más caudaloso de España?", a: "EBRO" },
-  { q: "¿Pico más alto de España?", a: "TEIDE" },
-  { q: "¿Océano que baña Galicia?", a: "ATLANTICO" },
-  { q: "¿Continente de Egipto?", a: "AFRICA" },
-  { q: "¿Continente de Japón?", a: "ASIA" },
-  { q: "¿País con forma de bota?", a: "ITALIA" },
-  { q: "¿Selva más grande del mundo?", a: "AMAZONAS" },
+// PREGUNTAS DE COMBATE POR NIVELES
+const COMBAT_QUESTIONS = {
+  easy: [
+    { q: "¿Cuántas patas tiene una araña?", a: "8" },
+    { q: "¿Color del caballo blanco de Santiago?", a: "BLANCO" },
+    { q: "¿Capital de España?", a: "MADRID" },
+    { q: "¿2 x 5?", a: "10" },
+    { q: "¿Antónimo de 'alto'?", a: "BAJO" },
+    { q: "¿Rey de la selva?", a: "LEON" },
+    { q: "¿Días de la semana?", a: "7" },
+    { q: "¿Estación más calurosa?", a: "VERANO" },
+    { q: "¿5 + 5?", a: "10" },
+    { q: "¿Planeta donde vivimos?", a: "TIERRA" }
+  ],
+  medium: [
+    { q: "¿Capital de Alemania?", a: "BERLIN" },
+    { q: "¿Símbolo químico del agua?", a: "H2O" },
+    { q: "¿Lados de un hexágono?", a: "6" },
+    { q: "¿Planeta rojo?", a: "MARTE" },
+    { q: "¿7 x 8?", a: "56" },
+    { q: "¿País de la Torre Eiffel?", a: "FRANCIA" },
+    { q: "¿Hueso más largo del cuerpo?", a: "FEMUR" },
+    { q: "¿Continente de Egipto?", a: "AFRICA" },
+    { q: "¿Verbo de 'canción'?", a: "CANTAR" },
+    { q: "¿Capital de Italia?", a: "ROMA" }
+  ],
+  hard: [
+    { q: "¿Capital de Australia?", a: "CANBERRA" },
+    { q: "¿Símbolo químico del Oro?", a: "AU" },
+    { q: "¿12 x 12?", a: "144" },
+    { q: "¿Autor del Quijote?", a: "CERVANTES" },
+    { q: "¿Planeta más grande?", a: "JUPITER" },
+    { q: "¿Río que pasa por Londres?", a: "TAMESIS" },
+    { q: "¿Pintor del Guernica?", a: "PICASSO" },
+    { q: "¿Capital de Portugal?", a: "LISBOA" },
+    { q: "¿Año del descubrimiento de América?", a: "1492" },
+    { q: "¿Raíz cuadrada de 81?", a: "9" }
+  ]
+};
 
-  // INGLÉS (Verbos Irregulares - Pasado Simple)
-  { q: "Pasado de 'GO'?", a: "WENT" },
-  { q: "Pasado de 'EAT'?", a: "ATE" },
-  { q: "Pasado de 'SEE'?", a: "SAW" },
-  { q: "Pasado de 'DO'?", a: "DID" },
-  { q: "Pasado de 'HAVE'?", a: "HAD" },
-  { q: "Pasado de 'MAKE'?", a: "MADE" },
-  { q: "Pasado de 'BUY'?", a: "BOUGHT" },
-  { q: "Pasado de 'THINK'?", a: "THOUGHT" },
-  { q: "Pasado de 'CATCH'?", a: "CAUGHT" },
-  { q: "Pasado de 'DRINK'?", a: "DRANK" },
-  { q: "Pasado de 'SWIM'?", a: "SWAM" },
-  { q: "Pasado de 'RUN'?", a: "RAN" },
-  { q: "Pasado de 'SING'?", a: "SANG" },
-  { q: "Pasado de 'WRITE'?", a: "WROTE" },
-  { q: "Pasado de 'BREAK'?", a: "BROKE" },
-  { q: "Pasado de 'SPEAK'?", a: "SPOKE" },
-  { q: "Pasado de 'DRIVE'?", a: "DROVE" },
-  { q: "Pasado de 'FLY'?", a: "FLEW" },
-  { q: "Pasado de 'COME'?", a: "CAME" },
-  { q: "Pasado de 'BECOME'?", a: "BECAME" },
-
-  // MATEMÁTICAS (Cálculo Mental)
-  { q: "7 x 8", a: "56" },
-  { q: "9 x 9", a: "81" },
-  { q: "6 x 7", a: "42" },
-  { q: "8 x 8", a: "64" },
-  { q: "12 x 12", a: "144" },
-  { q: "11 x 11", a: "121" },
-  { q: "15 x 2", a: "30" },
-  { q: "50 + 50", a: "100" },
-  { q: "100 - 25", a: "75" },
-  { q: "Raíz de 49", a: "7" },
-  { q: "Raíz de 81", a: "9" },
-  { q: "Raíz de 100", a: "10" },
-  { q: "Doble de 250", a: "500" },
-  { q: "Mitad de 1000", a: "500" },
-  { q: "Un cuarto de 100", a: "25" },
-  { q: "10 al cuadrado", a: "100" },
-  { q: "Ángulo recto (grados)?", a: "90" },
-  { q: "Número romano V?", a: "5" },
-  { q: "Número romano X?", a: "10" },
-  { q: "Número romano L?", a: "50" },
-  { q: "Número romano C?", a: "100" },
-
-  // CIENCIAS Y CULTURA
-  { q: "¿Símbolo químico del Agua?", a: "H2O" },
-  { q: "¿Símbolo del Oro?", a: "AU" },
-  { q: "¿Símbolo del Oxígeno?", a: "O" },
-  { q: "¿Gas que respiramos?", a: "OXIGENO" },
-  { q: "¿Planeta más grande?", a: "JUPITER" },
-  { q: "¿Continente más grande?", a: "ASIA" },
-  { q: "¿Océano más grande?", a: "PACIFICO" },
-  { q: "¿Cuántas patas tiene una araña?", a: "8" },
-  { q: "¿Cuántas patas tiene un insecto?", a: "6" },
-  { q: "¿Hueso más largo?", a: "FEMUR" },
-  { q: "¿Animal terrestre más rápido?", a: "GUEPARDO" },
-  { q: "¿Temperatura ebullición agua?", a: "100" },
-  { q: "¿Antónimo de 'frío'?", a: "CALIENTE" },
-  { q: "¿Antónimo de 'siempre'?", a: "NUNCA" },
-  { q: "¿Sinónimo de 'bonito'?", a: "GUAPO" },
-  { q: "¿Verbo de 'canción'?", a: "CANTAR" },
-  { q: "¿Autor del Quijote (Apellido)?", a: "CERVANTES" }
-];
-
-const BOSS_MAX_HP = 777;
+// BOSS BASE HP - Ahora se recalcula dinámicamente
+const BOSS_BASE_HP = 1500;
 const ICONS = { cpu: Cpu, shield: Shield, zap: Zap, atom: Atom, target: Target, eye: Eye };
-const DEFAULT_TICKER_MESSAGES = [ "CAPITÁN AMÉRICA: 'PUEDO HACER ESTO TODO EL DÍA'", "TONY STARK: 'YO SOY IRON MAN'", "AVENGERS: ¡REUNÍOS!", "THOR: 'POR LAS BARBAS DE ODÍN'", "BLACK PANTHER: '¡WAKANDA POR SIEMPRE!'", "HULK: ¡APLASTA EL EXAMEN!" ];
+const TICKER_MESSAGES = [ "CAPITÁN AMÉRICA: 'PUEDO HACER ESTO TODO EL DÍA'", "TONY STARK: 'YO SOY IRON MAN'", "AVENGERS: ¡REUNÍOS!", "THOR: 'POR LAS BARBAS DE ODÍN'", "BLACK PANTHER: '¡WAKANDA POR SIEMPRE!'", "HULK: ¡APLASTA EL EXAMEN!" ];
 
 const LOOT_ITEMS = [
   { text: "¡NADA! Thanos se lo ha robado.", val: 0 },
@@ -285,10 +240,10 @@ const CTRL_BTN_CLASS = "flex-1 py-1.5 rounded-sm text-[10px] font-bold font-mono
 const ACTION_BTN_CLASS = "w-full py-2 rounded-sm border text-xs font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer select-none";
 
 const getRankInfo = (p) => {
-  if (p < 0) return { title: 'AMENAZA', color: 'text-red-500', glow: 'shadow-red-900/50', iconScale: 1, next: 0, total: 100, level: 0 };
-  if (p < 100) return { title: 'RECLUTA', color: 'text-slate-400', glow: 'shadow-none', iconScale: 1, next: 100, total: 100, level: 1 };
-  if (p < 200) return { title: 'AGENTE', color: 'text-blue-300', glow: 'shadow-blue-500/20', iconScale: 1.1, next: 200, total: 200, level: 2 };
-  if (p < 400) return { title: 'VENGADOR', color: 'text-yellow-400', glow: 'shadow-yellow-500/30', iconScale: 1.25, next: 400, total: 200, level: 3 };
+  if (p < 0) return { title: 'AMENAZA', color: 'text-red-500', glow: 'shadow-red-900/50', iconScale: 1, next: 0, total: 100 };
+  if (p < 100) return { title: 'RECLUTA', color: 'text-slate-400', glow: 'shadow-none', iconScale: 1, next: 100, total: 100 };
+  if (p < 200) return { title: 'AGENTE', color: 'text-blue-300', glow: 'shadow-blue-500/20', iconScale: 1.1, next: 200, total: 200 };
+  if (p < 400) return { title: 'VENGADOR', color: 'text-yellow-400', glow: 'shadow-yellow-500/30', iconScale: 1.25, next: 400, total: 200 };
   return { title: 'LEYENDA', color: 'text-purple-300', glow: 'shadow-[0_0_30px_rgba(168,85,247,0.3)]', iconScale: 1.5, next: 1000, total: 600 };
 };
 
@@ -320,12 +275,6 @@ const playSfx = (type) => {
             osc.type = 'triangle'; osc.frequency.setValueAtTime(600, now); osc.frequency.linearRampToValueAtTime(800, now + 0.2);
             gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 1.5);
             osc.start(now); osc.stop(now + 1.5);
-        } else if (type === 'levelup') {
-            osc.type = 'square'; osc.frequency.setValueAtTime(400, now);
-            osc.frequency.linearRampToValueAtTime(600, now + 0.1);
-            osc.frequency.linearRampToValueAtTime(800, now + 0.2);
-            gain.gain.setValueAtTime(0.3, now); gain.gain.linearRampToValueAtTime(0.01, now + 1.0);
-            osc.start(now); osc.stop(now + 1.0);
         }
     } catch (e) {}
 };
@@ -356,27 +305,6 @@ const Toast = ({ message, type, onClose }) => {
       <p className="text-sm font-bold text-white">{message}</p>
     </div>
   );
-};
-
-const ParticleBackground = () => {
-    return (
-        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-            {[...Array(20)].map((_, i) => (
-                <div 
-                    key={i} 
-                    className="absolute bg-white/10 rounded-full animate-pulse"
-                    style={{
-                        top: `${Math.random() * 100}%`,
-                        left: `${Math.random() * 100}%`,
-                        width: `${Math.random() * 3 + 1}px`,
-                        height: `${Math.random() * 3 + 1}px`,
-                        animationDuration: `${Math.random() * 3 + 2}s`,
-                        animationDelay: `${Math.random() * 2}s`
-                    }}
-                />
-            ))}
-        </div>
-    );
 };
 
 class ErrorBoundary extends Component {
@@ -419,9 +347,8 @@ function AvengersTracker() {
   const [newFuryMsg, setNewFuryMsg] = useState("");
   const [shaking, setShaking] = useState(false);
   const [dailyQuote, setDailyQuote] = useState("");
-  const [levelUpEvent, setLevelUpEvent] = useState(null); 
   
-  // Challenge States
+  // Math & Logic Challenge States
   const [mathState, setMathState] = useState({ active: false, questions: [], currentIdx: 0, level: 2 });
   const [mathInput, setMathInput] = useState("");
   const [streak, setStreak] = useState(0);
@@ -431,6 +358,8 @@ function AvengersTracker() {
 
   const [combatState, setCombatState] = useState({ active: false, questions: [], currentIdx: 0, correctCount: 0 }); 
   const [combatInput, setCombatInput] = useState("");
+  
+  const [bossMaxHp, setBossMaxHp] = useState(BOSS_BASE_HP);
 
   // Features
   const [timerTarget, setTimerTarget] = useState(null); 
@@ -438,6 +367,7 @@ function AvengersTracker() {
   const [timerInput, setTimerInput] = useState(5);
   const [duelData, setDuelData] = useState(null);
 
+  // ESTA ES LA CLAVE: useCallback para que la función no cambie y resetee el timer del toast
   const closeToast = useCallback(() => setToast(null), []);
 
   // Backup local
@@ -446,16 +376,37 @@ function AvengersTracker() {
     localStorage.setItem('avengers_mission', mission);
   }, [teams, mission]);
 
-  // Daily Quote & Reset Logic
+  // Daily Quote, Boss HP Growth & Reset Logic
   useEffect(() => {
       const day = new Date().getDate();
       setDailyQuote(DAILY_QUOTES[day % DAILY_QUOTES.length]);
+      
       const today = new Date().toDateString();
       const lastRunDate = localStorage.getItem('avengers_last_run_date');
+      
       if (lastRunDate !== today) {
-          const updatedTeams = teams.map(t => ({ ...t, daily: 0, lastDaily: today }));
+          // Reset daily progress
+          // Ensure we reset all daily counters
+          const updatedTeams = teams.map(t => ({ 
+              ...t, 
+              dailyMath: 0, 
+              dailyWord: 0, 
+              dailyCombat: 0,
+              lastDaily: today 
+          }));
           setTeams(updatedTeams);
+          
+          // Increase Boss HP by 10% daily (Compound)
+          const currentMax = parseFloat(localStorage.getItem('avengers_boss_hp')) || BOSS_BASE_HP;
+          const newMax = Math.floor(currentMax * 1.1);
+          setBossMaxHp(newMax);
+          localStorage.setItem('avengers_boss_hp', newMax.toString());
+          
           localStorage.setItem('avengers_last_run_date', today);
+      } else {
+          // Load existing daily max HP
+           const currentMax = parseFloat(localStorage.getItem('avengers_boss_hp')) || BOSS_BASE_HP;
+           setBossMaxHp(currentMax);
       }
   }, []);
 
@@ -485,9 +436,12 @@ function AvengersTracker() {
       const unsub = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'avengers_teams'), (snap) => {
         if (snap.empty) { INITIAL_TEAMS.forEach(t => setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'avengers_teams', t.id), t)); }
         else {
-          const tArr = []; let fMission=null, fAlert=false, fHist=[], fTimer=null, fFury=null, fShake=false;
+          const tArr = []; let fMission=null, fAlert=false, fHist=[], fTimer=null, fFury=null, fShake=false, fBossHp=null;
           snap.docs.forEach(d => {
-            if (d.id === 'mission_control') { const data=d.data(); fMission=data.text; fAlert=data.alert; fHist=data.history||[]; fTimer=data.timerEnd; fFury=data.furyMsg; fShake=data.shaking; }
+            if (d.id === 'mission_control') { 
+                const data=d.data(); 
+                fMission=data.text; fAlert=data.alert; fHist=data.history||[]; fTimer=data.timerEnd; fFury=data.furyMsg; fShake=data.shaking; fBossHp=data.bossMaxHp;
+            }
             else { tArr.push(d.data()); }
           });
           const merged = tArr.map(t => ({
@@ -495,12 +449,15 @@ function AvengersTracker() {
               points: t.points, 
               shield: t.shield, 
               badges: t.badges||[],
-              daily: t.daily || 0 
+              dailyMath: t.dailyMath || 0,
+              dailyWord: t.dailyWord || 0,
+              dailyCombat: t.dailyCombat || 0
           })).filter(t=>t.id).sort((a,b)=>b.points-a.points);
           if(merged.length>0) setTeams(merged);
           if(fMission) setMission(fMission);
           if(fAlert!==undefined) setRedAlertMode(fAlert);
           if(fTimer) setTimerTarget(fTimer); else setTimerTarget(null);
+          if(fBossHp) setBossMaxHp(fBossHp); else if(!useLocal) safeUpdate('mission_control', {bossMaxHp: bossMaxHp}); 
           setFuryMessage(fFury);
           if(fShake) { setShaking(true); setTimeout(() => setShaking(false), 3000); playSfx('alarm'); }
           setHistory((fHist||[]).reverse().slice(0,50));
@@ -511,25 +468,20 @@ function AvengersTracker() {
     } catch { setUseLocal(true); setLoading(false); }
   }, [user, useLocal]);
 
-  // Ticker Logic (Dynamic)
+  // Ticker
   useEffect(() => {
     const t = setInterval(() => {
-      setTickerIdx(p => {
-          const historyMsgs = history.slice(0, 5).map(h => `ÚLTIMA HORA: ${h.text?.toUpperCase() || ''}`);
-          const allMsgs = [...DEFAULT_TICKER_MESSAGES, ...historyMsgs];
-          return (p + 1) % allMsgs.length;
-      });
-
+      setTickerIdx(p => (p + 1) % TICKER_MESSAGES.length);
       const h = new Date().getHours() + new Date().getMinutes()/60;
       setQuestionAvailable(h >= 9 && h <= 12.5);
       if (timerTarget) {
         const diff = timerTarget - Date.now();
-        if (diff <= 0) setTimeLeft(null);
+        if (diff <= 0) setTimeLeft("00:00");
         else setTimeLeft(`${Math.floor(diff/60000).toString().padStart(2,'0')}:${Math.floor((diff%60000)/1000).toString().padStart(2,'0')}`);
       } else setTimeLeft(null);
-    }, 3000); 
+    }, 1000);
     return () => clearInterval(t);
-  }, [timerTarget, history]);
+  }, [timerTarget]);
 
   // Helpers
   const showToast = (msg, type='info') => setToast({ message: msg, type });
@@ -544,6 +496,7 @@ function AvengersTracker() {
           if(data.history) setHistory(prev => [...(data.history||[]), ...prev]);
           if(data.timerEnd !== undefined) setTimerTarget(data.timerEnd);
           if(data.furyMsg !== undefined) setFuryMessage(data.furyMsg);
+          if(data.bossMaxHp !== undefined) setBossMaxHp(data.bossMaxHp);
       } else {
           setTeams(prev => prev.map(t => t.id === docId ? {...t, ...data} : t).sort((a,b)=>b.points-a.points));
       }
@@ -571,37 +524,23 @@ function AvengersTracker() {
   const handlePts = (tid, amt, e, force = false) => {
     if (!force && !isAdmin && !(loggedInId === tid && amt < 0)) return;
     if (amt > 0) { triggerConfetti(e); playSfx('success'); } else { playSfx('error'); }
-    
     const t = teams.find(i => i.id === tid);
     if (!t) return;
-
-    // LEVEL UP CHECK
-    const oldLevel = Math.floor(t.points / 100);
-    const newLevel = Math.floor((t.points + amt) / 100);
-    
-    if (newLevel > oldLevel) {
-        playSfx('levelup');
-        setLevelUpEvent({ team: t.name, level: newLevel });
-        speak(`Atención. ${t.name} ha ascendido al nivel ${newLevel}.`);
-        setTimeout(() => setLevelUpEvent(null), 4000);
-    }
-
     if (Math.abs(amt) >= 5) speak(`Puntos para ${t.name}`);
     safeUpdate(tid, { points: t.points + amt });
     if (amt !== 0) logAction(`${t.name}: ${amt > 0 ? '+' : ''}${amt} pts`);
   };
 
-  const handleDailyProgress = (tid) => {
+  const handleDailyProgress = (tid, type) => {
       const t = teams.find(i => i.id === tid);
       if(!t) return;
-      const newDaily = Math.min((t.daily || 0) + 1, 4);
-      if (newDaily === 4 && (t.daily || 0) < 4) {
-          speak("¡Carga diaria completada!");
-          triggerSecretConfetti();
-          showToast("¡CARGA AL 100%! +2 Puntos Extra", "success");
-          handlePts(tid, 2, null, true); // Bonus for completion
-      }
-      safeUpdate(tid, { daily: newDaily });
+      
+      let update = {};
+      if(type === 'math') update = { dailyMath: Math.min((t.dailyMath || 0) + 1, 4) };
+      if(type === 'word') update = { dailyWord: Math.min((t.dailyWord || 0) + 1, 4) };
+      if(type === 'combat') update = { dailyCombat: Math.min((t.dailyCombat || 0) + 1, 4) };
+      
+      safeUpdate(tid, update);
   };
 
   const handleBadge = (tid, badge) => {
@@ -625,6 +564,28 @@ function AvengersTracker() {
           return true;
       } else { showToast("Fondos insuficientes", "error"); playSfx('error'); return false; }
   };
+  
+  // NEW SNAP FUNCTIONALITY
+  const handleSnap = async () => {
+    if (!window.confirm("¿Ejecutar el Chasquido de Thanos? 2 equipos perderán la mitad de sus puntos.")) return;
+    
+    playSfx('alarm');
+    speak("Yo soy... inevitable.");
+    
+    // Select 2 distinct random teams
+    const shuffled = [...teams].sort(() => 0.5 - Math.random());
+    const victims = shuffled.slice(0, 2);
+    
+    for (const team of victims) {
+        const newPoints = Math.floor(team.points / 2);
+        const lost = team.points - newPoints;
+        await safeUpdate(team.id, { points: newPoints });
+        logAction(`${team.name} sufrió el Chasquido: -${lost} pts`);
+    }
+    
+    triggerSecretConfetti(); // Visual feedback (maybe red confetti?)
+    showToast("El equilibrio ha sido restaurado.", "info");
+  };
 
   const openLootBox = async (tid) => { if(handleBuy(tid, 15)) { speak("Abriendo..."); setTimeout(() => { const it=LOOT_ITEMS[Math.floor(Math.random()*LOOT_ITEMS.length)]; setLootResult(it); if(it.val>0) handlePts(tid, it.val, null, true); logAction(`${teams.find(t=>t.id===tid).name} loot: ${it.text}`); if(it.val>0) playSfx('success'); }, 1500); }};
   const startDuel = () => { const s=[...teams].sort(()=>0.5-Math.random()); setDuelData({t1:s[0], t2:s[1], challenge:DUEL_CHALLENGES[Math.floor(Math.random()*DUEL_CHALLENGES.length)]}); setModal('duel'); playSfx('alarm'); speak("Civil War"); };
@@ -636,7 +597,7 @@ function AvengersTracker() {
   const checkPass = (e) => { e.preventDefault(); const p = pass.toLowerCase().trim(); if (p === 'director_fury_00') { setIsAdmin(true); setLoggedInId(null); setModal(null); setPass(''); playSfx('success'); speak("Hola Director"); return; } const t = INITIAL_TEAMS.find(tm => tm.password === p); if (t) { setLoggedInId(t.id); setIsAdmin(false); setModal(null); setPass(''); playSfx('success'); speak(`Hola ${t.name}`); return; } playSfx('error'); showToast("Acceso denegado", "error"); };
   const handleLogoClick = () => { setSecretCount(p=>p+1); if(secretCount>4) { speak("Fiesta"); triggerSecretConfetti(); setSecretCount(0); } };
   const activateCerebro = () => { setCerebro({ active: true, target: null, searching: true }); speak("Buscando"); const all = teams.flatMap(t => t.members); let i = 0; const interval = setInterval(() => { setCerebro(prev => ({ ...prev, target: all[Math.floor(Math.random() * all.length)] })); i++; if (i > 20) { clearInterval(interval); setCerebro(prev => ({ ...prev, searching: false })); speak("Localizado"); playSfx('success'); } }, 100); };
-  const reset = async () => { if (!window.confirm("¿Reiniciar temporada?")) return; teams.forEach(t => safeUpdate(t.id, {points: 0, shield: false, badges: [], daily: 0})); safeUpdate('mission_control', { history: [], timerEnd: null, furyMsg: null }); speak("Reinicio"); };
+  const reset = async () => { if (!window.confirm("¿Reiniciar temporada?")) return; teams.forEach(t => safeUpdate(t.id, {points: 0, shield: false, badges: [], dailyMath:0, dailyWord:0, dailyCombat:0})); safeUpdate('mission_control', { history: [], timerEnd: null, furyMsg: null, bossMaxHp: 1500 }); speak("Reinicio"); };
   const updateM = async (txt) => { if(!isAdmin) return; await safeUpdate('mission_control', { text: txt }); setModal(null); speak("Misión actualizada"); };
   const toggleAlert = async () => { if(!isAdmin) return; const s = !redAlertMode; setRedAlertMode(s); await safeUpdate('mission_control', { alert: s }); if(s) { speak("Alerta Roja"); logAction("ALERTA ROJA"); playSfx('alarm'); } else logAction("Alerta desactivada"); };
   const spinPenalty = () => {
@@ -704,8 +665,9 @@ function AvengersTracker() {
 
   const startMathChallenge = () => {
       if (!loggedInId) return;
-      const today = new Date().toDateString();
-      if(localStorage.getItem(`math_done_${today}_${loggedInId}`)) { showToast("Ya entrenado hoy", "error"); playSfx('error'); return; }
+      const t = teams.find(t => t.id === loggedInId);
+      if ((t.dailyMath || 0) >= 4) { showToast("Batería de Matemáticas al 100%.", "info"); playSfx('error'); return; }
+      
       // Reset to Level 2 (Medium) on start
       setMathState({ active: true, questions: [generateMathQuestion(2)], currentIdx: 0, level: 2 });
       setStreak(0); setModal('mathChallenge'); speak("Iniciando entrenamiento.");
@@ -730,9 +692,8 @@ function AvengersTracker() {
              setMathInput("");
          } else {
              handlePts(loggedInId, 3, null, true); // Force add
-             handleDailyProgress(loggedInId);
-             logAction(`${teams.find(t=>t.id===loggedInId).name} completó el Entrenamiento.`);
-             localStorage.setItem(`math_done_${new Date().toDateString()}_${loggedInId}`, 'true');
+             handleDailyProgress(loggedInId, 'math');
+             logAction(`${teams.find(t=>t.id===loggedInId).name} completó Mates.`);
              setModal(null); showToast("¡Misión Cumplida! +3 Puntos", "success"); speak("Excelente trabajo."); triggerSecretConfetti();
          }
      } else {
@@ -753,6 +714,9 @@ function AvengersTracker() {
 
   // HYDRA WORD CHALLENGE
   const startWordChallenge = () => {
+      const t = teams.find(t => t.id === loggedInId);
+      if ((t.dailyWord || 0) >= 4) { showToast("Batería de Lengua al 100%.", "info"); playSfx('error'); return; }
+
       const word = HYDRA_WORDS[Math.floor(Math.random() * HYDRA_WORDS.length)];
       const scrambled = word.split('').sort(() => 0.5 - Math.random()).join('');
       setWordState({ active: true, word: word, scrambled: scrambled });
@@ -764,7 +728,7 @@ function AvengersTracker() {
   const submitWordAnswer = () => {
       if (wordInput.toUpperCase().trim() === wordState.word) {
           handlePts(loggedInId, 2, null, true); // Force add
-          handleDailyProgress(loggedInId);
+          handleDailyProgress(loggedInId, 'word');
           playSfx('success');
           logAction(`${teams.find(t=>t.id===loggedInId).name} desencriptó ${wordState.word}`);
           setModal(null);
@@ -779,8 +743,22 @@ function AvengersTracker() {
   // COMBAT CHALLENGE (TRIVIA)
   const startCombatChallenge = () => {
       if (!loggedInId) return;
-      const shuffled = [...COMBAT_QUESTIONS].sort(() => 0.5 - Math.random());
-      const selected = shuffled.slice(0, 3);
+      const t = teams.find(t => t.id === loggedInId);
+      if ((t.dailyCombat || 0) >= 4) { showToast("Batería de Combate al 100%.", "info"); playSfx('error'); return; }
+
+      const shuffled = [
+        ...COMBAT_QUESTIONS.easy.map(q => ({...q, diff: 'easy'})),
+        ...COMBAT_QUESTIONS.medium.map(q => ({...q, diff: 'medium'})),
+        ...COMBAT_QUESTIONS.hard.map(q => ({...q, diff: 'hard'}))
+      ];
+      
+      // Select 1 easy, 1 medium, 1 hard
+      const qEasy = COMBAT_QUESTIONS.easy[Math.floor(Math.random() * COMBAT_QUESTIONS.easy.length)];
+      const qMedium = COMBAT_QUESTIONS.medium[Math.floor(Math.random() * COMBAT_QUESTIONS.medium.length)];
+      const qHard = COMBAT_QUESTIONS.hard[Math.floor(Math.random() * COMBAT_QUESTIONS.hard.length)];
+      
+      const selected = [qEasy, qMedium, qHard];
+      
       setCombatState({ active: true, questions: selected, currentIdx: 0, correctCount: 0 });
       setCombatInput("");
       setModal('combatChallenge');
@@ -791,9 +769,9 @@ function AvengersTracker() {
       const currentQ = combatState.questions[combatState.currentIdx];
       const isCorrect = combatInput.toUpperCase().trim() === currentQ.a;
       
-      let newCorrectCount = combatState.correctCount;
+      let newCorrectCount = combatState.correctCount + (isCorrect ? 1 : 0);
+      
       if (isCorrect) {
-          newCorrectCount++;
           playSfx('success');
           showToast("¡Objetivo neutralizado!", "success");
       } else {
@@ -805,16 +783,15 @@ function AvengersTracker() {
           setCombatState(prev => ({ ...prev, currentIdx: prev.currentIdx + 1, correctCount: newCorrectCount }));
           setCombatInput("");
       } else {
-          // FIN DE LA TANDA
           if (newCorrectCount === 3) {
               handlePts(loggedInId, 1, null, true);
-              handleDailyProgress(loggedInId);
+              handleDailyProgress(loggedInId, 'combat');
               logAction(`${teams.find(t=>t.id===loggedInId).name} superó la simulación (3/3).`);
               showToast("¡Simulación Perfecta! +1 Punto", "success");
               speak("Simulación completada con éxito.");
               triggerSecretConfetti();
           } else {
-              showToast(`Simulación finalizada. ${newCorrectCount}/3 aciertos. Sin puntos.`, "info");
+              showToast(`Simulación finalizada. ${newCorrectCount}/3 aciertos.`, "info");
               speak("Simulación fallida. Se requiere 100% de efectividad.");
           }
           setModal(null);
@@ -825,14 +802,10 @@ function AvengersTracker() {
   // Render Vars
   const totalPoints = teams.reduce((a, b) => a + Math.max(0, b.points), 0);
   const maxPoints = Math.max(...teams.map(t => t.points), 50);
-  const bossDefeated = totalPoints >= BOSS_MAX_HP;
-  const bossProgress = Math.min(100, (totalPoints / BOSS_MAX_HP) * 100);
+  const bossDefeated = totalPoints >= bossMaxHp;
+  const bossProgress = Math.min(100, (totalPoints / bossMaxHp) * 100);
   const leaderId = teams.length > 0 ? teams[0].id : null;
   const loggedInTeam = teams.find(t => t.id === loggedInId);
-  const dynamicTickerMessages = [
-    ...DEFAULT_TICKER_MESSAGES,
-    ...history.slice(0, 5).map(h => `ÚLTIMA HORA: ${h.text?.toUpperCase() || ''}`)
-  ];
 
   if (errorMsg) return <div className="p-10 text-red-500 bg-black h-screen font-mono">ERROR: {errorMsg}</div>;
   if (loading) return <div className="p-10 text-cyan-500 bg-black h-screen font-mono animate-pulse">CARGANDO SISTEMA S.H.I.E.L.D...</div>;
@@ -841,18 +814,6 @@ function AvengersTracker() {
     <div className={`min-h-screen bg-[#020617] text-white font-sans pb-20 overflow-x-hidden ${redAlertMode ? 'border-4 border-red-600' : ''} ${shaking ? 'animate-[shake_0.5s_ease-in-out_infinite]' : ''}`}>
       {confetti.active && (<div className="fixed pointer-events-none z-50" style={{left: confetti.x, top: confetti.y}}>{[...Array(40)].map((_,i) => <div key={i} className="absolute w-2 h-2 rounded-full animate-confetti" style={{ backgroundColor: ['#ef4444', '#3b82f6', '#eab308', '#22c55e', '#a855f7'][Math.floor(Math.random() * 5)], '--tx': `${Math.random()*300-150}px`, '--ty': `${Math.random()*300-150}px`, '--r': `${Math.random() * 360}deg` }} />)}</div>)}
       {toast && <Toast message={toast.message} type={toast.type} onClose={closeToast} />}
-
-      {/* LEVEL UP MODAL OVERLAY */}
-      {levelUpEvent && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 animate-in zoom-in duration-500">
-              <div className="text-center">
-                  <div className="text-6xl mb-4 animate-bounce">⭐</div>
-                  <h1 className="text-5xl font-black text-yellow-400 mb-2 tracking-widest">¡ASCENSO!</h1>
-                  <p className="text-2xl text-white font-mono">EL EQUIPO <span className="text-cyan-400">{levelUpEvent.team}</span></p>
-                  <p className="text-xl text-slate-400 mt-2">ALCANZA EL NIVEL {levelUpEvent.level}</p>
-              </div>
-          </div>
-      )}
 
       <header className={`relative z-20 w-full p-4 border-b flex flex-wrap justify-between items-center gap-4 ${redAlertMode ? 'bg-red-900/90 border-red-500' : 'bg-slate-900/90 border-cyan-500/30'}`}>
         <div className="flex items-center gap-3">
@@ -898,6 +859,7 @@ function AvengersTracker() {
 
             {isAdmin ? (
                 <>
+                  <button onClick={handleSnap} className="p-2 rounded border bg-slate-800 border-yellow-500 text-yellow-400 hover:scale-110 transition-transform" title="CHASQUIDO"><Hand size={16}/></button>
                   <button onClick={handleBossAttack} className="p-2 rounded border bg-red-900/80 border-red-500 text-white hover:scale-110 transition-transform animate-pulse" title="ATAQUE DE THANOS"><Skull size={16}/></button>
                   <button onClick={()=>setModal('fury')} className="p-2 rounded border bg-slate-800 border-slate-600 hover:text-cyan-400" title="Mensaje Fury"><MessageSquare size={16}/></button>
                   <button onClick={()=>setModal('timerConfig')} className="p-2 rounded border bg-blue-900/50 border-blue-500 hover:text-white"><Timer size={16}/></button>
@@ -934,7 +896,7 @@ function AvengersTracker() {
                    return (
                       <div key={t.id}>
                          <div className="flex justify-between items-center mb-1 text-xs font-bold uppercase tracking-wide"><span className={`flex items-center gap-2 ${clr}`}>{i === 0 && <Crown size={12} className="animate-bounce" />} #{i + 1} {t.name} <span className="text-[9px] text-slate-500 ml-1 opacity-70">NVL {Math.floor(t.points/100)}</span></span><span className={isNeg ? "text-red-400" : "text-cyan-300"}>{t.points}</span></div>
-                         <div className="h-1 bg-slate-800 rounded-full overflow-hidden mb-1"><div className={`h-full transition-all duration-1000 ${isNeg ? 'bg-red-600' : t.barColor}`} style={{ width: `${Math.min(100, Math.max(0, (t.points / (BOSS_MAX_HP/3)) * 100))}%` }}></div></div>
+                         <div className="h-1 bg-slate-800 rounded-full overflow-hidden mb-1"><div className={`h-full transition-all duration-1000 ${isNeg ? 'bg-red-600' : t.barColor}`} style={{ width: `${Math.min(100, Math.max(0, (t.points / (bossMaxHp/3)) * 100))}%` }}></div></div>
                          {/* XP BAR */}
                          <div className="h-0.5 bg-slate-900 rounded-full overflow-hidden w-full opacity-50"><div className="h-full bg-white/50" style={{ width: `${nextRankPct}%` }}></div></div>
                       </div>
@@ -947,7 +909,7 @@ function AvengersTracker() {
             <div className="relative z-10">
                <div className="flex items-center gap-3 mb-3">
                   <div className="w-12 h-12 rounded-full border-2 border-purple-500 overflow-hidden shadow-[0_0_15px_rgba(168,85,247,0.5)] bg-purple-900/50"><img src="https://i.ibb.co/7NjPsfgb/183d8eefe6fe041dd1169fdeaab016f8.gif" alt="Thanos" className="w-full h-full object-cover" /></div>
-                  <div><h3 className="text-sm font-black text-purple-400 uppercase leading-none mb-1">Amenaza: Thanos</h3><span className="text-xs font-mono text-purple-200">{totalPoints}/{BOSS_MAX_HP} DAÑO</span></div>
+                  <div><h3 className="text-sm font-black text-purple-400 uppercase leading-none mb-1">Amenaza: Thanos</h3><span className="text-xs font-mono text-purple-200">{totalPoints}/{bossMaxHp} DAÑO</span></div>
                </div>
                <div className="h-4 bg-slate-800 rounded-full overflow-hidden border border-purple-900 relative"><div className={`h-full transition-all duration-1000 flex items-center justify-center ${bossDefeated ? 'bg-green-500' : 'bg-gradient-to-r from-purple-600 to-red-500'}`} style={{width: `${bossProgress}%`}}></div></div>
                {bossDefeated && <p className="text-center text-xs font-bold text-green-400 mt-1 animate-pulse">¡AMENAZA NEUTRALIZADA!</p>}
@@ -988,12 +950,19 @@ function AvengersTracker() {
                       <span className={`text-2xl font-black font-mono tracking-tighter ${t.points<0?'text-red-400':'text-white'}`}>{t.points}</span>
                     </div>
                     {/* DAILY ENERGY CELLS */}
-                    <div className="flex gap-1 mb-2 items-center">
-                        <div className="text-[9px] text-cyan-500 font-bold uppercase mr-1">CARGA DIARIA</div>
-                        {[...Array(4)].map((_, idx) => (
-                             <div key={idx} className={`w-3 h-3 rounded-full border border-cyan-800 ${idx < (t.daily || 0) ? 'bg-cyan-400 shadow-[0_0_5px_rgba(34,211,238,0.8)] animate-pulse' : 'bg-black/50'}`}></div>
-                        ))}
-                        {(t.daily >= 4) && <BatteryCharging size={12} className="text-green-400 animate-bounce ml-1"/>}
+                    <div className="flex flex-col gap-1 mb-2">
+                        <div className="flex items-center gap-1 text-[9px] text-slate-400">
+                          <Calculator size={10} className="text-green-400"/>
+                          <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-2 h-2 rounded-full border border-green-900 ${i<(t.dailyMath||0)?'bg-green-400 animate-pulse':'bg-black/50'}`}></div>)}</div>
+                        </div>
+                        <div className="flex items-center gap-1 text-[9px] text-slate-400">
+                          <Type size={10} className="text-purple-400"/>
+                          <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-2 h-2 rounded-full border border-purple-900 ${i<(t.dailyWord||0)?'bg-purple-400 animate-pulse':'bg-black/50'}`}></div>)}</div>
+                        </div>
+                        <div className="flex items-center gap-1 text-[9px] text-slate-400">
+                          <Target size={10} className="text-red-400"/>
+                          <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-2 h-2 rounded-full border border-red-900 ${i<(t.dailyCombat||0)?'bg-red-400 animate-pulse':'bg-black/50'}`}></div>)}</div>
+                        </div>
                     </div>
 
                     {/* BADGES ROW */}
@@ -1010,7 +979,15 @@ function AvengersTracker() {
                        {t.points >= 500 && <Award size={14} className="text-yellow-400" />}
                     </div>
                     <div className="flex justify-between bg-slate-900/50 p-1 rounded mb-3 border border-white/5 relative z-10">{INFINITY_STONES.map((s,i)=>(<div key={i} title={s.name} className={t.points>=s.threshold?s.color:'text-slate-800'}><Hexagon size={12} fill="currentColor"/></div>))}</div>
-                    <div className="mb-4 relative z-10 pl-2 border-l border-white/10"><div className="text-sm font-bold text-white tracking-wide leading-relaxed drop-shadow-md">{t.members.join(' • ')}</div></div>
+                    <div className="mb-4 relative z-10 pl-2 border-l border-white/10"><div className="text-[9px] uppercase tracking-widest opacity-50 font-bold text-slate-300 mb-1">OPERATIVOS</div>
+                    <div className="grid grid-cols-2 gap-1 mt-1">
+                        {t.members.map((m, idx) => (
+                            <div key={idx} className="bg-cyan-900/20 border border-cyan-500/30 rounded px-2 py-1 text-[10px] text-cyan-100 font-mono text-center shadow-[0_0_5px_rgba(6,182,212,0.1)]">
+                                {m}
+                            </div>
+                        ))}
+                    </div>
+                    </div>
                   </div>
                   <div className="relative z-10 mt-auto">
                     <div className="mb-4 relative pl-3 border-l-2 border-white/10 group-hover:border-white/30 transition-colors"><p className={`text-xs italic font-medium leading-tight ${t.accent} opacity-80`}>"{t.quote}"</p></div>
@@ -1038,7 +1015,7 @@ function AvengersTracker() {
 
       <footer className="fixed bottom-0 w-full bg-slate-950 border-t border-cyan-900 h-6 flex items-center overflow-hidden z-50">
         <div className="px-4 bg-cyan-900/50 h-full flex items-center text-[9px] font-bold text-cyan-200">NEWS</div>
-        <div className="flex-1 whitespace-nowrap overflow-hidden"><div className="animate-[marquee_20s_linear_infinite] text-[9px] font-mono text-cyan-400/70">{dynamicTickerMessages[tickerIdx]}</div></div>
+        <div className="flex-1 whitespace-nowrap overflow-hidden"><div className="animate-[marquee_20s_linear_infinite] text-[9px] font-mono text-cyan-400/70">{TICKER_MESSAGES[tickerIdx]}</div></div>
       </footer>
 
       {/* --- MODALS --- */}
