@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Component, useCallback } from 'react';
+import { useState, useEffect, Component, useCallback } from 'react';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
 import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, arrayUnion } from 'firebase/firestore';
@@ -362,9 +362,6 @@ function AvengersTracker() {
   const [bossMaxHp, setBossMaxHp] = useState(BOSS_BASE_HP);
 
   // Features
-  const [timerTarget, setTimerTarget] = useState(null); 
-  const [timeLeft, setTimeLeft] = useState(null); 
-  const [timerInput, setTimerInput] = useState(5);
   const [duelData, setDuelData] = useState(null);
 
   // ESTA ES LA CLAVE: useCallback para que la función no cambie y resetee el timer del toast
@@ -436,11 +433,11 @@ function AvengersTracker() {
       const unsub = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'avengers_teams'), (snap) => {
         if (snap.empty) { INITIAL_TEAMS.forEach(t => setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'avengers_teams', t.id), t)); }
         else {
-          const tArr = []; let fMission=null, fAlert=false, fHist=[], fTimer=null, fFury=null, fShake=false, fBossHp=null;
+          const tArr = []; let fMission=null, fAlert=false, fHist=[], fFury=null, fShake=false, fBossHp=null;
           snap.docs.forEach(d => {
             if (d.id === 'mission_control') { 
                 const data=d.data(); 
-                fMission=data.text; fAlert=data.alert; fHist=data.history||[]; fTimer=data.timerEnd; fFury=data.furyMsg; fShake=data.shaking; fBossHp=data.bossMaxHp;
+                fMission=data.text; fAlert=data.alert; fHist=data.history||[]; fFury=data.furyMsg; fShake=data.shaking; fBossHp=data.bossMaxHp;
             }
             else { tArr.push(d.data()); }
           });
@@ -456,7 +453,6 @@ function AvengersTracker() {
           if(merged.length>0) setTeams(merged);
           if(fMission) setMission(fMission);
           if(fAlert!==undefined) setRedAlertMode(fAlert);
-          if(fTimer) setTimerTarget(fTimer); else setTimerTarget(null);
           if(fBossHp) setBossMaxHp(fBossHp); else if(!useLocal) safeUpdate('mission_control', {bossMaxHp: bossMaxHp}); 
           setFuryMessage(fFury);
           if(fShake) { setShaking(true); setTimeout(() => setShaking(false), 3000); playSfx('alarm'); }
@@ -474,14 +470,9 @@ function AvengersTracker() {
       setTickerIdx(p => (p + 1) % TICKER_MESSAGES.length);
       const h = new Date().getHours() + new Date().getMinutes()/60;
       setQuestionAvailable(h >= 9 && h <= 12.5);
-      if (timerTarget) {
-        const diff = timerTarget - Date.now();
-        if (diff <= 0) setTimeLeft("00:00");
-        else setTimeLeft(`${Math.floor(diff/60000).toString().padStart(2,'0')}:${Math.floor((diff%60000)/1000).toString().padStart(2,'0')}`);
-      } else setTimeLeft(null);
     }, 1000);
     return () => clearInterval(t);
-  }, [timerTarget]);
+  }, []);
 
   // Helpers
   const showToast = (msg, type='info') => setToast({ message: msg, type });
@@ -494,7 +485,6 @@ function AvengersTracker() {
           if(data.text) setMission(data.text);
           if(data.alert !== undefined) setRedAlertMode(data.alert);
           if(data.history) setHistory(prev => [...(data.history||[]), ...prev]);
-          if(data.timerEnd !== undefined) setTimerTarget(data.timerEnd);
           if(data.furyMsg !== undefined) setFuryMessage(data.furyMsg);
           if(data.bossMaxHp !== undefined) setBossMaxHp(data.bossMaxHp);
       } else {
@@ -590,7 +580,6 @@ function AvengersTracker() {
   const openLootBox = async (tid) => { if(handleBuy(tid, 15)) { speak("Abriendo..."); setTimeout(() => { const it=LOOT_ITEMS[Math.floor(Math.random()*LOOT_ITEMS.length)]; setLootResult(it); if(it.val>0) handlePts(tid, it.val, null, true); logAction(`${teams.find(t=>t.id===tid).name} loot: ${it.text}`); if(it.val>0) playSfx('success'); }, 1500); }};
   const startDuel = () => { const s=[...teams].sort(()=>0.5-Math.random()); setDuelData({t1:s[0], t2:s[1], challenge:DUEL_CHALLENGES[Math.floor(Math.random()*DUEL_CHALLENGES.length)]}); setModal('duel'); playSfx('alarm'); speak("Civil War"); };
   const resolveDuel = (wid) => { if(wid){ const w=teams.find(t=>t.id===wid); handlePts(wid,5, null, true); logAction(`Civil War: Gana ${w.name}`); speak(`Gana ${w.name}`); playSfx('success'); } setModal(null); };
-  const setTimer = (m) => { const end=Date.now()+m*60000; safeUpdate('mission_control', {timerEnd:end}); setModal(null); speak(`${m} minutos`); playSfx('click'); };
   const triggerMultiverse = () => { setModal('multiverse'); playSfx('alarm'); speak("Brecha"); setTimeout(() => { const e=MULTIVERSE_EVENTS[Math.floor(Math.random()*MULTIVERSE_EVENTS.length)]; setMultiverseEvent(e); speak(e.title); if(e.points!==0) { teams.forEach(t=>handlePts(t.id, e.points, null, true)); logAction(`Multiverso: ${e.title}`); } }, 2000); };
   const sendFuryMessage = () => { if(newFuryMsg.trim()) { safeUpdate('mission_control', { furyMsg: newFuryMsg }); playSfx('alarm'); speak("Mensaje de Fury"); setNewFuryMsg(""); }};
   const handleBossAttack = () => { setShaking(true); playSfx('alarm'); speak("Thanos ataca"); safeUpdate('mission_control', { shaking: true }); setTimeout(() => { setShaking(false); safeUpdate('mission_control', { shaking: false }); }, 3000); };
@@ -830,13 +819,7 @@ function AvengersTracker() {
           </div>
         </div>
         
-        {timeLeft && (
-           <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-black/80 border-2 border-cyan-500 px-6 py-2 rounded-full shadow-2xl animate-pulse flex items-center gap-3">
-              <Timer className="text-cyan-400 animate-spin" />
-              <span className="text-2xl font-mono font-bold text-white">{timeLeft}</span>
-              {isAdmin && <button onClick={stopTimer} className="text-red-500 hover:text-white"><X size={16}/></button>}
-           </div>
-        )}
+        {/* CRONOMETER REMOVED */}
 
         <div className="flex gap-2 items-center">
             {useLocal && <span className="text-[10px] text-orange-500 font-mono bg-orange-900/20 px-2 py-1 rounded border border-orange-500/50 flex items-center gap-1"><WifiOff size={10}/> LOCAL</span>}
@@ -862,7 +845,6 @@ function AvengersTracker() {
                   <button onClick={handleSnap} className="p-2 rounded border bg-slate-800 border-yellow-500 text-yellow-400 hover:scale-110 transition-transform" title="CHASQUIDO"><Hand size={16}/></button>
                   <button onClick={handleBossAttack} className="p-2 rounded border bg-red-900/80 border-red-500 text-white hover:scale-110 transition-transform animate-pulse" title="ATAQUE DE THANOS"><Skull size={16}/></button>
                   <button onClick={()=>setModal('fury')} className="p-2 rounded border bg-slate-800 border-slate-600 hover:text-cyan-400" title="Mensaje Fury"><MessageSquare size={16}/></button>
-                  <button onClick={()=>setModal('timerConfig')} className="p-2 rounded border bg-blue-900/50 border-blue-500 hover:text-white"><Timer size={16}/></button>
                   <button onClick={startDuel} className="p-2 rounded border bg-orange-900/50 border-orange-500 hover:text-orange-300"><Swords size={16}/></button>
                   <button onClick={triggerMultiverse} className="p-2 rounded border bg-purple-900/50 border-purple-500 hover:text-purple-300 animate-pulse"><Dices size={16}/></button>
                   <button onClick={activateCerebro} className="p-2 rounded border bg-pink-900/50 border-pink-500 hover:text-pink-300"><Brain size={16}/></button>
@@ -1189,22 +1171,6 @@ function AvengersTracker() {
                  </div>
                  <button onClick={()=>setModal(null)} className="mt-4 text-xs text-slate-500 underline">Cancelar Duelo</button>
              </div>
-        </div>
-      )}
-
-      {modal === 'timerConfig' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-           <div className="bg-slate-900 border border-cyan-500/50 p-6 rounded-sm w-full max-w-sm shadow-2xl">
-               <h3 className="text-xl font-bold text-cyan-400 mb-4 flex items-center gap-2"><List size={20}/> CRONÓMETRO</h3>
-               <div className="flex gap-2 mb-4">
-                  {[5, 10, 15, 30].map(m => (
-                      <button key={m} onClick={()=>setTimerInput(m)} className={`flex-1 py-2 border ${timerInput===m?'bg-cyan-900/50 border-cyan-400 text-white':'bg-black border-slate-700 text-slate-400'} rounded font-bold`}>{m}m</button>
-                  ))}
-               </div>
-               <input type="number" value={timerInput} onChange={e=>setTimerInput(parseInt(e.target.value))} className="w-full bg-black border border-slate-700 p-2 text-white mb-4 text-center font-mono" />
-               <button onClick={()=>setTimer(timerInput)} className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded uppercase">INICIAR CUENTA ATRÁS</button>
-               <button onClick={()=>setModal(null)} className="w-full mt-2 text-slate-500 text-xs">Cancelar</button>
-           </div>
         </div>
       )}
       
