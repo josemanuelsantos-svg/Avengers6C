@@ -525,10 +525,25 @@ function AvengersTracker() {
       const t = teams.find(i => i.id === tid);
       if(!t) return;
       
+      let currentVal = 0;
+      if(type === 'math') currentVal = t.dailyMath || 0;
+      else if(type === 'word') currentVal = t.dailyWord || 0;
+      else if(type === 'combat') currentVal = t.dailyCombat || 0;
+
+      const newDaily = Math.min(currentVal + 1, 4);
+      
       let update = {};
-      if(type === 'math') update = { dailyMath: Math.min((t.dailyMath || 0) + 1, 4) };
-      if(type === 'word') update = { dailyWord: Math.min((t.dailyWord || 0) + 1, 4) };
-      if(type === 'combat') update = { dailyCombat: Math.min((t.dailyCombat || 0) + 1, 4) };
+      if(type === 'math') update = { dailyMath: newDaily };
+      else if(type === 'word') update = { dailyWord: newDaily };
+      else if(type === 'combat') update = { dailyCombat: newDaily };
+      
+      // Bonus logic
+      if (newDaily === 4 && currentVal < 4) {
+          speak("¡Línea completada! Un punto extra.");
+          triggerSecretConfetti();
+          showToast("¡LÍNEA AL 100%! +1 Punto Extra", "success");
+          handlePts(tid, 1, null, true); 
+      }
       
       safeUpdate(tid, update);
   };
@@ -680,10 +695,10 @@ function AvengersTracker() {
              }));
              setMathInput("");
          } else {
-             handlePts(loggedInId, 3, null, true); // Force add
+             handlePts(loggedInId, 1, null, true); // Force add
              handleDailyProgress(loggedInId, 'math');
              logAction(`${teams.find(t=>t.id===loggedInId).name} completó Mates.`);
-             setModal(null); showToast("¡Misión Cumplida! +3 Puntos", "success"); speak("Excelente trabajo."); triggerSecretConfetti();
+             setModal(null); showToast("¡Correcto! +1 Punto", "success"); speak("Excelente trabajo."); triggerSecretConfetti();
          }
      } else {
          let nextLevel = Math.max(1, mathState.level - 1);
@@ -716,12 +731,12 @@ function AvengersTracker() {
 
   const submitWordAnswer = () => {
       if (wordInput.toUpperCase().trim() === wordState.word) {
-          handlePts(loggedInId, 2, null, true); // Force add
+          handlePts(loggedInId, 1, null, true); // Force add
           handleDailyProgress(loggedInId, 'word');
           playSfx('success');
           logAction(`${teams.find(t=>t.id===loggedInId).name} desencriptó ${wordState.word}`);
           setModal(null);
-          showToast("¡Código Descifrado! +2 Puntos", "success");
+          showToast("¡Código Descifrado! +1 Punto", "success");
       } else {
           playSfx('error');
           showToast("Código incorrecto", "error");
@@ -741,17 +756,13 @@ function AvengersTracker() {
         ...COMBAT_QUESTIONS.hard.map(q => ({...q, diff: 'hard'}))
       ];
       
-      // Select 1 easy, 1 medium, 1 hard
-      const qEasy = COMBAT_QUESTIONS.easy[Math.floor(Math.random() * COMBAT_QUESTIONS.easy.length)];
-      const qMedium = COMBAT_QUESTIONS.medium[Math.floor(Math.random() * COMBAT_QUESTIONS.medium.length)];
-      const qHard = COMBAT_QUESTIONS.hard[Math.floor(Math.random() * COMBAT_QUESTIONS.hard.length)];
-      
-      const selected = [qEasy, qMedium, qHard];
+      // Select random 5 questions now
+      const selected = shuffled.sort(() => 0.5 - Math.random()).slice(0, 5);
       
       setCombatState({ active: true, questions: selected, currentIdx: 0, correctCount: 0 });
       setCombatInput("");
       setModal('combatChallenge');
-      speak("Simulación de combate iniciada. Tanda de 3 objetivos.");
+      speak("Simulación de combate iniciada. Tanda de 5 objetivos.");
   };
   
   const submitCombatAnswer = () => {
@@ -768,19 +779,19 @@ function AvengersTracker() {
           showToast(`Fallo. Era: ${currentQ.a}`, "error");
       }
 
-      if (combatState.currentIdx < 2) {
+      if (combatState.currentIdx < 4) { // Changed to 4 (index 0 to 4 is 5 items)
           setCombatState(prev => ({ ...prev, currentIdx: prev.currentIdx + 1, correctCount: newCorrectCount }));
           setCombatInput("");
       } else {
-          if (newCorrectCount === 3) {
-              handlePts(loggedInId, 1, null, true);
+          if (newCorrectCount === 5) { // Check for 5 correct
+              handlePts(loggedInId, 1, null, true); // 1 point for the set
               handleDailyProgress(loggedInId, 'combat');
-              logAction(`${teams.find(t=>t.id===loggedInId).name} superó la simulación (3/3).`);
+              logAction(`${teams.find(t=>t.id===loggedInId).name} superó la simulación (5/5).`);
               showToast("¡Simulación Perfecta! +1 Punto", "success");
               speak("Simulación completada con éxito.");
               triggerSecretConfetti();
           } else {
-              showToast(`Simulación finalizada. ${newCorrectCount}/3 aciertos.`, "info");
+              showToast(`Simulación finalizada. ${newCorrectCount}/5 aciertos.`, "info");
               speak("Simulación fallida. Se requiere 100% de efectividad.");
           }
           setModal(null);
@@ -845,6 +856,7 @@ function AvengersTracker() {
                   <button onClick={handleSnap} className="p-2 rounded border bg-slate-800 border-yellow-500 text-yellow-400 hover:scale-110 transition-transform" title="CHASQUIDO"><Hand size={16}/></button>
                   <button onClick={handleBossAttack} className="p-2 rounded border bg-red-900/80 border-red-500 text-white hover:scale-110 transition-transform animate-pulse" title="ATAQUE DE THANOS"><Skull size={16}/></button>
                   <button onClick={()=>setModal('fury')} className="p-2 rounded border bg-slate-800 border-slate-600 hover:text-cyan-400" title="Mensaje Fury"><MessageSquare size={16}/></button>
+                  <button onClick={()=>setModal('timerConfig')} className="p-2 rounded border bg-blue-900/50 border-blue-500 hover:text-white"><Timer size={16}/></button>
                   <button onClick={startDuel} className="p-2 rounded border bg-orange-900/50 border-orange-500 hover:text-orange-300"><Swords size={16}/></button>
                   <button onClick={triggerMultiverse} className="p-2 rounded border bg-purple-900/50 border-purple-500 hover:text-purple-300 animate-pulse"><Dices size={16}/></button>
                   <button onClick={activateCerebro} className="p-2 rounded border bg-pink-900/50 border-pink-500 hover:text-pink-300"><Brain size={16}/></button>
@@ -1077,7 +1089,7 @@ function AvengersTracker() {
                   <div className="absolute top-0 left-0 w-full h-1 bg-red-500/50 animate-pulse"></div>
                   <h3 className="text-xl font-black text-red-400 mb-4 flex items-center gap-2"><Target size={24}/> SIMULACIÓN COMBATE</h3>
                   <div className="flex justify-between items-center mb-4">
-                      <p className="text-[10px] font-mono text-red-400/70">OBJETIVO {combatState.currentIdx + 1} / 3</p>
+                      <p className="text-[10px] font-mono text-red-400/70">OBJETIVO {combatState.currentIdx + 1} / 5</p>
                   </div>
                   
                   <div className="bg-black p-6 rounded border border-red-900 mb-6 text-center">
@@ -1171,6 +1183,22 @@ function AvengersTracker() {
                  </div>
                  <button onClick={()=>setModal(null)} className="mt-4 text-xs text-slate-500 underline">Cancelar Duelo</button>
              </div>
+        </div>
+      )}
+
+      {modal === 'timerConfig' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+           <div className="bg-slate-900 border border-cyan-500/50 p-6 rounded-sm w-full max-w-sm shadow-2xl">
+               <h3 className="text-xl font-bold text-cyan-400 mb-4 flex items-center gap-2"><List size={20}/> CRONÓMETRO</h3>
+               <div className="flex gap-2 mb-4">
+                  {[5, 10, 15, 30].map(m => (
+                      <button key={m} onClick={()=>setTimerInput(m)} className={`flex-1 py-2 border ${timerInput===m?'bg-cyan-900/50 border-cyan-400 text-white':'bg-black border-slate-700 text-slate-400'} rounded font-bold`}>{m}m</button>
+                  ))}
+               </div>
+               <input type="number" value={timerInput} onChange={e=>setTimerInput(parseInt(e.target.value))} className="w-full bg-black border border-slate-700 p-2 text-white mb-4 text-center font-mono" />
+               <button onClick={()=>setTimer(timerInput)} className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded uppercase">INICIAR CUENTA ATRÁS</button>
+               <button onClick={()=>setModal(null)} className="w-full mt-2 text-slate-500 text-xs">Cancelar</button>
+           </div>
         </div>
       )}
       
