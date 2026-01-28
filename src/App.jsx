@@ -1,4 +1,4 @@
-import { useState, useEffect, Component, useCallback } from 'react';
+import React, { useState, useEffect, Component, useCallback } from 'react';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
 import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, arrayUnion } from 'firebase/firestore';
@@ -36,10 +36,26 @@ try {
 const rawAppId = typeof __app_id !== 'undefined' ? __app_id : 'clase-6c';
 const appId = rawAppId.replace(/\//g, '_'); 
 
+// --- FUNCIÓN DE FECHA S.H.I.E.L.D. (HORA ESPAÑOLA 9:00 AM) ---
+const getAvengersDayId = () => {
+    // Obtenemos la hora actual simulada en Madrid
+    const now = new Date();
+    const spainTimeStr = now.toLocaleString("en-US", {timeZone: "Europe/Madrid"});
+    const spainDate = new Date(spainTimeStr);
+    
+    // Si es antes de las 9:00 AM, seguimos en el "día operativo" de ayer
+    if (spainDate.getHours() < 9) {
+        spainDate.setDate(spainDate.getDate() - 1);
+    }
+    
+    // Devolvemos ID único del día (YYYY-MM-DD)
+    return `${spainDate.getFullYear()}-${spainDate.getMonth()+1}-${spainDate.getDate()}`;
+};
+
 // --- 3. DATOS CONSTANTES ---
 const INITIAL_TEAMS = [
   { 
-    id: 'ironman', name: 'Iron Man', points: 0, shield: false, badges: [], 
+    id: 'ironman', name: 'Iron Man', points: 0, shield: false, badges: [], daily: 0, 
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, lastDaily: '',
     theme: 'bg-red-900/30 shadow-red-500/20', border: 'border-red-500/50', 
     accent: 'text-red-400', barColor: 'bg-red-500', iconKey: 'cpu', 
@@ -48,7 +64,7 @@ const INITIAL_TEAMS = [
     gif: "https://i.ibb.co/27K5dCBM/b751779a4a3bbc38f9268036cdb5af5a.gif"
   },
   { 
-    id: 'cap', name: 'Capitán América', points: 0, shield: false, badges: [], 
+    id: 'cap', name: 'Capitán América', points: 0, shield: false, badges: [], daily: 0,
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, lastDaily: '',
     theme: 'bg-blue-900/30 shadow-blue-500/20', border: 'border-blue-500/50', 
     accent: 'text-blue-400', barColor: 'bg-blue-500', iconKey: 'shield', 
@@ -57,7 +73,7 @@ const INITIAL_TEAMS = [
     gif: "https://i.ibb.co/XqT34sz/189868-C0-D40619-AD55-4-B4-C-BE57-9005-D2506967-0-1643400842.gif"
   },
   { 
-    id: 'thor', name: 'Thor', points: 0, shield: false, badges: [], 
+    id: 'thor', name: 'Thor', points: 0, shield: false, badges: [], daily: 0,
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, lastDaily: '',
     theme: 'bg-yellow-900/30 shadow-yellow-500/20', border: 'border-yellow-500/50', 
     accent: 'text-yellow-400', barColor: 'bg-yellow-400', iconKey: 'zap', 
@@ -66,7 +82,7 @@ const INITIAL_TEAMS = [
     gif: "https://i.ibb.co/PsFhhF1g/f604e46c6979b173d319fc064ed5c0dc.gif"
   },
   { 
-    id: 'hulk', name: 'Hulk', points: 0, shield: false, badges: [], 
+    id: 'hulk', name: 'Hulk', points: 0, shield: false, badges: [], daily: 0,
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, lastDaily: '',
     theme: 'bg-green-900/30 shadow-green-500/20', border: 'border-green-500/50', 
     accent: 'text-green-400', barColor: 'bg-green-500', iconKey: 'atom', 
@@ -75,7 +91,7 @@ const INITIAL_TEAMS = [
     gif: "https://i.ibb.co/BV1dZJCH/tumblr-nkx9ln-Ha8c1tiwiyxo1-640.gif"
   },
   { 
-    id: 'widow', name: 'Viuda Negra', points: 0, shield: false, badges: [], 
+    id: 'widow', name: 'Viuda Negra', points: 0, shield: false, badges: [], daily: 0,
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, lastDaily: '',
     theme: 'bg-gray-800/50 shadow-red-900/20', border: 'border-red-500/50', 
     accent: 'text-red-500', barColor: 'bg-red-600', iconKey: 'target', 
@@ -84,7 +100,7 @@ const INITIAL_TEAMS = [
     gif: "https://i.ibb.co/JjJQnWcH/0c2a5632830679-569563b0d45b2.gif"
   },
   { 
-    id: 'strange', name: 'Dr. Strange', points: 0, shield: false, badges: [], 
+    id: 'strange', name: 'Dr. Strange', points: 0, shield: false, badges: [], daily: 0,
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, lastDaily: '',
     theme: 'bg-purple-900/30 shadow-purple-500/20', border: 'border-purple-500/50', 
     accent: 'text-purple-400', barColor: 'bg-purple-500', iconKey: 'eye', 
@@ -181,145 +197,49 @@ const HYDRA_WORDS = [
     "PLANETA", "RELIEVE", "CLIMA", "EUROPA", "DEMOCRACIA", "CONSTITUCION", "ECOSYSTEMA", "VENGADORES", "ESCUDO"
 ];
 
-// PREGUNTAS DE COMBATE POR NIVELES
-const COMBAT_QUESTIONS = {
-  easy: [
-    { q: "¿Cuántas patas tiene una araña?", a: "8" },
-    { q: "¿Color del caballo blanco de Santiago?", a: "BLANCO" },
-    { q: "¿Capital de España?", a: "MADRID" },
-    { q: "¿2 x 5?", a: "10" },
-      { q: "¿Cuánto es 8 x 8?", a: "64" },
-  { q: "¿La mitad de 500?", a: "250" },
-  { q: "¿Cuántos lados tiene un hexágono?", a: "6" },
-  { q: "¿Resultado de 100 entre 4?", a: "25" },
-  { q: "¿Grados de un ángulo recto?", a: "90" },
-  { q: "¿Cuántos minutos tiene una hora?", a: "60" },
-  { q: "¿Raíz cuadrada de 81?", a: "9" },
-    { q: "¿Antónimo de 'rápido'?", a: "Lento" },
-  { q: "¿Sinónimo de 'bonito'?", a: "Bello" },
-  { q: "¿Palabra que indica acción?", a: "Verbo" },
-  { q: "¿Palabra que califica al nombre?", a: "Adjetivo" },
-  { q: "¿Autor de El Quijote?", a: "Cervantes" },
-  { q: "¿Género de 'La casa'?", a: "Femenino" },
-  { q: "¿Plural de 'luz'?", a: "Luces" },
-  { q: "¿Sílaba tónica de 'camión'?", a: "Mión" },
-  { q: "¿Palabra con tilde en la última sílaba?", a: "Aguda" },
-  { q: "¿Palabra con tilde en la penúltima?", a: "Llana" },
-  { q: "¿Palabra con tilde en la antepenúltima?", a: "Esdrújula" },
-  { q: "¿Letra que no suena en español?", a: "H" },
-  { q: "¿Antónimo de 'verdad'?", a: "Mentira" },
-  { q: "¿Sinónimo de 'caminar'?", a: "Andar" },
-  { q: "¿Persona que escribe libros?", a: "Escritor" },
-  { q: "¿Libro de definiciones?", a: "Diccionario" },
-  { q: "¿Signo para preguntar?", a: "Interrogación" },
-  { q: "¿Signo para exclamar?", a: "Exclamación" },
-  { q: "¿Cuántas letras tiene el abecedario?", a: "27" },
-  { q: "¿Conjunto de versos?", a: "Estrofa" },
-  { q: "¿El doble de 150?", a: "300" },
-  { q: "¿Cuánto es 12 x 10?", a: "120" },
-  { q: "¿Lados de un triángulo?", a: "3" },
-  { q: "¿Nombre del polígono de 5 lados?", a: "Pentágono" },
-  { q: "¿Cifra romana V?", a: "5" },
-  { q: "¿Cifra romana X?", a: "10" },
-  { q: "¿Cifra romana L?", a: "50" },
-  { q: "¿Cifra romana C?", a: "100" },
-  { q: "¿Cuánto es 7 x 7?", a: "49" },
-  { q: "¿Resultado de 25 + 75?", a: "100" },
-  { q: "¿El triple de 33?", a: "99" },
-  { q: "¿Cuántos cm hay en 1 metro?", a: "100" },
-  { q: "¿Cuántos gramos es 1 kilo?", a: "1000" },
-    { q: "¿Antónimo de 'alto'?", a: "BAJO" },
-    { q: "¿Rey de la selva?", a: "LEON" },
-    { q: "¿Días de la semana?", a: "7" },
-    { q: "¿Estación más calurosa?", a: "VERANO" },
-    { q: "¿5 + 5?", a: "10" },
-    { q: "¿Planeta donde vivimos?", a: "TIERRA" }
-  ],
-  medium: [
-    { q: "¿Capital de Alemania?", a: "BERLIN" },
-    { q: "¿Símbolo químico del agua?", a: "H2O" },
-    { q: "¿Lados de un hexágono?", a: "6" },
-    { q: "¿Planeta rojo?", a: "MARTE" },
-    { q: "¿Símbolo químico del agua?", a: "H2O" },
-    { q: "¿Hueso más largo del cuerpo?", a: "Fémur" },
-  { q: "¿Órgano que bombea sangre?", a: "Corazón" },
-  { q: "¿Planeta más cercano al Sol?", a: "Mercurio" },
-  { q: "¿Planeta conocido como el Planeta Rojo?", a: "Marte" },
-  { q: "¿Gas que respiramos?", a: "Oxígeno" },
-  { q: "¿Cuántos dientes tiene un adulto?", a: "32" },
-  { q: "¿Animal más rápido del mundo?", a: "Guepardo" },
-  { q: "¿Rey de la selva?", a: "León" },
-     { q: "¿En qué año se descubrió América?", a: "1492" },
-  { q: "¿Quién pintó la Mona Lisa?", a: "Da Vinci" },
-  { q: "¿Moneda de la Unión Europea?", a: "Euro" },
-  { q: "¿Idioma más hablado del mundo?", a: "Chino" },
-  { q: "¿Dios del trueno nórdico?", a: "Thor" },
-  { q: "¿Primer hombre en la Luna?", a: "Armstrong" },
-  { q: "¿Quién escribió Romeo y Julieta?", a: "Shakespeare" },
-  { q: "¿Qué se celebra el 25 de diciembre?", a: "Navidad" },
-  { q: "¿Color de la esperanza?", a: "Verde" },
-  { q: "¿Cuántos años tiene un siglo?", a: "100" },
-  { q: "¿Cuántos años tiene un milenio?", a: "1000" },
-  { q: "¿En qué país están las pirámides?", a: "Egipto" },
-  { q: "¿Instrumento para ver estrellas?", a: "Telescopio" },
-  { q: "¿Instrumento para ver microbios?", a: "Microscopio" },
-  { q: "¿Deporte rey en España?", a: "Fútbol" },
-  { q: "¿Cuántos jugadores hay en un equipo de fútbol?", a: "11" },
-  { q: "¿Estación que caen las hojas?", a: "Otoño" },
-  { q: "¿Mes con menos días?", a: "Febrero" },
-  { q: "¿Capital de Rusia?", a: "Moscú" },
-  { q: "¿País del sol naciente?", a: "Japón" }
-  { q: "¿Proceso de las plantas para comer?", a: "Fotosíntesis" },
-  { q: "¿Líquido vital del cuerpo humano?", a: "Sangre" },
-  { q: "¿Estado del agua en hielo?", a: "Sólido" },
-  { q: "¿Estado del agua en vapor?", a: "Gaseoso" },
-  { q: "¿Satélite natural de la Tierra?", a: "Luna" },
-  { q: "¿Estrella más cercana a la Tierra?", a: "Sol" },
-  { q: "¿Animal que produce leche?", a: "Mamífero" },
-  { q: "¿Animal que nace de huevo?", a: "Ovíparo" },
-  { q: "¿Cuántas patas tiene una araña?", a: "8" },
-    { q: "¿Insecto que fabrica miel?", a: "Abeja" },
-  { q: "¿Reino al que pertenecen las setas?", a: "Fungi" },
-    { q: "¿7 x 8?", a: "56" },
-    { q: "¿País de la Torre Eiffel?", a: "FRANCIA" },
-    { q: "¿Hueso más largo del cuerpo?", a: "FEMUR" },
-    { q: "¿Continente de Egipto?", a: "AFRICA" },
-    { q: "¿Verbo de 'canción'?", a: "CANTAR" },
-    { q: "¿Capital de Italia?", a: "ROMA" }
-  ],
-  hard: [
-    { q: "¿Capital de Australia?", a: "CANBERRA" },
-    { q: "¿Símbolo químico del Oro?", a: "AU" },
-    { q: "¿12 x 12?", a: "144" },
-    { q: "¿Autor del Quijote?", a: "CERVANTES" },
-     { q: "¿Capital de España?", a: "Madrid" },
-  { q: "¿Capital de Francia?", a: "París" },
-  { q: "¿Capital de Italia?", a: "Roma" },
-  { q: "¿Capital de Alemania?", a: "Berlín" },
-  { q: "¿Capital de Portugal?", a: "Lisboa" },
-  { q: "¿Capital de Reino Unido?", a: "Londres" },
-  { q: "¿Río más largo de la Península?", a: "Tajo" },
-  { q: "¿Río más caudaloso de la Península?", a: "Ebro" },
-  { q: "¿Océano entre América y Europa?", a: "Atlántico" },
-  { q: "¿Continente donde está Egipto?", a: "África" },
-  { q: "¿Continente donde está China?", a: "Asia" },
-  { q: "¿País con forma de bota?", a: "Italia" },
-  { q: "¿Montaña más alta del mundo?", a: "Everest" },
-  { q: "¿Montaña más alta de España?", a: "Teide" },
-  { q: "¿Desierto más grande del mundo?", a: "Sahara" },
-  { q: "¿Capital de Estados Unidos?", a: "Washington" },
-  { q: "¿Río que pasa por Sevilla?", a: "Guadalquivir" },
-  { q: "¿Río que pasa por Zaragoza?", a: "Guadalquivir" },
-  { q: "¿Mar al este de España?", a: "Mediterráneo" },
-  { q: "¿Mar al norte de España?", a: "Cantábrico" },
-    { q: "¿Planeta más grande?", a: "JUPITER" },
-    { q: "¿Río que pasa por Londres?", a: "TAMESIS" },
-    { q: "¿Pintor del Guernica?", a: "PICASSO" },
-    { q: "¿Capital de Portugal?", a: "LISBOA" },
-    { q: "¿Año del descubrimiento de América?", a: "1492" },
-    { q: "¿Raíz cuadrada de 81?", a: "9" }
-  ]
-};
+// BANCO DE PREGUNTAS MASIVO (COMBATE)
+const COMBAT_QUESTIONS = [
+  // MATEMÁTICAS
+  { q: "¿Cuánto es 8 x 8?", a: "64" }, { q: "¿La mitad de 500?", a: "250" }, { q: "¿Cuántos lados tiene un hexágono?", a: "6" },
+  { q: "¿Resultado de 100 entre 4?", a: "25" }, { q: "¿Grados de un ángulo recto?", a: "90" }, { q: "¿Cuántos minutos tiene una hora?", a: "60" },
+  { q: "¿Raíz cuadrada de 81?", a: "9" }, { q: "¿El doble de 150?", a: "300" }, { q: "¿Cuánto es 12 x 10?", a: "120" },
+  { q: "¿Lados de un triángulo?", a: "3" }, { q: "¿Nombre del polígono de 5 lados?", a: "PENTAGONO" }, { q: "¿Cifra romana V?", a: "5" },
+  { q: "¿Cifra romana X?", a: "10" }, { q: "¿Cifra romana L?", a: "50" }, { q: "¿Cifra romana C?", a: "100" },
+  { q: "¿Cuánto es 7 x 7?", a: "49" }, { q: "¿Resultado de 25 + 75?", a: "100" }, { q: "¿El triple de 33?", a: "99" },
+  { q: "¿Cuántos cm hay en 1 metro?", a: "100" }, { q: "¿Cuántos gramos es 1 kilo?", a: "1000" },
+  // CIENCIAS NATURALES
+  { q: "¿Símbolo químico del agua?", a: "H2O" }, { q: "¿Hueso más largo del cuerpo?", a: "FEMUR" }, { q: "¿Órgano que bombea sangre?", a: "CORAZON" },
+  { q: "¿Planeta más cercano al Sol?", a: "MERCURIO" }, { q: "¿Planeta conocido como el Planeta Rojo?", a: "MARTE" }, { q: "¿Gas que respiramos?", a: "OXIGENO" },
+  { q: "¿Cuántos dientes tiene un adulto?", a: "32" }, { q: "¿Animal más rápido del mundo?", a: "GUEPARDO" }, { q: "¿Rey de la selva?", a: "LEON" },
+  { q: "¿Proceso de las plantas para comer?", a: "FOTOSINTESIS" }, { q: "¿Líquido vital del cuerpo humano?", a: "SANGRE" }, { q: "¿Estado del agua en hielo?", a: "SOLIDO" },
+  { q: "¿Estado del agua en vapor?", a: "GASEOSO" }, { q: "¿Satélite natural de la Tierra?", a: "LUNA" }, { q: "¿Estrella más cercana a la Tierra?", a: "SOL" },
+  { q: "¿Animal que produce leche?", a: "MAMIFERO" }, { q: "¿Animal que nace de huevo?", a: "OVIPARO" }, { q: "¿Cuántas patas tiene una araña?", a: "8" },
+  { q: "¿Insecto que fabrica miel?", a: "ABEJA" }, { q: "¿Reino al que pertenecen las setas?", a: "FUNGI" },
+  // GEOGRAFÍA
+  { q: "¿Capital de España?", a: "MADRID" }, { q: "¿Capital de Francia?", a: "PARIS" }, { q: "¿Capital de Italia?", a: "ROMA" },
+  { q: "¿Capital de Alemania?", a: "BERLIN" }, { q: "¿Capital de Portugal?", a: "LISBOA" }, { q: "¿Capital de Reino Unido?", a: "LONDRES" },
+  { q: "¿Río más largo de la Península?", a: "TAJO" }, { q: "¿Río más caudaloso de la Península?", a: "EBRO" }, { q: "¿Océano entre América y Europa?", a: "ATLANTICO" },
+  { q: "¿Continente donde está Egipto?", a: "AFRICA" }, { q: "¿Continente donde está China?", a: "ASIA" }, { q: "¿País con forma de bota?", a: "ITALIA" },
+  { q: "¿Montaña más alta del mundo?", a: "EVEREST" }, { q: "¿Montaña más alta de España?", a: "TEIDE" }, { q: "¿Desierto más grande del mundo?", a: "SAHARA" },
+  { q: "¿Capital de Estados Unidos?", a: "WASHINGTON" }, { q: "¿Río que pasa por Sevilla?", a: "GUADALQUIVIR" }, { q: "¿Mar al este de España?", a: "MEDITERRANEO" },
+  { q: "¿Mar al norte de España?", a: "CANTABRICO" },
+  // LENGUA
+  { q: "¿Antónimo de 'rápido'?", a: "LENTO" }, { q: "¿Sinónimo de 'bonito'?", a: "BELLO" }, { q: "¿Palabra que indica acción?", a: "VERBO" },
+  { q: "¿Palabra que califica al nombre?", a: "ADJETIVO" }, { q: "¿Autor de El Quijote?", a: "CERVANTES" }, { q: "¿Género de 'La casa'?", a: "FEMENINO" },
+  { q: "¿Plural de 'luz'?", a: "LUCES" }, { q: "¿Sílaba tónica de 'camión'?", a: "MION" }, { q: "¿Palabra con tilde en la última sílaba?", a: "AGUDA" },
+  { q: "¿Palabra con tilde en la penúltima?", a: "LLANA" }, { q: "¿Palabra con tilde en la antepenúltima?", a: "ESDRUJULA" }, { q: "¿Letra que no suena en español?", a: "H" },
+  { q: "¿Antónimo de 'verdad'?", a: "MENTIRA" }, { q: "¿Sinónimo de 'caminar'?", a: "ANDAR" }, { q: "¿Persona que escribe libros?", a: "ESCRITOR" },
+  { q: "¿Libro de definiciones?", a: "DICCIONARIO" }, { q: "¿Signo para preguntar?", a: "INTERROGACION" }, { q: "¿Signo para exclamar?", a: "EXCLAMACION" },
+  { q: "¿Cuántas letras tiene el abecedario?", a: "27" }, { q: "¿Conjunto de versos?", a: "ESTROFA" },
+  // CULTURA E HISTORIA
+  { q: "¿En qué año se descubrió América?", a: "1492" }, { q: "¿Quién pintó la Mona Lisa?", a: "DA VINCI" }, { q: "¿Moneda de la Unión Europea?", a: "EURO" },
+  { q: "¿Idioma más hablado del mundo?", a: "CHINO" }, { q: "¿Dios del trueno nórdico?", a: "THOR" }, { q: "¿Primer hombre en la Luna?", a: "ARMSTRONG" },
+  { q: "¿Quién escribió Romeo y Julieta?", a: "SHAKESPEARE" }, { q: "¿Qué se celebra el 25 de diciembre?", a: "NAVIDAD" }, { q: "¿Color de la esperanza?", a: "VERDE" },
+  { q: "¿Cuántos años tiene un siglo?", a: "100" }, { q: "¿Cuántos años tiene un milenio?", a: "1000" }, { q: "¿En qué país están las pirámides?", a: "EGIPTO" },
+  { q: "¿Instrumento para ver estrellas?", a: "TELESCOPIO" }, { q: "¿Instrumento para ver microbios?", a: "MICROSCOPIO" }, { q: "¿Deporte rey en España?", a: "FUTBOL" },
+  { q: "¿Cuántos jugadores hay en un equipo de fútbol?", a: "11" }, { q: "¿Estación que caen las hojas?", a: "OTOÑO" }, { q: "¿Mes con menos días?", a: "FEBRERO" },
+  { q: "¿Capital de Rusia?", a: "MOSCU" }, { q: "¿País del sol naciente?", a: "JAPON" }
+];
 
 // BOSS BASE HP - Ahora se recalcula dinámicamente
 const BOSS_BASE_HP = 1500;
@@ -462,6 +382,9 @@ function AvengersTracker() {
   const [bossMaxHp, setBossMaxHp] = useState(BOSS_BASE_HP);
 
   // Features
+  const [timerTarget, setTimerTarget] = useState(null); 
+  const [timeLeft, setTimeLeft] = useState(null); 
+  const [timerInput, setTimerInput] = useState(5);
   const [duelData, setDuelData] = useState(null);
 
   // ESTA ES LA CLAVE: useCallback para que la función no cambie y resetee el timer del toast
@@ -478,7 +401,7 @@ function AvengersTracker() {
       const day = new Date().getDate();
       setDailyQuote(DAILY_QUOTES[day % DAILY_QUOTES.length]);
       
-      const today = new Date().toDateString();
+      const today = getAvengersDayId(); // Use the 9:00 AM logic for ID
       const lastRunDate = localStorage.getItem('avengers_last_run_date');
       
       if (lastRunDate !== today) {
@@ -533,11 +456,11 @@ function AvengersTracker() {
       const unsub = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'avengers_teams'), (snap) => {
         if (snap.empty) { INITIAL_TEAMS.forEach(t => setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'avengers_teams', t.id), t)); }
         else {
-          const tArr = []; let fMission=null, fAlert=false, fHist=[], fFury=null, fShake=false, fBossHp=null;
+          const tArr = []; let fMission=null, fAlert=false, fHist=[], fTimer=null, fFury=null, fShake=false, fBossHp=null;
           snap.docs.forEach(d => {
             if (d.id === 'mission_control') { 
                 const data=d.data(); 
-                fMission=data.text; fAlert=data.alert; fHist=data.history||[]; fFury=data.furyMsg; fShake=data.shaking; fBossHp=data.bossMaxHp;
+                fMission=data.text; fAlert=data.alert; fHist=data.history||[]; fTimer=data.timerEnd; fFury=data.furyMsg; fShake=data.shaking; fBossHp=data.bossMaxHp;
             }
             else { tArr.push(d.data()); }
           });
@@ -553,6 +476,7 @@ function AvengersTracker() {
           if(merged.length>0) setTeams(merged);
           if(fMission) setMission(fMission);
           if(fAlert!==undefined) setRedAlertMode(fAlert);
+          if(fTimer) setTimerTarget(fTimer); else setTimerTarget(null);
           if(fBossHp) setBossMaxHp(fBossHp); else if(!useLocal) safeUpdate('mission_control', {bossMaxHp: bossMaxHp}); 
           setFuryMessage(fFury);
           if(fShake) { setShaking(true); setTimeout(() => setShaking(false), 3000); playSfx('alarm'); }
@@ -570,9 +494,14 @@ function AvengersTracker() {
       setTickerIdx(p => (p + 1) % TICKER_MESSAGES.length);
       const h = new Date().getHours() + new Date().getMinutes()/60;
       setQuestionAvailable(h >= 9 && h <= 12.5);
+      if (timerTarget) {
+        const diff = timerTarget - Date.now();
+        if (diff <= 0) setTimeLeft("00:00");
+        else setTimeLeft(`${Math.floor(diff/60000).toString().padStart(2,'0')}:${Math.floor((diff%60000)/1000).toString().padStart(2,'0')}`);
+      } else setTimeLeft(null);
     }, 1000);
     return () => clearInterval(t);
-  }, []);
+  }, [timerTarget]);
 
   // Helpers
   const showToast = (msg, type='info') => setToast({ message: msg, type });
@@ -585,6 +514,7 @@ function AvengersTracker() {
           if(data.text) setMission(data.text);
           if(data.alert !== undefined) setRedAlertMode(data.alert);
           if(data.history) setHistory(prev => [...(data.history||[]), ...prev]);
+          if(data.timerEnd !== undefined) setTimerTarget(data.timerEnd);
           if(data.furyMsg !== undefined) setFuryMessage(data.furyMsg);
           if(data.bossMaxHp !== undefined) setBossMaxHp(data.bossMaxHp);
       } else {
@@ -695,6 +625,7 @@ function AvengersTracker() {
   const openLootBox = async (tid) => { if(handleBuy(tid, 15)) { speak("Abriendo..."); setTimeout(() => { const it=LOOT_ITEMS[Math.floor(Math.random()*LOOT_ITEMS.length)]; setLootResult(it); if(it.val>0) handlePts(tid, it.val, null, true); logAction(`${teams.find(t=>t.id===tid).name} loot: ${it.text}`); if(it.val>0) playSfx('success'); }, 1500); }};
   const startDuel = () => { const s=[...teams].sort(()=>0.5-Math.random()); setDuelData({t1:s[0], t2:s[1], challenge:DUEL_CHALLENGES[Math.floor(Math.random()*DUEL_CHALLENGES.length)]}); setModal('duel'); playSfx('alarm'); speak("Civil War"); };
   const resolveDuel = (wid) => { if(wid){ const w=teams.find(t=>t.id===wid); handlePts(wid,5, null, true); logAction(`Civil War: Gana ${w.name}`); speak(`Gana ${w.name}`); playSfx('success'); } setModal(null); };
+  const setTimer = (m) => { const end=Date.now()+m*60000; safeUpdate('mission_control', {timerEnd:end}); setModal(null); speak(`${m} minutos`); playSfx('click'); };
   const triggerMultiverse = () => { setModal('multiverse'); playSfx('alarm'); speak("Brecha"); setTimeout(() => { const e=MULTIVERSE_EVENTS[Math.floor(Math.random()*MULTIVERSE_EVENTS.length)]; setMultiverseEvent(e); speak(e.title); if(e.points!==0) { teams.forEach(t=>handlePts(t.id, e.points, null, true)); logAction(`Multiverso: ${e.title}`); } }, 2000); };
   const sendFuryMessage = () => { if(newFuryMsg.trim()) { safeUpdate('mission_control', { furyMsg: newFuryMsg }); playSfx('alarm'); speak("Mensaje de Fury"); setNewFuryMsg(""); }};
   const handleBossAttack = () => { setShaking(true); playSfx('alarm'); speak("Thanos ataca"); safeUpdate('mission_control', { shaking: true }); setTimeout(() => { setShaking(false); safeUpdate('mission_control', { shaking: false }); }, 3000); };
@@ -770,6 +701,9 @@ function AvengersTracker() {
   const startMathChallenge = () => {
       if (!loggedInId) return;
       const t = teams.find(t => t.id === loggedInId);
+      const today = getAvengersDayId();
+      // Check if current day's math battery is full (4 challenges)
+      // Note: We use the team's data which is already synced to 'today' by the effect above
       if ((t.dailyMath || 0) >= 4) { showToast("Batería de Matemáticas al 100%.", "info"); playSfx('error'); return; }
       
       // Reset to Level 2 (Medium) on start
@@ -795,7 +729,7 @@ function AvengersTracker() {
              }));
              setMathInput("");
          } else {
-             handlePts(loggedInId, 1, null, true); // Force add
+             handlePts(loggedInId, 1, null, true); // Force add +1 pt
              handleDailyProgress(loggedInId, 'math');
              logAction(`${teams.find(t=>t.id===loggedInId).name} completó Mates.`);
              setModal(null); showToast("¡Correcto! +1 Punto", "success"); speak("Excelente trabajo."); triggerSecretConfetti();
@@ -831,7 +765,7 @@ function AvengersTracker() {
 
   const submitWordAnswer = () => {
       if (wordInput.toUpperCase().trim() === wordState.word) {
-          handlePts(loggedInId, 1, null, true); // Force add
+          handlePts(loggedInId, 1, null, true); // Force add +1 pt
           handleDailyProgress(loggedInId, 'word');
           playSfx('success');
           logAction(`${teams.find(t=>t.id===loggedInId).name} desencriptó ${wordState.word}`);
@@ -850,14 +784,11 @@ function AvengersTracker() {
       const t = teams.find(t => t.id === loggedInId);
       if ((t.dailyCombat || 0) >= 4) { showToast("Batería de Combate al 100%.", "info"); playSfx('error'); return; }
 
-      const shuffled = [
-        ...COMBAT_QUESTIONS.easy.map(q => ({...q, diff: 'easy'})),
-        ...COMBAT_QUESTIONS.medium.map(q => ({...q, diff: 'medium'})),
-        ...COMBAT_QUESTIONS.hard.map(q => ({...q, diff: 'hard'}))
-      ];
+      // Get all questions as a single pool
+      const shuffled = [...COMBAT_QUESTIONS].sort(() => 0.5 - Math.random());
       
-      // Select random 5 questions now
-      const selected = shuffled.sort(() => 0.5 - Math.random()).slice(0, 5);
+      // Select 5 random questions
+      const selected = shuffled.slice(0, 5);
       
       setCombatState({ active: true, questions: selected, currentIdx: 0, correctCount: 0 });
       setCombatInput("");
@@ -867,7 +798,7 @@ function AvengersTracker() {
   
   const submitCombatAnswer = () => {
       const currentQ = combatState.questions[combatState.currentIdx];
-      const isCorrect = combatInput.toUpperCase().trim() === currentQ.a;
+      const isCorrect = combatInput.toUpperCase().trim() === currentQ.a.toUpperCase();
       
       let newCorrectCount = combatState.correctCount + (isCorrect ? 1 : 0);
       
@@ -879,12 +810,12 @@ function AvengersTracker() {
           showToast(`Fallo. Era: ${currentQ.a}`, "error");
       }
 
-      if (combatState.currentIdx < 4) { // Changed to 4 (index 0 to 4 is 5 items)
+      if (combatState.currentIdx < 4) { // 0 to 4 is 5 questions
           setCombatState(prev => ({ ...prev, currentIdx: prev.currentIdx + 1, correctCount: newCorrectCount }));
           setCombatInput("");
       } else {
-          if (newCorrectCount === 5) { // Check for 5 correct
-              handlePts(loggedInId, 1, null, true); // 1 point for the set
+          if (newCorrectCount === 5) {
+              handlePts(loggedInId, 1, null, true); // +1 point for perfect set
               handleDailyProgress(loggedInId, 'combat');
               logAction(`${teams.find(t=>t.id===loggedInId).name} superó la simulación (5/5).`);
               showToast("¡Simulación Perfecta! +1 Punto", "success");
@@ -930,7 +861,13 @@ function AvengersTracker() {
           </div>
         </div>
         
-        {/* CRONOMETER REMOVED */}
+        {timeLeft && (
+           <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-black/80 border-2 border-cyan-500 px-6 py-2 rounded-full shadow-2xl animate-pulse flex items-center gap-3">
+              <Timer className="text-cyan-400 animate-spin" />
+              <span className="text-2xl font-mono font-bold text-white">{timeLeft}</span>
+              {isAdmin && <button onClick={stopTimer} className="text-red-500 hover:text-white"><X size={16}/></button>}
+           </div>
+        )}
 
         <div className="flex gap-2 items-center">
             {useLocal && <span className="text-[10px] text-orange-500 font-mono bg-orange-900/20 px-2 py-1 rounded border border-orange-500/50 flex items-center gap-1"><WifiOff size={10}/> LOCAL</span>}
