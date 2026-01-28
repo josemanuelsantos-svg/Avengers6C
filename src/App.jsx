@@ -7,8 +7,8 @@ import {
   Cpu, Atom, Target, Eye, Trophy, Medal, TrendingUp, Info, Crown, Activity, User, 
   Users, ChevronsUp, Hexagon, ClipboardList, Swords, Brain, Volume2, VolumeX, List, 
   CheckCircle2, PlusCircle, Quote, Siren, Award, History, Trash2, X, Package, Dices, 
-  Sparkles, Radio, BookOpen, Wifi, WifiOff, MessageSquare, ShieldCheck, Flame, Star, Calculator,
-  Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand
+  Sparkles, Radio, BookOpen, Timer, Wifi, WifiOff, MessageSquare, ShieldCheck, Flame, Star, Calculator,
+  Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Check, AlertOctagon
 } from 'lucide-react';
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
@@ -443,6 +443,9 @@ function AvengersTracker() {
   const [shaking, setShaking] = useState(false);
   const [dailyQuote, setDailyQuote] = useState("");
   
+  // States for confirmation
+  const [purchaseConfirm, setPurchaseConfirm] = useState(null);
+
   // Math & Logic Challenge States
   const [mathState, setMathState] = useState({ active: false, questions: [], currentIdx: 0, level: 2 });
   const [mathInput, setMathInput] = useState("");
@@ -653,22 +656,55 @@ function AvengersTracker() {
       playSfx('success'); triggerSecretConfetti();
   };
 
-  const handleBuy = async (teamId, cost, itemId) => {
-      if (!isAdmin && loggedInId !== teamId) { showToast("Sin permiso", "error"); return false; }
+  // Prepara la compra (muestra modal confirmacion)
+  const requestPurchase = (teamId, cost, itemId, name, type='item') => {
+      if (!isAdmin && loggedInId !== teamId) { showToast("Sin permiso", "error"); return; }
       const t = teams.find(tm => tm.id === teamId);
-      if (t.points >= cost) {
-          playSfx('click');
-          if (itemId === 99) { safeUpdate(teamId, { points: t.points - cost, shield: true }); logAction(`${t.name} compró Escudo`); }
-          else if (itemId === 66) { // Snap
-             await safeUpdate(teamId, { points: t.points - cost });
-             logAction(`${t.name} compró EL GUANTELETE`);
-             // Execute Snap
-             speak("Yo soy... inevitable.");
-             playSfx('alarm');
-             const rivals = teams.filter(tm => tm.id !== teamId);
-             const shuffled = [...rivals].sort(() => 0.5 - Math.random());
-             const victims = shuffled.slice(0, 2);
-             for (const victim of victims) {
+      if (t.points < cost) { showToast("Fondos insuficientes", "error"); playSfx('error'); return; }
+      
+      setPurchaseConfirm({ teamId, cost, itemId, name, type });
+      playSfx('click');
+  };
+
+  // Ejecuta la compra confirmada
+  const executePurchase = async () => {
+      if (!purchaseConfirm) return;
+      const { teamId, cost, itemId, type } = purchaseConfirm;
+      const t = teams.find(tm => tm.id === teamId);
+      
+      // Double check funds just in case
+      if (t.points < cost) { showToast("Error: Fondos insuficientes", "error"); setPurchaseConfirm(null); return; }
+
+      // Deduct points
+      await safeUpdate(teamId, { points: t.points - cost });
+      
+      if (type === 'loot') {
+          logAction(`${t.name} compró CAJA WAKANDA`);
+          // Open loot box logic
+          speak("Abriendo..."); 
+          setPurchaseConfirm(null); // Close confirm modal
+          // We can reuse openLootBox logic but modified to not deduct points again
+          // Actually, let's keep it simple: Spin result here
+          setTimeout(() => { 
+              const it = LOOT_ITEMS[Math.floor(Math.random() * LOOT_ITEMS.length)]; 
+              setLootResult(it); 
+              if (it.val > 0) handlePts(teamId, it.val, null, true); 
+              logAction(`${t.name} loot: ${it.text}`); 
+              if (it.val > 0) playSfx('success'); else playSfx('error');
+          }, 1000);
+      } else {
+          // Normal Item or Snap
+          if (itemId === 99) { // Shield
+              await safeUpdate(teamId, { shield: true });
+              logAction(`${t.name} compró Escudo`);
+          } else if (itemId === 66) { // Snap
+              logAction(`${t.name} compró EL GUANTELETE`);
+              speak("Yo soy... inevitable.");
+              playSfx('alarm');
+              const rivals = teams.filter(tm => tm.id !== teamId);
+              const shuffled = [...rivals].sort(() => 0.5 - Math.random());
+              const victims = shuffled.slice(0, 2);
+              for (const victim of victims) {
                  if (victim.shield) {
                      await safeUpdate(victim.id, { shield: false });
                      logAction(`${victim.name} bloqueó el Chasquido`);
@@ -677,21 +713,32 @@ function AvengersTracker() {
                      await safeUpdate(victim.id, { points: halved });
                      logAction(`${t.name} chasqueó a ${victim.name}`);
                  }
-             }
-             triggerSecretConfetti();
-          } 
-          else { 
-             await safeUpdate(teamId, { points: t.points - cost }); 
-             logAction(`${t.name} gastó ${cost} pts`); 
+              }
+              triggerSecretConfetti();
+          } else {
+              logAction(`${t.name} compró ${purchaseConfirm.name}`);
           }
+          
+          showToast("Compra realizada", "success");
+          playSfx('success');
+          setPurchaseConfirm(null);
+      }
+  };
 
-          if(!modal?.includes('loot')) setModal(null);
-          showToast("Compra exitosa", "success");
-          return true;
-      } else { showToast("Fondos insuficientes", "error"); playSfx('error'); return false; }
+  // OLD HANDLERS (Refactored to use requestPurchase)
+  const handleBuy = async (teamId, cost, itemId) => {
+      // Find item name
+      let name = "Item Desconocido";
+      let type = 'item';
+      if (itemId === 666) { name = "Caja de Wakanda"; type = 'loot'; } // Special ID for loot box
+      else {
+          const item = REWARDS_LIST.find(r => r.id === itemId);
+          if (item) name = item.name;
+      }
+      requestPurchase(teamId, cost, itemId, name, type);
   };
   
-  // NEW SNAP FUNCTIONALITY
+  // NEW SNAP FUNCTIONALITY (ADMIN)
   const handleSnap = async () => {
     if (!window.confirm("¿Ejecutar el Chasquido de Thanos? 2 equipos perderán la mitad de sus puntos.")) return;
     
@@ -721,7 +768,11 @@ function AvengersTracker() {
     showToast("Límites diarios reseteados.", "success");
   };
 
-  const openLootBox = async (tid) => { if(handleBuy(tid, 15)) { speak("Abriendo..."); setTimeout(() => { const it=LOOT_ITEMS[Math.floor(Math.random()*LOOT_ITEMS.length)]; setLootResult(it); if(it.val>0) handlePts(tid, it.val, null, true); logAction(`${teams.find(t=>t.id===tid).name} loot: ${it.text}`); if(it.val>0) playSfx('success'); }, 1500); }};
+  const openLootBox = (tid) => { 
+      // This is called by the UI button. We redirect to handleBuy with special ID
+      handleBuy(tid, 15, 666);
+  };
+
   const startDuel = () => { const s=[...teams].sort(()=>0.5-Math.random()); setDuelData({t1:s[0], t2:s[1], challenge:DUEL_CHALLENGES[Math.floor(Math.random()*DUEL_CHALLENGES.length)]}); setModal('duel'); playSfx('alarm'); speak("Civil War"); };
   const resolveDuel = (wid) => { if(wid){ const w=teams.find(t=>t.id===wid); handlePts(wid,5, null, true); logAction(`Civil War: Gana ${w.name}`); speak(`Gana ${w.name}`); playSfx('success'); } setModal(null); };
   const triggerMultiverse = () => { setModal('multiverse'); playSfx('alarm'); speak("Brecha"); setTimeout(() => { const e=MULTIVERSE_EVENTS[Math.floor(Math.random()*MULTIVERSE_EVENTS.length)]; setMultiverseEvent(e); speak(e.title); if(e.points!==0) { teams.forEach(t=>handlePts(t.id, e.points, null, true)); logAction(`Multiverso: ${e.title}`); } }, 2000); };
@@ -1170,6 +1221,37 @@ function AvengersTracker() {
 
       {/* --- MODALS --- */}
 
+      {/* CONFIRMATION PURCHASE MODAL */}
+      {purchaseConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 p-4 animate-in zoom-in duration-200">
+           <div className="bg-slate-900 border-2 border-yellow-500 p-6 rounded-lg w-full max-w-sm shadow-[0_0_50px_rgba(234,179,8,0.3)] text-center relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500 animate-pulse"></div>
+               <AlertOctagon size={48} className="mx-auto text-yellow-400 mb-4 animate-bounce" />
+               <h3 className="text-xl font-black text-white uppercase mb-2">¿CONFIRMAR COMPRA?</h3>
+               <div className="bg-black/50 p-4 rounded border border-yellow-900/50 mb-6">
+                   <p className="text-sm text-slate-400 mb-1">Artículo:</p>
+                   <p className="text-lg font-bold text-yellow-300 mb-3">{purchaseConfirm.name}</p>
+                   <p className="text-sm text-slate-400 mb-1">Coste:</p>
+                   <p className="text-2xl font-mono font-bold text-white">{purchaseConfirm.cost} PTS</p>
+               </div>
+               <div className="grid grid-cols-2 gap-3">
+                   <button 
+                       onClick={() => { setPurchaseConfirm(null); playSfx('click'); }}
+                       className="py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold uppercase rounded text-xs transition-colors"
+                   >
+                       CANCELAR
+                   </button>
+                   <button 
+                       onClick={executePurchase}
+                       className="py-3 bg-yellow-600 hover:bg-yellow-500 text-black font-black uppercase rounded text-xs shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2"
+                   >
+                       <Check size={16}/> PAGAR
+                   </button>
+               </div>
+           </div>
+        </div>
+      )}
+
       {/* MATH CHALLENGE MODAL (STUDENT TRAINING) */}
       {modal === 'mathChallenge' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
@@ -1339,6 +1421,22 @@ function AvengersTracker() {
                  </div>
                  <button onClick={()=>setModal(null)} className="mt-4 text-xs text-slate-500 underline">Cancelar Duelo</button>
              </div>
+        </div>
+      )}
+
+      {modal === 'timerConfig' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+           <div className="bg-slate-900 border border-cyan-500/50 p-6 rounded-sm w-full max-w-sm shadow-2xl">
+               <h3 className="text-xl font-bold text-cyan-400 mb-4 flex items-center gap-2"><List size={20}/> CRONÓMETRO</h3>
+               <div className="flex gap-2 mb-4">
+                  {[5, 10, 15, 30].map(m => (
+                      <button key={m} onClick={()=>setTimerInput(m)} className={`flex-1 py-2 border ${timerInput===m?'bg-cyan-900/50 border-cyan-400 text-white':'bg-black border-slate-700 text-slate-400'} rounded font-bold`}>{m}m</button>
+                  ))}
+               </div>
+               <input type="number" value={timerInput} onChange={e=>setTimerInput(parseInt(e.target.value))} className="w-full bg-black border border-slate-700 p-2 text-white mb-4 text-center font-mono" />
+               <button onClick={()=>setTimer(timerInput)} className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded uppercase">INICIAR CUENTA ATRÁS</button>
+               <button onClick={()=>setModal(null)} className="w-full mt-2 text-slate-500 text-xs">Cancelar</button>
+           </div>
         </div>
       )}
       
