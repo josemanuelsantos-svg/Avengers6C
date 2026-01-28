@@ -163,7 +163,6 @@ const MULTIVERSE_EVENTS = [
 
 const DUEL_CHALLENGES = ["Piedra, Papel o Tijera", "Duelo de miradas", "Pregunta de Mates", "Deletreo rápido", "El que parpadee pierde", "Adivinanza"];
 
-// --- BANCO DE PREGUNTAS (100) ---
 const ACADEMIC_QUESTIONS = [
   // MATEMÁTICAS
   { q: "¿Cuánto es 8 x 8?", a: "64" },
@@ -317,7 +316,7 @@ const COMBAT_QUESTIONS = {
   ]
 };
 
-// BOSS BASE HP
+// BOSS BASE HP - Ahora se recalcula dinámicamente
 const BOSS_BASE_HP = 1500;
 const ICONS = { cpu: Cpu, shield: Shield, zap: Zap, atom: Atom, target: Target, eye: Eye };
 const TICKER_MESSAGES = [ "CAPITÁN AMÉRICA: 'PUEDO HACER ESTO TODO EL DÍA'", "TONY STARK: 'YO SOY IRON MAN'", "AVENGERS: ¡REUNÍOS!", "THOR: 'POR LAS BARBAS DE ODÍN'", "BLACK PANTHER: '¡WAKANDA POR SIEMPRE!'", "HULK: ¡APLASTA EL EXAMEN!" ];
@@ -432,7 +431,7 @@ function AvengersTracker() {
   const [tickerIdx, setTickerIdx] = useState(0);
   const [redAlertMode, setRedAlertMode] = useState(false);
   const [sound, setSound] = useState(false);
-  const [cerebro, setCerebro] = useState({ active: false, target: null, searching: false });
+  const [cerebro, setCerebro] = useState({ active: false, target: null, searching: false, type: null }); // Nuevo estado type para el menú
   const [confetti, setConfetti] = useState({ active: false, x: 0, y: 0 });
   const [toast, setToast] = useState(null);
   const [secretCount, setSecretCount] = useState(0);
@@ -458,6 +457,7 @@ function AvengersTracker() {
   const [bossMaxHp, setBossMaxHp] = useState(BOSS_BASE_HP);
 
   // Features
+  const [timerInput, setTimerInput] = useState(5);
   const [duelData, setDuelData] = useState(null);
 
   // ESTA ES LA CLAVE: useCallback para que la función no cambie y resetee el timer del toast
@@ -479,6 +479,7 @@ function AvengersTracker() {
       
       if (lastRunDate !== today) {
           // Reset daily progress
+          // Ensure we reset all daily counters
           const updatedTeams = teams.map(t => ({ 
               ...t, 
               dailyMath: 0, 
@@ -728,7 +729,34 @@ function AvengersTracker() {
   const handleBossAttack = () => { setShaking(true); playSfx('alarm'); speak("Thanos ataca"); safeUpdate('mission_control', { shaking: true }); setTimeout(() => { setShaking(false); safeUpdate('mission_control', { shaking: false }); }, 3000); };
   const checkPass = (e) => { e.preventDefault(); const p = pass.toLowerCase().trim(); if (p === 'director_fury_00') { setIsAdmin(true); setLoggedInId(null); setModal(null); setPass(''); playSfx('success'); speak("Hola Director"); return; } const t = INITIAL_TEAMS.find(tm => tm.password === p); if (t) { setLoggedInId(t.id); setIsAdmin(false); setModal(null); setPass(''); playSfx('success'); speak(`Hola ${t.name}`); return; } playSfx('error'); showToast("Acceso denegado", "error"); };
   const handleLogoClick = () => { setSecretCount(p=>p+1); if(secretCount>4) { speak("Fiesta"); triggerSecretConfetti(); setSecretCount(0); } };
-  const activateCerebro = () => { setCerebro({ active: true, target: null, searching: true }); speak("Buscando"); const all = teams.flatMap(t => t.members); let i = 0; const interval = setInterval(() => { setCerebro(prev => ({ ...prev, target: all[Math.floor(Math.random() * all.length)] })); i++; if (i > 20) { clearInterval(interval); setCerebro(prev => ({ ...prev, searching: false })); speak("Localizado"); playSfx('success'); } }, 100); };
+  
+  // MODIFIED CEREBRO LOGIC
+  const openCerebroMenu = () => {
+    setCerebro({ active: true, target: null, searching: false, type: null }); // Open menu mode
+  };
+  
+  const activateCerebro = (type = 'member') => { // Default to member if not specified
+    const targetType = type === 'team' ? 'team' : 'member';
+    speak(targetType === 'team' ? "Buscando escuadrón" : "Buscando sujeto");
+    setCerebro({ active: true, target: null, searching: true, type: targetType }); 
+    
+    // Choose source array based on type
+    const source = targetType === 'team' ? teams.map(t => t.name) : teams.flatMap(t => t.members);
+    
+    let i = 0; 
+    const interval = setInterval(() => { 
+        // Random selection visual effect
+        setCerebro(prev => ({ ...prev, target: source[Math.floor(Math.random() * source.length)] })); 
+        i++; 
+        if (i > 20) { 
+            clearInterval(interval); 
+            setCerebro(prev => ({ ...prev, searching: false })); 
+            speak("Localizado"); 
+            playSfx('success'); 
+        } 
+    }, 100); 
+  };
+  
   const reset = async () => { if (!window.confirm("¿Reiniciar temporada?")) return; teams.forEach(t => safeUpdate(t.id, {points: 0, shield: false, badges: [], dailyMath:0, dailyWord:0, dailyCombat:0})); safeUpdate('mission_control', { history: [], timerEnd: null, furyMsg: null, bossMaxHp: 1500 }); speak("Reinicio"); };
   const updateM = async (txt) => { if(!isAdmin) return; await safeUpdate('mission_control', { text: txt }); setModal(null); speak("Misión actualizada"); };
   const toggleAlert = async () => { if(!isAdmin) return; const s = !redAlertMode; setRedAlertMode(s); await safeUpdate('mission_control', { alert: s }); if(s) { speak("Alerta Roja"); logAction("ALERTA ROJA"); playSfx('alarm'); } else logAction("Alerta desactivada"); };
@@ -987,7 +1015,7 @@ function AvengersTracker() {
                   <button onClick={()=>setModal('fury')} className="p-2 rounded border bg-slate-800 border-slate-600 hover:text-cyan-400" title="Mensaje Fury"><MessageSquare size={16}/></button>
                   <button onClick={startDuel} className="p-2 rounded border bg-orange-900/50 border-orange-500 hover:text-orange-300"><Swords size={16}/></button>
                   <button onClick={triggerMultiverse} className="p-2 rounded border bg-purple-900/50 border-purple-500 hover:text-purple-300 animate-pulse"><Dices size={16}/></button>
-                  <button onClick={activateCerebro} className="p-2 rounded border bg-pink-900/50 border-pink-500 hover:text-pink-300"><Brain size={16}/></button>
+                  <button onClick={openCerebroMenu} className="p-2 rounded border bg-pink-900/50 border-pink-500 hover:text-pink-300" title="CEREBRO: Elegir Alumno/Equipo"><Brain size={16}/></button>
                   <button onClick={toggleAlert} className={`p-2 rounded border ${redAlertMode ? 'bg-red-600 border-white animate-pulse' : 'bg-slate-800 border-slate-600 hover:text-red-400'}`}><Siren size={16}/></button>
                   <button onClick={()=>setModal('history')} className="p-2 rounded border bg-slate-800 border-slate-600 hover:text-white"><History size={16}/></button>
                   <button onClick={reset} className="p-2 rounded border bg-slate-800 border-slate-600 hover:text-red-500"><Trash2 size={16}/></button>
@@ -1444,12 +1472,70 @@ function AvengersTracker() {
       )}
 
       {cerebro.active && (
-        <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 cursor-pointer" onClick={()=>{if(!cerebro.searching)setCerebro({...cerebro, active:false})}}>
-          <div className="text-center">
-            <Brain size={80} className="mx-auto text-purple-500 mb-6 animate-pulse" />
-            <h2 className="text-2xl font-black text-purple-400 uppercase tracking-widest mb-4">PROTOCOLO CEREBRO</h2>
-            <div className="text-4xl font-mono font-bold text-white">{cerebro.target || "RASTREANDO..."}</div>
-            {!cerebro.searching && <div className="mt-8 text-xs text-slate-500 animate-bounce">CLICK PARA CERRAR</div>}
+        <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4">
+          <div className="absolute inset-0" onClick={()=>{if(!cerebro.searching)setCerebro({...cerebro, active:false})}}></div>
+          <div className="relative z-10 text-center bg-slate-900/80 p-8 rounded-xl border border-purple-500/30 backdrop-blur-sm max-w-lg w-full mx-4 shadow-[0_0_50px_rgba(168,85,247,0.2)]">
+            
+            {/* IF NO MODE SELECTED */}
+            {!cerebro.type ? (
+               <>
+                 <Brain size={80} className="mx-auto text-purple-500 mb-6 animate-pulse" />
+                 <h2 className="text-2xl font-black text-purple-400 uppercase tracking-widest mb-6">PROTOCOLO CEREBRO</h2>
+                 <p className="text-sm text-slate-300 mb-8">Seleccione el objetivo del rastreo:</p>
+                 <div className="grid grid-cols-2 gap-4">
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); activateCerebro('member'); }}
+                        className="py-6 bg-purple-900/50 hover:bg-purple-600 border border-purple-500 text-white font-black uppercase tracking-widest rounded transition-all active:scale-95 flex flex-col items-center gap-2"
+                    >
+                        <User size={32}/> OPERATIVO
+                    </button>
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); activateCerebro('team'); }}
+                        className="py-6 bg-cyan-900/50 hover:bg-cyan-600 border border-cyan-500 text-white font-black uppercase tracking-widest rounded transition-all active:scale-95 flex flex-col items-center gap-2"
+                    >
+                        <Users size={32}/> ESCUADRÓN
+                    </button>
+                 </div>
+                 <button 
+                    onClick={(e) => { e.stopPropagation(); setCerebro({...cerebro, active:false}); }}
+                    className="mt-6 text-slate-500 text-xs hover:text-white underline"
+                >
+                    CANCELAR RASTREO
+                </button>
+               </>
+            ) : (
+               // IF MODE SELECTED (SEARCHING OR RESULT)
+               <>
+                 <div className={`mb-6 ${cerebro.searching ? 'animate-spin' : ''}`}>
+                    {cerebro.type === 'team' ? <Users size={64} className="mx-auto text-cyan-400"/> : <Brain size={64} className="mx-auto text-purple-500"/>}
+                 </div>
+                 <h2 className="text-xl font-black text-white uppercase tracking-widest mb-4">
+                    {cerebro.searching ? "RASTREANDO..." : (cerebro.type === 'team' ? "ESCUADRÓN LOCALIZADO" : "SUJETO LOCALIZADO")}
+                 </h2>
+                 
+                 <div className="text-3xl md:text-5xl font-mono font-black text-white mb-8 min-h-[4rem] flex items-center justify-center p-4 bg-black/40 rounded border border-white/10">
+                    {cerebro.target || <span className="animate-pulse text-slate-500">...</span>}
+                 </div>
+                
+                 {!cerebro.searching && (
+                    <div className="grid grid-cols-2 gap-4">
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); activateCerebro(cerebro.type); }}
+                            className="py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-widest rounded shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+                        >
+                            <RefreshCw size={16}/> RE-ESCANEAR
+                        </button>
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); setCerebro({...cerebro, active:false}); }}
+                            className="py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold uppercase tracking-widest rounded transition-all active:scale-95"
+                        >
+                            CERRAR
+                        </button>
+                    </div>
+                 )}
+               </>
+            )}
+
           </div>
         </div>
       )}
