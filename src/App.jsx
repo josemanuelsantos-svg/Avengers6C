@@ -7,8 +7,8 @@ import {
   Cpu, Atom, Target, Eye, Trophy, Medal, TrendingUp, Info, Crown, Activity, User, 
   Users, ChevronsUp, Hexagon, ClipboardList, Swords, Brain, Volume2, VolumeX, List, 
   CheckCircle2, PlusCircle, Quote, Siren, Award, History, Trash2, X, Package, Dices, 
-  Sparkles, Radio, BookOpen, Timer, Wifi, WifiOff, MessageSquare, ShieldCheck, Flame, Star, Calculator,
-  Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Check, AlertOctagon
+  Sparkles, Radio, BookOpen, Wifi, WifiOff, MessageSquare, ShieldCheck, Flame, Star, Calculator,
+  Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3
 } from 'lucide-react';
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
@@ -40,7 +40,7 @@ const appId = rawAppId.replace(/\//g, '_');
 const INITIAL_TEAMS = [
   { 
     id: 'ironman', name: 'Iron Man', points: 0, shield: false, badges: [], 
-    dailyMath: 0, dailyWord: 0, dailyCombat: 0, lastDaily: '',
+    dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '',
     theme: 'bg-red-900/30 shadow-red-500/20', border: 'border-red-500/50', 
     accent: 'text-red-400', barColor: 'bg-red-500', iconKey: 'cpu', 
     password: 'arc_reactor_85', members: ['Juandi', 'Ernesto', 'Carmen', 'Bea'], 
@@ -49,7 +49,7 @@ const INITIAL_TEAMS = [
   },
   { 
     id: 'cap', name: 'Capitán América', points: 0, shield: false, badges: [], 
-    dailyMath: 0, dailyWord: 0, dailyCombat: 0, lastDaily: '',
+    dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '',
     theme: 'bg-blue-900/30 shadow-blue-500/20', border: 'border-blue-500/50', 
     accent: 'text-blue-400', barColor: 'bg-blue-500', iconKey: 'shield', 
     password: 'escudo_vibranium', members: ['Sara', 'Araceli', 'Nagore', 'Alex'], 
@@ -58,7 +58,7 @@ const INITIAL_TEAMS = [
   },
   { 
     id: 'thor', name: 'Thor', points: 0, shield: false, badges: [], 
-    dailyMath: 0, dailyWord: 0, dailyCombat: 0, lastDaily: '',
+    dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '',
     theme: 'bg-yellow-900/30 shadow-yellow-500/20', border: 'border-yellow-500/50', 
     accent: 'text-yellow-400', barColor: 'bg-yellow-400', iconKey: 'zap', 
     password: 'stormbreaker_trueno', members: ['Javi', 'Guille', 'Yma', 'Iker'], 
@@ -67,7 +67,7 @@ const INITIAL_TEAMS = [
   },
   { 
     id: 'hulk', name: 'Hulk', points: 0, shield: false, badges: [], 
-    dailyMath: 0, dailyWord: 0, dailyCombat: 0, lastDaily: '',
+    dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '',
     theme: 'bg-green-900/30 shadow-green-500/20', border: 'border-green-500/50', 
     accent: 'text-green-400', barColor: 'bg-green-500', iconKey: 'atom', 
     password: 'gamma_smash_verde', members: ['Oliver', 'Félix', 'Sofía'], 
@@ -76,7 +76,7 @@ const INITIAL_TEAMS = [
   },
   { 
     id: 'widow', name: 'Viuda Negra', points: 0, shield: false, badges: [], 
-    dailyMath: 0, dailyWord: 0, dailyCombat: 0, lastDaily: '',
+    dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '',
     theme: 'bg-gray-800/50 shadow-red-900/20', border: 'border-red-500/50', 
     accent: 'text-red-500', barColor: 'bg-red-600', iconKey: 'target', 
     password: 'sala_roja_007', members: ['Sara', 'Sebas', 'Héctor', 'Alejandro'], 
@@ -85,7 +85,7 @@ const INITIAL_TEAMS = [
   },
   { 
     id: 'strange', name: 'Dr. Strange', points: 0, shield: false, badges: [], 
-    dailyMath: 0, dailyWord: 0, dailyCombat: 0, lastDaily: '',
+    dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '',
     theme: 'bg-purple-900/30 shadow-purple-500/20', border: 'border-purple-500/50', 
     accent: 'text-purple-400', barColor: 'bg-purple-500', iconKey: 'eye', 
     password: 'sanctum_agomoto', members: ['Derek', 'Liah', 'Dani', 'Cata'], 
@@ -443,9 +443,6 @@ function AvengersTracker() {
   const [shaking, setShaking] = useState(false);
   const [dailyQuote, setDailyQuote] = useState("");
   
-  // States for confirmation
-  const [purchaseConfirm, setPurchaseConfirm] = useState(null);
-
   // Math & Logic Challenge States
   const [mathState, setMathState] = useState({ active: false, questions: [], currentIdx: 0, level: 2 });
   const [mathInput, setMathInput] = useState("");
@@ -458,6 +455,9 @@ function AvengersTracker() {
   const [combatInput, setCombatInput] = useState("");
   
   const [bossMaxHp, setBossMaxHp] = useState(BOSS_BASE_HP);
+  
+  // MEMORY GAME STATE
+  const [memoryState, setMemoryState] = useState({ active: false, cards: [], flipped: [], matched: [], lock: false });
 
   // Features
   const [timerInput, setTimerInput] = useState(5);
@@ -488,6 +488,7 @@ function AvengersTracker() {
               dailyMath: 0, 
               dailyWord: 0, 
               dailyCombat: 0,
+              dailyMemory: 0, // NEW
               lastDaily: today 
           }));
           setTeams(updatedTeams);
@@ -547,7 +548,8 @@ function AvengersTracker() {
               badges: t.badges||[],
               dailyMath: t.dailyMath || 0,
               dailyWord: t.dailyWord || 0,
-              dailyCombat: t.dailyCombat || 0
+              dailyCombat: t.dailyCombat || 0,
+              dailyMemory: t.dailyMemory || 0 // Sync new field
           })).filter(t=>t.id).sort((a,b)=>b.points-a.points);
           if(merged.length>0) setTeams(merged);
           if(fMission) setMission(fMission);
@@ -628,6 +630,7 @@ function AvengersTracker() {
       if(type === 'math') currentVal = t.dailyMath || 0;
       else if(type === 'word') currentVal = t.dailyWord || 0;
       else if(type === 'combat') currentVal = t.dailyCombat || 0;
+      else if(type === 'memory') currentVal = t.dailyMemory || 0;
 
       const newDaily = Math.min(currentVal + 1, 4);
       
@@ -635,13 +638,33 @@ function AvengersTracker() {
       if(type === 'math') update = { dailyMath: newDaily };
       else if(type === 'word') update = { dailyWord: newDaily };
       else if(type === 'combat') update = { dailyCombat: newDaily };
+      else if(type === 'memory') update = { dailyMemory: newDaily };
       
-      // Bonus logic
+      // Bonus logic for Line Completion
       if (newDaily === 4 && currentVal < 4) {
-          speak("¡Línea completada! Un punto extra.");
+          // Check for Grand Slam (All 4 categories completed)
+          // We use the new value for the current type, and existing values for others
+          const dMath = t.dailyMath || 0;
+          const dWord = t.dailyWord || 0;
+          const dCombat = t.dailyCombat || 0;
+          const dMemory = t.dailyMemory || 0;
+
+          const mathDone = type === 'math' ? true : dMath === 4;
+          const wordDone = type === 'word' ? true : dWord === 4;
+          const combatDone = type === 'combat' ? true : dCombat === 4;
+          const memoryDone = type === 'memory' ? true : dMemory === 4;
+
+          if (mathDone && wordDone && combatDone && memoryDone) {
+               speak("¡POTENCIA MÁXIMA! Todos los sistemas al 100%.");
+               showToast("¡DÍA COMPLETADO! 20/20 PUNTOS", "success");
+               // Bonus point for the line is added below
+          } else {
+               speak("¡Línea completada! Un punto extra.");
+               showToast("¡LÍNEA AL 100%! +1 Punto Extra", "success");
+          }
+          
           triggerSecretConfetti();
-          showToast("¡LÍNEA AL 100%! +1 Punto Extra", "success");
-          handlePts(tid, 1, null, true); 
+          handlePts(tid, 1, null, true); // +1 Bonus for the line
       }
       
       safeUpdate(tid, update);
@@ -656,55 +679,22 @@ function AvengersTracker() {
       playSfx('success'); triggerSecretConfetti();
   };
 
-  // Prepara la compra (muestra modal confirmacion)
-  const requestPurchase = (teamId, cost, itemId, name, type='item') => {
-      if (!isAdmin && loggedInId !== teamId) { showToast("Sin permiso", "error"); return; }
+  const handleBuy = async (teamId, cost, itemId) => {
+      if (!isAdmin && loggedInId !== teamId) { showToast("Sin permiso", "error"); return false; }
       const t = teams.find(tm => tm.id === teamId);
-      if (t.points < cost) { showToast("Fondos insuficientes", "error"); playSfx('error'); return; }
-      
-      setPurchaseConfirm({ teamId, cost, itemId, name, type });
-      playSfx('click');
-  };
-
-  // Ejecuta la compra confirmada
-  const executePurchase = async () => {
-      if (!purchaseConfirm) return;
-      const { teamId, cost, itemId, type } = purchaseConfirm;
-      const t = teams.find(tm => tm.id === teamId);
-      
-      // Double check funds just in case
-      if (t.points < cost) { showToast("Error: Fondos insuficientes", "error"); setPurchaseConfirm(null); return; }
-
-      // Deduct points
-      await safeUpdate(teamId, { points: t.points - cost });
-      
-      if (type === 'loot') {
-          logAction(`${t.name} compró CAJA WAKANDA`);
-          // Open loot box logic
-          speak("Abriendo..."); 
-          setPurchaseConfirm(null); // Close confirm modal
-          // We can reuse openLootBox logic but modified to not deduct points again
-          // Actually, let's keep it simple: Spin result here
-          setTimeout(() => { 
-              const it = LOOT_ITEMS[Math.floor(Math.random() * LOOT_ITEMS.length)]; 
-              setLootResult(it); 
-              if (it.val > 0) handlePts(teamId, it.val, null, true); 
-              logAction(`${t.name} loot: ${it.text}`); 
-              if (it.val > 0) playSfx('success'); else playSfx('error');
-          }, 1000);
-      } else {
-          // Normal Item or Snap
-          if (itemId === 99) { // Shield
-              await safeUpdate(teamId, { shield: true });
-              logAction(`${t.name} compró Escudo`);
-          } else if (itemId === 66) { // Snap
-              logAction(`${t.name} compró EL GUANTELETE`);
-              speak("Yo soy... inevitable.");
-              playSfx('alarm');
-              const rivals = teams.filter(tm => tm.id !== teamId);
-              const shuffled = [...rivals].sort(() => 0.5 - Math.random());
-              const victims = shuffled.slice(0, 2);
-              for (const victim of victims) {
+      if (t.points >= cost) {
+          playSfx('click');
+          if (itemId === 99) { safeUpdate(teamId, { points: t.points - cost, shield: true }); logAction(`${t.name} compró Escudo`); }
+          else if (itemId === 66) { // Snap
+             await safeUpdate(teamId, { points: t.points - cost });
+             logAction(`${t.name} compró EL GUANTELETE`);
+             // Execute Snap
+             speak("Yo soy... inevitable.");
+             playSfx('alarm');
+             const rivals = teams.filter(tm => tm.id !== teamId);
+             const shuffled = [...rivals].sort(() => 0.5 - Math.random());
+             const victims = shuffled.slice(0, 2);
+             for (const victim of victims) {
                  if (victim.shield) {
                      await safeUpdate(victim.id, { shield: false });
                      logAction(`${victim.name} bloqueó el Chasquido`);
@@ -713,32 +703,21 @@ function AvengersTracker() {
                      await safeUpdate(victim.id, { points: halved });
                      logAction(`${t.name} chasqueó a ${victim.name}`);
                  }
-              }
-              triggerSecretConfetti();
-          } else {
-              logAction(`${t.name} compró ${purchaseConfirm.name}`);
+             }
+             triggerSecretConfetti();
+          } 
+          else { 
+             await safeUpdate(teamId, { points: t.points - cost }); 
+             logAction(`${t.name} gastó ${cost} pts`); 
           }
-          
-          showToast("Compra realizada", "success");
-          playSfx('success');
-          setPurchaseConfirm(null);
-      }
-  };
 
-  // OLD HANDLERS (Refactored to use requestPurchase)
-  const handleBuy = async (teamId, cost, itemId) => {
-      // Find item name
-      let name = "Item Desconocido";
-      let type = 'item';
-      if (itemId === 666) { name = "Caja de Wakanda"; type = 'loot'; } // Special ID for loot box
-      else {
-          const item = REWARDS_LIST.find(r => r.id === itemId);
-          if (item) name = item.name;
-      }
-      requestPurchase(teamId, cost, itemId, name, type);
+          if(!modal?.includes('loot')) setModal(null);
+          showToast("Compra exitosa", "success");
+          return true;
+      } else { showToast("Fondos insuficientes", "error"); playSfx('error'); return false; }
   };
   
-  // NEW SNAP FUNCTIONALITY (ADMIN)
+  // NEW SNAP FUNCTIONALITY
   const handleSnap = async () => {
     if (!window.confirm("¿Ejecutar el Chasquido de Thanos? 2 equipos perderán la mitad de sus puntos.")) return;
     
@@ -763,16 +742,12 @@ function AvengersTracker() {
   // NEW: Reset Daily Limits
   const resetDailyLimits = async () => {
     if (!window.confirm("¿Reiniciar los límites de retos diarios para todos?")) return;
-    teams.forEach(t => safeUpdate(t.id, { dailyMath: 0, dailyWord: 0, dailyCombat: 0 }));
+    teams.forEach(t => safeUpdate(t.id, { dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0 }));
     speak("Protocolos de entrenamiento reiniciados.");
     showToast("Límites diarios reseteados.", "success");
   };
 
-  const openLootBox = (tid) => { 
-      // This is called by the UI button. We redirect to handleBuy with special ID
-      handleBuy(tid, 15, 666);
-  };
-
+  const openLootBox = async (tid) => { if(handleBuy(tid, 15)) { speak("Abriendo..."); setTimeout(() => { const it=LOOT_ITEMS[Math.floor(Math.random()*LOOT_ITEMS.length)]; setLootResult(it); if(it.val>0) handlePts(tid, it.val, null, true); logAction(`${teams.find(t=>t.id===tid).name} loot: ${it.text}`); if(it.val>0) playSfx('success'); }, 1500); }};
   const startDuel = () => { const s=[...teams].sort(()=>0.5-Math.random()); setDuelData({t1:s[0], t2:s[1], challenge:DUEL_CHALLENGES[Math.floor(Math.random()*DUEL_CHALLENGES.length)]}); setModal('duel'); playSfx('alarm'); speak("Civil War"); };
   const resolveDuel = (wid) => { if(wid){ const w=teams.find(t=>t.id===wid); handlePts(wid,5, null, true); logAction(`Civil War: Gana ${w.name}`); speak(`Gana ${w.name}`); playSfx('success'); } setModal(null); };
   const triggerMultiverse = () => { setModal('multiverse'); playSfx('alarm'); speak("Brecha"); setTimeout(() => { const e=MULTIVERSE_EVENTS[Math.floor(Math.random()*MULTIVERSE_EVENTS.length)]; setMultiverseEvent(e); speak(e.title); if(e.points!==0) { teams.forEach(t=>handlePts(t.id, e.points, null, true)); logAction(`Multiverso: ${e.title}`); } }, 2000); };
@@ -808,7 +783,7 @@ function AvengersTracker() {
     }, 100); 
   };
   
-  const reset = async () => { if (!window.confirm("¿Reiniciar temporada?")) return; teams.forEach(t => safeUpdate(t.id, {points: 0, shield: false, badges: [], dailyMath:0, dailyWord:0, dailyCombat:0})); safeUpdate('mission_control', { history: [], timerEnd: null, furyMsg: null, bossMaxHp: 1500 }); speak("Reinicio"); };
+  const reset = async () => { if (!window.confirm("¿Reiniciar temporada?")) return; teams.forEach(t => safeUpdate(t.id, {points: 0, shield: false, badges: [], dailyMath:0, dailyWord:0, dailyCombat:0, dailyMemory:0})); safeUpdate('mission_control', { history: [], timerEnd: null, furyMsg: null, bossMaxHp: 1500 }); speak("Reinicio"); };
   const updateM = async (txt) => { if(!isAdmin) return; await safeUpdate('mission_control', { text: txt }); setModal(null); speak("Misión actualizada"); };
   const toggleAlert = async () => { if(!isAdmin) return; const s = !redAlertMode; setRedAlertMode(s); await safeUpdate('mission_control', { alert: s }); if(s) { speak("Alerta Roja"); logAction("ALERTA ROJA"); playSfx('alarm'); } else logAction("Alerta desactivada"); };
   const spinPenalty = () => {
@@ -1006,6 +981,72 @@ function AvengersTracker() {
       }
   };
 
+  // MEMORY CHALLENGE (NEW)
+  const startMemoryChallenge = () => {
+      if (!loggedInId) return;
+      const t = teams.find(t => t.id === loggedInId);
+      if ((t.dailyMemory || 0) >= 4) { showToast("Batería de Memoria al 100%.", "info"); playSfx('error'); return; }
+
+      // Generate pairs
+      const shuffledQs = [...ACADEMIC_QUESTIONS].sort(() => 0.5 - Math.random()).slice(0, 6);
+      const cards = [];
+      shuffledQs.forEach((item, index) => {
+         cards.push({ id: `q-${index}`, content: item.q, type: 'q', pairId: index, isFlipped: false, isMatched: false });
+         cards.push({ id: `a-${index}`, content: item.a, type: 'a', pairId: index, isFlipped: false, isMatched: false });
+      });
+      // Shuffle cards
+      cards.sort(() => 0.5 - Math.random());
+      
+      setMemoryState({ active: true, cards: cards, flipped: [], matched: [], lock: false });
+      setModal('memoryChallenge');
+      speak("Protocolo de Sincronización iniciado.");
+  };
+
+  const handleCardClick = (id) => {
+      if (memoryState.lock) return;
+      const clickedCard = memoryState.cards.find(c => c.id === id);
+      if (!clickedCard || clickedCard.isFlipped || clickedCard.isMatched) return;
+
+      playSfx('click');
+
+      // Flip card
+      const newCards = memoryState.cards.map(c => c.id === id ? { ...c, isFlipped: true } : c);
+      const newFlipped = [...memoryState.flipped, clickedCard];
+      
+      setMemoryState({ ...memoryState, cards: newCards, flipped: newFlipped });
+
+      if (newFlipped.length === 2) {
+          setMemoryState(prev => ({ ...prev, lock: true }));
+          // Check match
+          if (newFlipped[0].pairId === newFlipped[1].pairId) {
+              playSfx('success');
+              setTimeout(() => {
+                  const matchedCards = newCards.map(c => (c.id === newFlipped[0].id || c.id === newFlipped[1].id) ? { ...c, isMatched: true } : c);
+                  const newMatched = [...memoryState.matched, newFlipped[0].pairId];
+                  
+                  // Check win
+                  if (newMatched.length === 6) {
+                      handlePts(loggedInId, 1, null, true);
+                      handleDailyProgress(loggedInId, 'memory');
+                      logAction(`${teams.find(t=>t.id===loggedInId).name} completó Sincronización.`);
+                      setModal(null);
+                      showToast("¡Sincronización Completa! +1 Punto", "success");
+                      speak("Sistemas sincronizados.");
+                      triggerSecretConfetti();
+                  } else {
+                     setMemoryState(prev => ({ ...prev, cards: matchedCards, flipped: [], lock: false, matched: newMatched }));
+                  }
+              }, 1000);
+          } else {
+              playSfx('error');
+              setTimeout(() => {
+                  const resetCards = newCards.map(c => (c.id === newFlipped[0].id || c.id === newFlipped[1].id) ? { ...c, isFlipped: false } : c);
+                  setMemoryState(prev => ({ ...prev, cards: resetCards, flipped: [], lock: false }));
+              }, 1000);
+          }
+      }
+  };
+
   // Render Vars
   const totalPoints = teams.reduce((a, b) => a + Math.max(0, b.points), 0);
   const maxPoints = Math.max(...teams.map(t => t.points), 50);
@@ -1054,6 +1095,10 @@ function AvengersTracker() {
                     </button>
                     <button onClick={startCombatChallenge} className="bg-red-500/20 border border-red-500 px-3 py-1 rounded text-red-300 text-xs font-bold flex gap-1 items-center hover:bg-red-500/40 transition-colors">
                         <Target size={14}/> COMBATE
+                    </button>
+                    {/* NEW MEMORY BUTTON */}
+                    <button onClick={startMemoryChallenge} className="bg-cyan-500/20 border border-cyan-500 px-3 py-1 rounded text-cyan-300 text-xs font-bold flex gap-1 items-center hover:bg-cyan-500/40 transition-colors">
+                        <Grid3X3 size={14}/> MEMORIA
                     </button>
                 </div>
             )}
@@ -1164,6 +1209,10 @@ function AvengersTracker() {
                           <Target size={10} className="text-red-400"/>
                           <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-2 h-2 rounded-full border border-red-900 ${i<(t.dailyCombat||0)?'bg-red-400 animate-pulse':'bg-black/50'}`}></div>)}</div>
                         </div>
+                        <div className="flex items-center gap-1 text-[9px] text-slate-400">
+                          <Grid3X3 size={10} className="text-cyan-400"/>
+                          <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-2 h-2 rounded-full border border-cyan-900 ${i<(t.dailyMemory||0)?'bg-cyan-400 animate-pulse':'bg-black/50'}`}></div>)}</div>
+                        </div>
                     </div>
 
                     {/* BADGES ROW */}
@@ -1220,37 +1269,6 @@ function AvengersTracker() {
       </footer>
 
       {/* --- MODALS --- */}
-
-      {/* CONFIRMATION PURCHASE MODAL */}
-      {purchaseConfirm && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 p-4 animate-in zoom-in duration-200">
-           <div className="bg-slate-900 border-2 border-yellow-500 p-6 rounded-lg w-full max-w-sm shadow-[0_0_50px_rgba(234,179,8,0.3)] text-center relative overflow-hidden">
-               <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500 animate-pulse"></div>
-               <AlertOctagon size={48} className="mx-auto text-yellow-400 mb-4 animate-bounce" />
-               <h3 className="text-xl font-black text-white uppercase mb-2">¿CONFIRMAR COMPRA?</h3>
-               <div className="bg-black/50 p-4 rounded border border-yellow-900/50 mb-6">
-                   <p className="text-sm text-slate-400 mb-1">Artículo:</p>
-                   <p className="text-lg font-bold text-yellow-300 mb-3">{purchaseConfirm.name}</p>
-                   <p className="text-sm text-slate-400 mb-1">Coste:</p>
-                   <p className="text-2xl font-mono font-bold text-white">{purchaseConfirm.cost} PTS</p>
-               </div>
-               <div className="grid grid-cols-2 gap-3">
-                   <button 
-                       onClick={() => { setPurchaseConfirm(null); playSfx('click'); }}
-                       className="py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold uppercase rounded text-xs transition-colors"
-                   >
-                       CANCELAR
-                   </button>
-                   <button 
-                       onClick={executePurchase}
-                       className="py-3 bg-yellow-600 hover:bg-yellow-500 text-black font-black uppercase rounded text-xs shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2"
-                   >
-                       <Check size={16}/> PAGAR
-                   </button>
-               </div>
-           </div>
-        </div>
-      )}
 
       {/* MATH CHALLENGE MODAL (STUDENT TRAINING) */}
       {modal === 'mathChallenge' && (
@@ -1350,6 +1368,39 @@ function AvengersTracker() {
                       <button onClick={() => setModal(null)} className="flex-1 py-3 text-xs text-slate-500 hover:text-white">ABORTAR</button>
                       <button onClick={submitCombatAnswer} className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded uppercase">DISPARAR</button>
                   </div>
+              </div>
+          </div>
+      )}
+
+      {/* MEMORY CHALLENGE MODAL */}
+      {modal === 'memoryChallenge' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
+              <div className="bg-slate-900 border-2 border-cyan-500 p-6 rounded-sm w-full max-w-3xl shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-cyan-500/50 animate-pulse"></div>
+                  <h3 className="text-xl font-black text-cyan-400 mb-4 flex items-center gap-2"><Grid3X3 size={24}/> PROTOCOLO SINCRONIZACIÓN</h3>
+                  <p className="text-xs text-slate-400 mb-4 font-mono">EMPAREJA LOS CONCEPTOS</p>
+
+                  <div className="grid grid-cols-4 gap-3">
+                      {memoryState.cards.map((card) => (
+                          <div 
+                              key={card.id} 
+                              onClick={() => handleCardClick(card.id)}
+                              className={`h-24 rounded border flex items-center justify-center cursor-pointer transition-all duration-300 relative overflow-hidden ${
+                                  card.isMatched ? 'bg-green-900/50 border-green-500' :
+                                  card.isFlipped ? 'bg-cyan-900/50 border-cyan-400' : 
+                                  'bg-slate-800 border-slate-700 hover:bg-slate-700'
+                              }`}
+                          >
+                              {card.isFlipped || card.isMatched ? (
+                                  <p className="text-xs font-bold text-white text-center p-2 leading-tight">{card.content}</p>
+                              ) : (
+                                  <Shield size={32} className="text-slate-600 opacity-20" />
+                              )}
+                          </div>
+                      ))}
+                  </div>
+
+                  <button onClick={() => setModal(null)} className="mt-6 w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-bold uppercase rounded">CANCELAR</button>
               </div>
           </div>
       )}
@@ -1570,70 +1621,12 @@ function AvengersTracker() {
       )}
 
       {cerebro.active && (
-        <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4">
-          <div className="absolute inset-0" onClick={()=>{if(!cerebro.searching)setCerebro({...cerebro, active:false})}}></div>
-          <div className="relative z-10 text-center bg-slate-900/80 p-8 rounded-xl border border-purple-500/30 backdrop-blur-sm max-w-lg w-full mx-4 shadow-[0_0_50px_rgba(168,85,247,0.2)]">
-            
-            {/* IF NO MODE SELECTED */}
-            {!cerebro.type ? (
-               <>
-                 <Brain size={80} className="mx-auto text-purple-500 mb-6 animate-pulse" />
-                 <h2 className="text-2xl font-black text-purple-400 uppercase tracking-widest mb-6">PROTOCOLO CEREBRO</h2>
-                 <p className="text-sm text-slate-300 mb-8">Seleccione el objetivo del rastreo:</p>
-                 <div className="grid grid-cols-2 gap-4">
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); activateCerebro('member'); }}
-                        className="py-6 bg-purple-900/50 hover:bg-purple-600 border border-purple-500 text-white font-black uppercase tracking-widest rounded transition-all active:scale-95 flex flex-col items-center gap-2"
-                    >
-                        <User size={32}/> OPERATIVO
-                    </button>
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); activateCerebro('team'); }}
-                        className="py-6 bg-cyan-900/50 hover:bg-cyan-600 border border-cyan-500 text-white font-black uppercase tracking-widest rounded transition-all active:scale-95 flex flex-col items-center gap-2"
-                    >
-                        <Users size={32}/> ESCUADRÓN
-                    </button>
-                 </div>
-                 <button 
-                    onClick={(e) => { e.stopPropagation(); setCerebro({...cerebro, active:false}); }}
-                    className="mt-6 text-slate-500 text-xs hover:text-white underline"
-                >
-                    CANCELAR RASTREO
-                </button>
-               </>
-            ) : (
-               // IF MODE SELECTED (SEARCHING OR RESULT)
-               <>
-                 <div className={`mb-6 ${cerebro.searching ? 'animate-spin' : ''}`}>
-                    {cerebro.type === 'team' ? <Users size={64} className="mx-auto text-cyan-400"/> : <Brain size={64} className="mx-auto text-purple-500"/>}
-                 </div>
-                 <h2 className="text-xl font-black text-white uppercase tracking-widest mb-4">
-                    {cerebro.searching ? "RASTREANDO..." : (cerebro.type === 'team' ? "ESCUADRÓN LOCALIZADO" : "SUJETO LOCALIZADO")}
-                 </h2>
-                 
-                 <div className="text-3xl md:text-5xl font-mono font-black text-white mb-8 min-h-[4rem] flex items-center justify-center p-4 bg-black/40 rounded border border-white/10">
-                    {cerebro.target || <span className="animate-pulse text-slate-500">...</span>}
-                 </div>
-                
-                 {!cerebro.searching && (
-                    <div className="grid grid-cols-2 gap-4">
-                        <button 
-                            onClick={(e) => { e.stopPropagation(); activateCerebro(cerebro.type); }}
-                            className="py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-widest rounded shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
-                        >
-                            <RefreshCw size={16}/> RE-ESCANEAR
-                        </button>
-                        <button 
-                            onClick={(e) => { e.stopPropagation(); setCerebro({...cerebro, active:false}); }}
-                            className="py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold uppercase tracking-widest rounded transition-all active:scale-95"
-                        >
-                            CERRAR
-                        </button>
-                    </div>
-                 )}
-               </>
-            )}
-
+        <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 cursor-pointer" onClick={()=>{if(!cerebro.searching)setCerebro({...cerebro, active:false})}}>
+          <div className="text-center">
+            <Brain size={80} className="mx-auto text-purple-500 mb-6 animate-pulse" />
+            <h2 className="text-2xl font-black text-purple-400 uppercase tracking-widest mb-4">PROTOCOLO CEREBRO</h2>
+            <div className="text-4xl font-mono font-bold text-white">{cerebro.target || "RASTREANDO..."}</div>
+            {!cerebro.searching && <div className="mt-8 text-xs text-slate-500 animate-bounce">CLICK PARA CERRAR</div>}
           </div>
         </div>
       )}
