@@ -7,7 +7,7 @@ import {
   Cpu, Atom, Target, Eye, Trophy, Medal, TrendingUp, Info, Crown, Activity, User, 
   Users, ChevronsUp, Hexagon, ClipboardList, Swords, Brain, Volume2, VolumeX, List, 
   CheckCircle2, PlusCircle, Quote, Siren, Award, History, Trash2, X, Package, Dices, 
-  Sparkles, Radio, BookOpen, Wifi, WifiOff, MessageSquare, ShieldCheck, Flame, Star, Calculator,
+  Sparkles, Radio, BookOpen, Timer, Wifi, WifiOff, MessageSquare, ShieldCheck, Flame, Star, Calculator,
   Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3
 } from 'lucide-react';
 
@@ -40,7 +40,7 @@ const appId = rawAppId.replace(/\//g, '_');
 const INITIAL_TEAMS = [
   { 
     id: 'ironman', name: 'Iron Man', points: 0, shield: false, badges: [], 
-    dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '',
+    dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null,
     theme: 'bg-red-900/30 shadow-red-500/20', border: 'border-red-500/50', 
     accent: 'text-red-400', barColor: 'bg-red-500', iconKey: 'cpu', 
     password: 'arc_reactor_85', members: ['Juandi', 'Ernesto', 'Carmen', 'Bea'], 
@@ -49,7 +49,7 @@ const INITIAL_TEAMS = [
   },
   { 
     id: 'cap', name: 'Capitán América', points: 0, shield: false, badges: [], 
-    dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '',
+    dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null,
     theme: 'bg-blue-900/30 shadow-blue-500/20', border: 'border-blue-500/50', 
     accent: 'text-blue-400', barColor: 'bg-blue-500', iconKey: 'shield', 
     password: 'escudo_vibranium', members: ['Sara', 'Araceli', 'Nagore', 'Alex'], 
@@ -58,7 +58,7 @@ const INITIAL_TEAMS = [
   },
   { 
     id: 'thor', name: 'Thor', points: 0, shield: false, badges: [], 
-    dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '',
+    dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null,
     theme: 'bg-yellow-900/30 shadow-yellow-500/20', border: 'border-yellow-500/50', 
     accent: 'text-yellow-400', barColor: 'bg-yellow-400', iconKey: 'zap', 
     password: 'stormbreaker_trueno', members: ['Javi', 'Guille', 'Yma', 'Iker'], 
@@ -67,7 +67,7 @@ const INITIAL_TEAMS = [
   },
   { 
     id: 'hulk', name: 'Hulk', points: 0, shield: false, badges: [], 
-    dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '',
+    dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null,
     theme: 'bg-green-900/30 shadow-green-500/20', border: 'border-green-500/50', 
     accent: 'text-green-400', barColor: 'bg-green-500', iconKey: 'atom', 
     password: 'gamma_smash_verde', members: ['Oliver', 'Félix', 'Sofía'], 
@@ -76,7 +76,7 @@ const INITIAL_TEAMS = [
   },
   { 
     id: 'widow', name: 'Viuda Negra', points: 0, shield: false, badges: [], 
-    dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '',
+    dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null,
     theme: 'bg-gray-800/50 shadow-red-900/20', border: 'border-red-500/50', 
     accent: 'text-red-500', barColor: 'bg-red-600', iconKey: 'target', 
     password: 'sala_roja_007', members: ['Sara', 'Sebas', 'Héctor', 'Alejandro'], 
@@ -85,7 +85,7 @@ const INITIAL_TEAMS = [
   },
   { 
     id: 'strange', name: 'Dr. Strange', points: 0, shield: false, badges: [], 
-    dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '',
+    dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null,
     theme: 'bg-purple-900/30 shadow-purple-500/20', border: 'border-purple-500/50', 
     accent: 'text-purple-400', barColor: 'bg-purple-500', iconKey: 'eye', 
     password: 'sanctum_agomoto', members: ['Derek', 'Liah', 'Dani', 'Cata'], 
@@ -163,156 +163,87 @@ const MULTIVERSE_EVENTS = [
 
 const DUEL_CHALLENGES = ["Piedra, Papel o Tijera", "Duelo de miradas", "Pregunta de Mates", "Deletreo rápido", "El que parpadee pierde", "Adivinanza"];
 
+// --- BANCO DE PREGUNTAS (100) ---
 const ACADEMIC_QUESTIONS = [
   // MATEMÁTICAS
-  { q: "¿Cuánto es 8 x 8?", a: "64" },
-  { q: "¿La mitad de 500?", a: "250" },
-  { q: "¿Cuántos lados tiene un hexágono?", a: "6" },
-  { q: "¿Resultado de 100 entre 4?", a: "25" },
-  { q: "¿Grados de un ángulo recto?", a: "90" },
-  { q: "¿Cuántos minutos tiene una hora?", a: "60" },
-  { q: "¿Raíz cuadrada de 81?", a: "9" },
-  { q: "¿El doble de 150?", a: "300" },
-  { q: "¿Cuánto es 12 x 10?", a: "120" },
-  { q: "¿Lados de un triángulo?", a: "3" },
-  { q: "¿Nombre del polígono de 5 lados?", a: "Pentágono" },
-  { q: "¿Cifra romana V?", a: "5" },
-  { q: "¿Cifra romana X?", a: "10" },
-  { q: "¿Cifra romana L?", a: "50" },
-  { q: "¿Cifra romana C?", a: "100" },
-  { q: "¿Cuánto es 7 x 7?", a: "49" },
-  { q: "¿Resultado de 25 + 75?", a: "100" },
-  { q: "¿El triple de 33?", a: "99" },
-  { q: "¿Cuántos cm hay en 1 metro?", a: "100" },
-  { q: "¿Cuántos gramos es 1 kilo?", a: "1000" },
+  { q: "¿Cuánto es 8 x 8?", a: "64" }, { q: "¿La mitad de 500?", a: "250" }, { q: "¿Cuántos lados tiene un hexágono?", a: "6" },
+  { q: "¿Resultado de 100 entre 4?", a: "25" }, { q: "¿Grados de un ángulo recto?", a: "90" }, { q: "¿Cuántos minutos tiene una hora?", a: "60" },
+  { q: "¿Raíz cuadrada de 81?", a: "9" }, { q: "¿El doble de 150?", a: "300" }, { q: "¿Cuánto es 12 x 10?", a: "120" },
+  { q: "¿Lados de un triángulo?", a: "3" }, { q: "¿Nombre del polígono de 5 lados?", a: "Pentágono" }, { q: "¿Cifra romana V?", a: "5" },
+  { q: "¿Cifra romana X?", a: "10" }, { q: "¿Cifra romana L?", a: "50" }, { q: "¿Cifra romana C?", a: "100" },
+  { q: "¿Cuánto es 7 x 7?", a: "49" }, { q: "¿Resultado de 25 + 75?", a: "100" }, { q: "¿El triple de 33?", a: "99" },
+  { q: "¿Cuántos cm hay en 1 metro?", a: "100" }, { q: "¿Cuántos gramos es 1 kilo?", a: "1000" },
   // CIENCIAS NATURALES
-  { q: "¿Símbolo químico del agua?", a: "H2O" },
-  { q: "¿Hueso más largo del cuerpo?", a: "Fémur" },
-  { q: "¿Órgano que bombea sangre?", a: "Corazón" },
-  { q: "¿Planeta más cercano al Sol?", a: "Mercurio" },
-  { q: "¿Planeta conocido como el Planeta Rojo?", a: "Marte" },
-  { q: "¿Gas que respiramos?", a: "Oxígeno" },
-  { q: "¿Cuántos dientes tiene un adulto?", a: "32" },
-  { q: "¿Animal más rápido del mundo?", a: "Guepardo" },
-  { q: "¿Rey de la selva?", a: "León" },
-  { q: "¿Proceso de las plantas para comer?", a: "Fotosíntesis" },
-  { q: "¿Líquido vital del cuerpo humano?", a: "Sangre" },
-  { q: "¿Estado del agua en hielo?", a: "Sólido" },
-  { q: "¿Estado del agua en vapor?", a: "Gaseoso" },
-  { q: "¿Satélite natural de la Tierra?", a: "Luna" },
-  { q: "¿Estrella más cercana a la Tierra?", a: "Sol" },
-  { q: "¿Animal que produce leche?", a: "Mamífero" },
-  { q: "¿Animal que nace de huevo?", a: "Ovíparo" },
-  { q: "¿Cuántas patas tiene una araña?", a: "8" },
-  { q: "¿Insecto que fabrica miel?", a: "Abeja" },
-  { q: "¿Reino al que pertenecen las setas?", a: "Fungi" },
+  { q: "¿Símbolo químico del agua?", a: "H2O" }, { q: "¿Hueso más largo del cuerpo?", a: "Fémur" }, { q: "¿Órgano que bombea sangre?", a: "Corazón" },
+  { q: "¿Planeta más cercano al Sol?", a: "Mercurio" }, { q: "¿Planeta conocido como el Planeta Rojo?", a: "Marte" }, { q: "¿Gas que respiramos?", a: "Oxígeno" },
+  { q: "¿Cuántos dientes tiene un adulto?", a: "32" }, { q: "¿Animal más rápido del mundo?", a: "Guepardo" }, { q: "¿Rey de la selva?", a: "León" },
+  { q: "¿Proceso de las plantas para comer?", a: "Fotosíntesis" }, { q: "¿Líquido vital del cuerpo humano?", a: "Sangre" }, { q: "¿Estado del agua en hielo?", a: "Sólido" },
+  { q: "¿Estado del agua en vapor?", a: "Gaseoso" }, { q: "¿Satélite natural de la Tierra?", a: "Luna" }, { q: "¿Estrella más cercana a la Tierra?", a: "Sol" },
+  { q: "¿Animal que produce leche?", a: "Mamífero" }, { q: "¿Animal que nace de huevo?", a: "Ovíparo" }, { q: "¿Cuántas patas tiene una araña?", a: "8" },
+  { q: "¿Insecto que fabrica miel?", a: "Abeja" }, { q: "¿Reino al que pertenecen las setas?", a: "Fungi" },
   // GEOGRAFÍA
-  { q: "¿Capital de España?", a: "Madrid" },
-  { q: "¿Capital de Francia?", a: "París" },
-  { q: "¿Capital de Italia?", a: "Roma" },
-  { q: "¿Capital de Alemania?", a: "Berlín" },
-  { q: "¿Capital de Portugal?", a: "Lisboa" },
-  { q: "¿Capital de Reino Unido?", a: "Londres" },
-  { q: "¿Río más largo de la Península?", a: "Tajo" },
-  { q: "¿Río más caudaloso de la Península?", a: "Ebro" },
-  { q: "¿Océano entre América y Europa?", a: "Atlántico" },
-  { q: "¿Continente donde está Egipto?", a: "África" },
-  { q: "¿Continente donde está China?", a: "Asia" },
-  { q: "¿País con forma de bota?", a: "Italia" },
-  { q: "¿Montaña más alta del mundo?", a: "Everest" },
-  { q: "¿Montaña más alta de España?", a: "Teide" },
-  { q: "¿Desierto más grande del mundo?", a: "Sahara" },
-  { q: "¿Capital de Estados Unidos?", a: "Washington" },
-  { q: "¿Río que pasa por Sevilla?", a: "Guadalquivir" },
-  { q: "¿Río que pasa por Zaragoza?", a: "Ebro" },
-  { q: "¿Mar al este de España?", a: "Mediterráneo" },
-  { q: "¿Mar al norte de España?", a: "Cantábrico" },
-  // LENGUA Y LITERATURA
-  { q: "¿Antónimo de 'rápido'?", a: "Lento" },
-  { q: "¿Sinónimo de 'bonito'?", a: "Bello" },
-  { q: "¿Palabra que indica acción?", a: "Verbo" },
-  { q: "¿Palabra que califica al nombre?", a: "Adjetivo" },
-  { q: "¿Autor de El Quijote?", a: "Cervantes" },
-  { q: "¿Género de 'La casa'?", a: "Femenino" },
-  { q: "¿Plural de 'luz'?", a: "Luces" },
-  { q: "¿Sílaba tónica de 'camión'?", a: "Mión" },
-  { q: "¿Palabra con tilde en la última sílaba?", a: "Aguda" },
-  { q: "¿Palabra con tilde en la penúltima?", a: "Llana" },
-  { q: "¿Palabra con tilde en la antepenúltima?", a: "Esdrújula" },
-  { q: "¿Letra que no suena en español?", a: "H" },
-  { q: "¿Antónimo de 'verdad'?", a: "Mentira" },
-  { q: "¿Sinónimo de 'caminar'?", a: "Andar" },
-  { q: "¿Persona que escribe libros?", a: "Escritor" },
-  { q: "¿Libro de definiciones?", a: "Diccionario" },
-  { q: "¿Signo para preguntar?", a: "Interrogación" },
-  { q: "¿Signo para exclamar?", a: "Exclamación" },
-  { q: "¿Cuántas letras tiene el abecedario?", a: "27" },
-  { q: "¿Conjunto de versos?", a: "Estrofa" },
-  // CULTURA E HISTORIA
-  { q: "¿En qué año se descubrió América?", a: "1492" },
-  { q: "¿Quién pintó la Mona Lisa?", a: "Da Vinci" },
-  { q: "¿Moneda de la Unión Europea?", a: "Euro" },
-  { q: "¿Idioma más hablado del mundo?", a: "Chino" },
-  { q: "¿Dios del trueno nórdico?", a: "Thor" },
-  { q: "¿Primer hombre en la Luna?", a: "Armstrong" },
-  { q: "¿Quién escribió Romeo y Julieta?", a: "Shakespeare" },
-  { q: "¿Qué se celebra el 25 de diciembre?", a: "Navidad" },
-  { q: "¿Color de la esperanza?", a: "Verde" },
-  { q: "¿Cuántos años tiene un siglo?", a: "100" },
-  { q: "¿Cuántos años tiene un milenio?", a: "1000" },
-  { q: "¿En qué país están las pirámides?", a: "Egipto" },
-  { q: "¿Instrumento para ver estrellas?", a: "Telescopio" },
-  { q: "¿Instrumento para ver microbios?", a: "Microscopio" },
-  { q: "¿Deporte rey en España?", a: "Fútbol" },
-  { q: "¿Cuántos jugadores hay en un equipo de fútbol?", a: "11" },
-  { q: "¿Estación que caen las hojas?", a: "Otoño" },
-  { q: "¿Mes con menos días?", a: "Febrero" },
-  { q: "¿Capital de Rusia?", a: "Moscú" },
-  { q: "¿País del sol naciente?", a: "Japón" }
+  { q: "¿Capital de España?", a: "Madrid" }, { q: "¿Capital de Francia?", a: "París" }, { q: "¿Capital de Italia?", a: "Roma" },
+  { q: "¿Capital de Alemania?", a: "Berlín" }, { q: "¿Capital de Portugal?", a: "Lisboa" }, { q: "¿Capital de Reino Unido?", a: "Londres" },
+  { q: "¿Río más largo de la Península?", a: "Tajo" }, { q: "¿Río más caudaloso de la Península?", a: "Ebro" }, { q: "¿Océano entre América y Europa?", a: "Atlántico" },
+  { q: "¿Continente donde está Egipto?", a: "África" }, { q: "¿Continente donde está China?", a: "Asia" }, { q: "¿País con forma de bota?", a: "Italia" },
+  { q: "¿Montaña más alta del mundo?", a: "Everest" }, { q: "¿Montaña más alta de España?", a: "Teide" }, { q: "¿Desierto más grande del mundo?", a: "Sahara" },
+  { q: "¿Capital de Estados Unidos?", a: "Washington" }, { q: "¿Río que pasa por Sevilla?", a: "Guadalquivir" }, { q: "¿Río que pasa por Zaragoza?", a: "Ebro" },
+  { q: "¿Mar al este de España?", a: "Mediterráneo" }, { q: "¿Mar al norte de España?", a: "Cantábrico" },
+  // LENGUA
+  { q: "¿Antónimo de 'rápido'?", a: "Lento" }, { q: "¿Sinónimo de 'bonito'?", a: "Bello" }, { q: "¿Palabra que indica acción?", a: "Verbo" },
+  { q: "¿Palabra que califica al nombre?", a: "Adjetivo" }, { q: "¿Autor de El Quijote?", a: "Cervantes" }, { q: "¿Género de 'La casa'?", a: "Femenino" },
+  { q: "¿Plural de 'luz'?", a: "Luces" }, { q: "¿Sílaba tónica de 'camión'?", a: "Mión" }, { q: "¿Palabra con tilde en la última sílaba?", a: "Aguda" },
+  { q: "¿Palabra con tilde en la penúltima?", a: "Llana" }, { q: "¿Palabra con tilde en la antepenúltima?", a: "Esdrújula" }, { q: "¿Letra que no suena en español?", a: "H" },
+  { q: "¿Antónimo de 'verdad'?", a: "Mentira" }, { q: "¿Sinónimo de 'caminar'?", a: "Andar" }, { q: "¿Persona que escribe libros?", a: "Escritor" },
+  { q: "¿Libro de definiciones?", a: "Diccionario" }, { q: "¿Signo para preguntar?", a: "Interrogación" }, { q: "¿Signo para exclamar?", a: "Exclamación" },
+  { q: "¿Cuántas letras tiene el abecedario?", a: "27" }, { q: "¿Conjunto de versos?", a: "Estrofa" },
+  // CULTURA
+  { q: "¿En qué año se descubrió América?", a: "1492" }, { q: "¿Quién pintó la Mona Lisa?", a: "Da Vinci" }, { q: "¿Moneda de la Unión Europea?", a: "Euro" },
+  { q: "¿Idioma más hablado del mundo?", a: "Chino" }, { q: "¿Dios del trueno nórdico?", a: "Thor" }, { q: "¿Primer hombre en la Luna?", a: "Armstrong" },
+  { q: "¿Quién escribió Romeo y Julieta?", a: "Shakespeare" }, { q: "¿Qué se celebra el 25 de diciembre?", a: "Navidad" }, { q: "¿Color de la esperanza?", a: "Verde" },
+  { q: "¿Cuántos años tiene un siglo?", a: "100" }, { q: "¿Cuántos años tiene un milenio?", a: "1000" }, { q: "¿En qué país están las pirámides?", a: "Egipto" },
+  { q: "¿Instrumento para ver estrellas?", a: "Telescopio" }, { q: "¿Instrumento para ver microbios?", a: "Microscopio" }, { q: "¿Deporte rey en España?", a: "Fútbol" },
+  { q: "¿Cuántos jugadores hay en un equipo de fútbol?", a: "11" }, { q: "¿Estación que caen las hojas?", a: "Otoño" }, { q: "¿Mes con menos días?", a: "Febrero" },
+  { q: "¿Capital de Rusia?", a: "Moscú" }, { q: "¿País del sol naciente?", a: "Japón" }
 ];
 
 const HYDRA_WORDS = [
     "SUJETO", "PREDICADO", "VERBO", "ADJETIVO", "CELULA", "FOTOSINTESIS", "ENERGIA", "MATERIA", 
-    "PLANETA", "RELIEVE", "CLIMA", "EUROPA", "DEMOCRACIA", "CONSTITUCION", "ECOSYSTEMA", "VENGADORES", "ESCUDO"
+    "PLANETA", "RELIEVE", "CLIMA", "EUROPA", "DEMOCRACIA", "CONSTITUCION", "ECOSYSTEMA", "VENGADORES", "ESCUDO",
+    "GRAVEDAD", "OXIGENO", "HIDROGENO", "GALAXIA", "ASTEROIDE", "VOLCAN", "TERREMOTO", "HURACAN", "TORNADO",
+    "ESDRUJULA", "DIPTONGO", "HIATO", "SINONIMO", "ANTONIMO", "METAFORA", "POESIA", "TEATRO", "NOVELA",
+    "FRACCION", "DECIMAL", "POLIGONO", "VERTICE", "ANGULO", "DIAMETRO", "RADIO", "PERIMETRO", "MULTIGLO",
+    "DIVISOR", "FACTOR", "PRODUCTO", "COCIENTE", "RESTO", "DECADA"
 ];
 
 // PREGUNTAS DE COMBATE POR NIVELES
 const COMBAT_QUESTIONS = {
   easy: [
-    { q: "¿Cuántas patas tiene una araña?", a: "8" },
-    { q: "¿Color del caballo blanco de Santiago?", a: "BLANCO" },
-    { q: "¿Capital de España?", a: "MADRID" },
-    { q: "¿2 x 5?", a: "10" },
-    { q: "¿Antónimo de 'alto'?", a: "BAJO" },
-    { q: "¿Rey de la selva?", a: "LEON" },
-    { q: "¿Días de la semana?", a: "7" },
-    { q: "¿Estación más calurosa?", a: "VERANO" },
-    { q: "¿5 + 5?", a: "10" },
-    { q: "¿Planeta donde vivimos?", a: "TIERRA" }
+    { q: "¿Cuántas patas tiene una araña?", a: "8" }, { q: "¿Color del caballo blanco de Santiago?", a: "BLANCO" },
+    { q: "¿Capital de España?", a: "MADRID" }, { q: "¿2 x 5?", a: "10" }, { q: "¿Antónimo de 'alto'?", a: "BAJO" },
+    { q: "¿Rey de la selva?", a: "LEON" }, { q: "¿Días de la semana?", a: "7" }, { q: "¿Estación más calurosa?", a: "VERANO" },
+    { q: "¿5 + 5?", a: "10" }, { q: "¿Planeta donde vivimos?", a: "TIERRA" }, { q: "¿Color del cielo despejado?", a: "AZUL" },
+    { q: "¿Fruta amarilla y curva?", a: "PLATANO" }, { q: "¿Animal que maulla?", a: "GATO" }, { q: "¿Opuesto de negro?", a: "BLANCO" },
+    { q: "¿Dedos en una mano?", a: "5" }, { q: "¿Mes de la Navidad?", a: "DICIEMBRE" }, { q: "¿Instrumento para escribir?", a: "LAPIZ" },
+    { q: "¿Vehículo de dos ruedas?", a: "BICICLETA" }, { q: "¿Líquido que bebemos?", a: "AGUA" }, { q: "¿Sonido de la vaca?", a: "MUU" }
   ],
   medium: [
-    { q: "¿Capital de Alemania?", a: "BERLIN" },
-    { q: "¿Símbolo químico del agua?", a: "H2O" },
-    { q: "¿Lados de un hexágono?", a: "6" },
-    { q: "¿Planeta rojo?", a: "MARTE" },
-    { q: "¿7 x 8?", a: "56" },
-    { q: "¿País de la Torre Eiffel?", a: "FRANCIA" },
-    { q: "¿Hueso más largo del cuerpo?", a: "FEMUR" },
-    { q: "¿Continente de Egipto?", a: "AFRICA" },
-    { q: "¿Verbo de 'canción'?", a: "CANTAR" },
-    { q: "¿Capital de Italia?", a: "ROMA" }
+    { q: "¿Capital de Alemania?", a: "BERLIN" }, { q: "¿Símbolo químico del agua?", a: "H2O" }, { q: "¿Lados de un hexágono?", a: "6" },
+    { q: "¿Planeta rojo?", a: "MARTE" }, { q: "¿7 x 8?", a: "56" }, { q: "¿País de la Torre Eiffel?", a: "FRANCIA" },
+    { q: "¿Hueso más largo del cuerpo?", a: "FEMUR" }, { q: "¿Continente de Egipto?", a: "AFRICA" }, { q: "¿Verbo de 'canción'?", a: "CANTAR" },
+    { q: "¿Capital de Italia?", a: "ROMA" }, { q: "¿Capital de Portugal?", a: "LISBOA" }, { q: "¿Gas que respiramos?", a: "OXIGENO" },
+    { q: "¿Animal más rápido?", a: "GUEPARDO" }, { q: "¿Triángulo 3 lados iguales?", a: "EQUILATERO" }, { q: "¿Antónimo de 'valiente'?", a: "COBARDE" },
+    { q: "¿Sexto mes del año?", a: "JUNIO" }, { q: "¿País de la pizza?", a: "ITALIA" }, { q: "¿Planeta con anillos?", a: "SATURNO" },
+    { q: "¿Capital de Rusia?", a: "MOSCU" }, { q: "¿Metal precioso amarillo?", a: "ORO" }
   ],
   hard: [
-    { q: "¿Capital de Australia?", a: "CANBERRA" },
-    { q: "¿Símbolo químico del Oro?", a: "AU" },
-    { q: "¿12 x 12?", a: "144" },
-    { q: "¿Autor del Quijote?", a: "CERVANTES" },
-    { q: "¿Planeta más grande?", a: "JUPITER" },
-    { q: "¿Río que pasa por Londres?", a: "TAMESIS" },
-    { q: "¿Pintor del Guernica?", a: "PICASSO" },
-    { q: "¿Capital de Portugal?", a: "LISBOA" },
-    { q: "¿Año del descubrimiento de América?", a: "1492" },
-    { q: "¿Raíz cuadrada de 81?", a: "9" }
+    { q: "¿Capital de Australia?", a: "CANBERRA" }, { q: "¿Símbolo químico del Oro?", a: "AU" }, { q: "¿12 x 12?", a: "144" },
+    { q: "¿Autor del Quijote?", a: "CERVANTES" }, { q: "¿Planeta más grande?", a: "JUPITER" }, { q: "¿Río que pasa por Londres?", a: "TAMESIS" },
+    { q: "¿Pintor del Guernica?", a: "PICASSO" }, { q: "¿Capital de Portugal?", a: "LISBOA" }, { q: "¿Año descubrimiento América?", a: "1492" },
+    { q: "¿Raíz cuadrada de 81?", a: "9" }, { q: "¿Diosa griega sabiduría?", a: "ATENEA" }, { q: "¿Capital de Canadá?", a: "OTTAWA" },
+    { q: "¿Elemento químico 'Fe'?", a: "HIERRO" }, { q: "¿Autor de Harry Potter?", a: "ROWLING" }, { q: "¿Guerra 1939-1945?", a: "SEGUNDA" },
+    { q: "¿Capital de Turquía?", a: "ANKARA" }, { q: "¿Velocidad de la luz?", a: "300000" }, { q: "¿Satélite de la Tierra?", a: "LUNA" },
+    { q: "¿País más grande?", a: "RUSIA" }, { q: "¿Río más largo?", a: "AMAZONAS" }
   ]
 };
 
@@ -322,12 +253,26 @@ const ICONS = { cpu: Cpu, shield: Shield, zap: Zap, atom: Atom, target: Target, 
 const TICKER_MESSAGES = [ "CAPITÁN AMÉRICA: 'PUEDO HACER ESTO TODO EL DÍA'", "TONY STARK: 'YO SOY IRON MAN'", "AVENGERS: ¡REUNÍOS!", "THOR: 'POR LAS BARBAS DE ODÍN'", "BLACK PANTHER: '¡WAKANDA POR SIEMPRE!'", "HULK: ¡APLASTA EL EXAMEN!" ];
 
 const LOOT_ITEMS = [
-  { text: "¡NADA! Thanos se lo ha robado.", val: 0 },
-  { text: "¡NADA! Inténtalo de nuevo.", val: 0 },
-  { text: "1 Punto Extra", val: 1 },
-  { text: "5 Puntos Extra", val: 5 },
-  { text: "¡RECOMPENSA! Elegir música 5 min.", val: 0 },
-  { text: "¡PREMIO GORDO! 20 Puntos.", val: 20 }
+  { text: "¡NADA! Thanos se lo ha robado.", val: 0, type: 'bad' },
+  { text: "1 Punto Extra", val: 1, type: 'good' },
+  { text: "5 Puntos Extra", val: 5, type: 'good' },
+  { text: "¡RECOMPENSA! Elegir música.", val: 0, type: 'good' },
+  { text: "¡MALA SUERTE! -2 Puntos", val: -2, type: 'bad' },
+  { text: "¡TRAMPA! -5 Puntos", val: -5, type: 'bad' },
+  { text: "¡CAJA VACÍA!", val: 0, type: 'neutral' },
+  { text: "2 Puntos Extra", val: 2, type: 'good' },
+  { text: "¡ROBO! Pierdes 3 Puntos", val: -3, type: 'bad' },
+  { text: "10 Puntos ¡LEGENDARIO!", val: 10, type: 'good' },
+  { text: "¡SANCIONADO! Copiar verbos", val: 0, type: 'bad' },
+  { text: "¡ESCUDO ROTO! Pierdes defensa", val: 0, type: 'bad' }, 
+  { text: "¡REGALO! 3 Puntos", val: 3, type: 'good' },
+  { text: "¡EXPLOSIÓN! -4 Puntos", val: -4, type: 'bad' },
+  { text: "¡SUERTE! 4 Puntos", val: 4, type: 'good' },
+  { text: "¡AGUJERO NEGRO! -10 Puntos", val: -10, type: 'bad' },
+  { text: "¡HERENCIA! 8 Puntos", val: 8, type: 'good' },
+  { text: "¡IMPUESTOS! -1 Punto", val: -1, type: 'bad' },
+  { text: "¡BONUS! 6 Puntos", val: 6, type: 'good' },
+  { text: "¡VISITA DE LOKI! -6 Puntos", val: -6, type: 'bad' }
 ];
 
 // Estilos Helpers
@@ -489,7 +434,8 @@ function AvengersTracker() {
               dailyWord: 0, 
               dailyCombat: 0,
               dailyMemory: 0, // NEW
-              lastDaily: today 
+              lastDaily: today,
+              lastLoot: null
           }));
           setTeams(updatedTeams);
           
@@ -549,7 +495,8 @@ function AvengersTracker() {
               dailyMath: t.dailyMath || 0,
               dailyWord: t.dailyWord || 0,
               dailyCombat: t.dailyCombat || 0,
-              dailyMemory: t.dailyMemory || 0 // Sync new field
+              dailyMemory: t.dailyMemory || 0, // Sync new field
+              lastLoot: t.lastLoot || null // Sync loot effect
           })).filter(t=>t.id).sort((a,b)=>b.points-a.points);
           if(merged.length>0) setTeams(merged);
           if(fMission) setMission(fMission);
@@ -639,32 +586,18 @@ function AvengersTracker() {
       else if(type === 'word') update = { dailyWord: newDaily };
       else if(type === 'combat') update = { dailyCombat: newDaily };
       else if(type === 'memory') update = { dailyMemory: newDaily };
-      
-      // Bonus logic for Line Completion
-      if (newDaily === 4 && currentVal < 4) {
-          // Check for Grand Slam (All 4 categories completed)
-          // We use the new value for the current type, and existing values for others
-          const dMath = t.dailyMath || 0;
-          const dWord = t.dailyWord || 0;
-          const dCombat = t.dailyCombat || 0;
-          const dMemory = t.dailyMemory || 0;
 
-          const mathDone = type === 'math' ? true : dMath === 4;
-          const wordDone = type === 'word' ? true : dWord === 4;
-          const combatDone = type === 'combat' ? true : dCombat === 4;
-          const memoryDone = type === 'memory' ? true : dMemory === 4;
+      // Check for Global Bonus (All 4 categories completed)
+      const dMath = type === 'math' ? newDaily : (t.dailyMath || 0);
+      const dWord = type === 'word' ? newDaily : (t.dailyWord || 0);
+      const dCombat = type === 'combat' ? newDaily : (t.dailyCombat || 0);
+      const dMemory = type === 'memory' ? newDaily : (t.dailyMemory || 0);
 
-          if (mathDone && wordDone && combatDone && memoryDone) {
-               speak("¡POTENCIA MÁXIMA! Todos los sistemas al 100%.");
-               showToast("¡DÍA COMPLETADO! 20/20 PUNTOS", "success");
-               // Bonus point for the line is added below
-          } else {
-               speak("¡Línea completada! Un punto extra.");
-               showToast("¡LÍNEA AL 100%! +1 Punto Extra", "success");
-          }
-          
+      if (dMath === 4 && dWord === 4 && dCombat === 4 && dMemory === 4 && newDaily === 4 && currentVal < 4) {
+          speak("¡Protocolo Vengador completado al 100%!");
           triggerSecretConfetti();
-          handlePts(tid, 1, null, true); // +1 Bonus for the line
+          showToast("¡SISTEMAS AL MÁXIMO! +4 Puntos Extra", "success");
+          handlePts(tid, 4, null, true); 
       }
       
       safeUpdate(tid, update);
@@ -747,7 +680,25 @@ function AvengersTracker() {
     showToast("Límites diarios reseteados.", "success");
   };
 
-  const openLootBox = async (tid) => { if(handleBuy(tid, 15)) { speak("Abriendo..."); setTimeout(() => { const it=LOOT_ITEMS[Math.floor(Math.random()*LOOT_ITEMS.length)]; setLootResult(it); if(it.val>0) handlePts(tid, it.val, null, true); logAction(`${teams.find(t=>t.id===tid).name} loot: ${it.text}`); if(it.val>0) playSfx('success'); }, 1500); }};
+  const openLootBox = async (tid) => { 
+      if(handleBuy(tid, 15)) { 
+          speak("Abriendo..."); 
+          setTimeout(() => { 
+              const it = LOOT_ITEMS[Math.floor(Math.random()*LOOT_ITEMS.length)]; 
+              setLootResult(it); 
+              // UPDATE TEAM LAST LOOT STATUS
+              if(it.type === 'bad') safeUpdate(tid, { lastLoot: 'bad' });
+              else safeUpdate(tid, { lastLoot: 'good' });
+
+              // Reset status after 5 seconds
+              setTimeout(() => safeUpdate(tid, { lastLoot: null }), 5000);
+
+              if(it.val !== 0) handlePts(tid, it.val, null, true); 
+              logAction(`${teams.find(t=>t.id===tid).name} loot: ${it.text}`); 
+              if(it.type === 'good') playSfx('success'); else playSfx('error'); 
+          }, 1500); 
+      }
+  };
   const startDuel = () => { const s=[...teams].sort(()=>0.5-Math.random()); setDuelData({t1:s[0], t2:s[1], challenge:DUEL_CHALLENGES[Math.floor(Math.random()*DUEL_CHALLENGES.length)]}); setModal('duel'); playSfx('alarm'); speak("Civil War"); };
   const resolveDuel = (wid) => { if(wid){ const w=teams.find(t=>t.id===wid); handlePts(wid,5, null, true); logAction(`Civil War: Gana ${w.name}`); speak(`Gana ${w.name}`); playSfx('success'); } setModal(null); };
   const triggerMultiverse = () => { setModal('multiverse'); playSfx('alarm'); speak("Brecha"); setTimeout(() => { const e=MULTIVERSE_EVENTS[Math.floor(Math.random()*MULTIVERSE_EVENTS.length)]; setMultiverseEvent(e); speak(e.title); if(e.points!==0) { teams.forEach(t=>handlePts(t.id, e.points, null, true)); logAction(`Multiverso: ${e.title}`); } }, 2000); };
@@ -800,8 +751,8 @@ function AvengersTracker() {
   };
 
   const openDailyQuestion = () => {
-    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
-    const q = ACADEMIC_QUESTIONS[dayOfYear % ACADEMIC_QUESTIONS.length];
+    // RANDOM QUESTION FROM DATABASE (FIXED)
+    const q = ACADEMIC_QUESTIONS[Math.floor(Math.random() * ACADEMIC_QUESTIONS.length)];
     setDailyQuestion(q);
     setShowAnswer(false);
     setModal('dailyQuestion');
@@ -1195,6 +1146,14 @@ function AvengersTracker() {
                       <div className="flex gap-2 items-center"><div className={`w-10 h-10 rounded-full border border-white/20 bg-slate-900 overflow-hidden ${t.accent}`}><img src={t.gif} className="w-full h-full object-cover"/></div><div><div className={`text-[8px] font-black uppercase tracking-widest ${rInfo.color}`}>{rInfo.title}</div><h2 className="text-sm font-black uppercase tracking-wider text-white">{t.name}</h2></div></div>
                       <span className={`text-2xl font-black font-mono tracking-tighter ${t.points<0?'text-red-400':'text-white'}`}>{t.points}</span>
                     </div>
+                    
+                    {/* WAKANDA LOOT EFFECT BADGE */}
+                    {t.lastLoot && (
+                        <div className={`absolute top-2 right-12 z-20 px-2 py-1 rounded text-[9px] font-bold uppercase animate-pulse shadow-lg ${t.lastLoot === 'bad' ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}>
+                            {t.lastLoot === 'bad' ? '¡MALDICIÓN!' : '¡SUERTE!'}
+                        </div>
+                    )}
+
                     {/* DAILY ENERGY CELLS */}
                     <div className="flex flex-col gap-1 mb-2">
                         <div className="flex items-center gap-1 text-[9px] text-slate-400">
@@ -1368,39 +1327,6 @@ function AvengersTracker() {
                       <button onClick={() => setModal(null)} className="flex-1 py-3 text-xs text-slate-500 hover:text-white">ABORTAR</button>
                       <button onClick={submitCombatAnswer} className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded uppercase">DISPARAR</button>
                   </div>
-              </div>
-          </div>
-      )}
-
-      {/* MEMORY CHALLENGE MODAL */}
-      {modal === 'memoryChallenge' && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
-              <div className="bg-slate-900 border-2 border-cyan-500 p-6 rounded-sm w-full max-w-3xl shadow-2xl relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-cyan-500/50 animate-pulse"></div>
-                  <h3 className="text-xl font-black text-cyan-400 mb-4 flex items-center gap-2"><Grid3X3 size={24}/> PROTOCOLO SINCRONIZACIÓN</h3>
-                  <p className="text-xs text-slate-400 mb-4 font-mono">EMPAREJA LOS CONCEPTOS</p>
-
-                  <div className="grid grid-cols-4 gap-3">
-                      {memoryState.cards.map((card) => (
-                          <div 
-                              key={card.id} 
-                              onClick={() => handleCardClick(card.id)}
-                              className={`h-24 rounded border flex items-center justify-center cursor-pointer transition-all duration-300 relative overflow-hidden ${
-                                  card.isMatched ? 'bg-green-900/50 border-green-500' :
-                                  card.isFlipped ? 'bg-cyan-900/50 border-cyan-400' : 
-                                  'bg-slate-800 border-slate-700 hover:bg-slate-700'
-                              }`}
-                          >
-                              {card.isFlipped || card.isMatched ? (
-                                  <p className="text-xs font-bold text-white text-center p-2 leading-tight">{card.content}</p>
-                              ) : (
-                                  <Shield size={32} className="text-slate-600 opacity-20" />
-                              )}
-                          </div>
-                      ))}
-                  </div>
-
-                  <button onClick={() => setModal(null)} className="mt-6 w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-bold uppercase rounded">CANCELAR</button>
               </div>
           </div>
       )}
@@ -1621,14 +1547,104 @@ function AvengersTracker() {
       )}
 
       {cerebro.active && (
-        <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 cursor-pointer" onClick={()=>{if(!cerebro.searching)setCerebro({...cerebro, active:false})}}>
-          <div className="text-center">
-            <Brain size={80} className="mx-auto text-purple-500 mb-6 animate-pulse" />
-            <h2 className="text-2xl font-black text-purple-400 uppercase tracking-widest mb-4">PROTOCOLO CEREBRO</h2>
-            <div className="text-4xl font-mono font-bold text-white">{cerebro.target || "RASTREANDO..."}</div>
-            {!cerebro.searching && <div className="mt-8 text-xs text-slate-500 animate-bounce">CLICK PARA CERRAR</div>}
+        <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4">
+          <div className="absolute inset-0" onClick={()=>{if(!cerebro.searching)setCerebro({...cerebro, active:false})}}></div>
+          <div className="relative z-10 text-center bg-slate-900/80 p-8 rounded-xl border border-purple-500/30 backdrop-blur-sm max-w-lg w-full mx-4 shadow-[0_0_50px_rgba(168,85,247,0.2)]">
+            
+            {/* IF NO MODE SELECTED */}
+            {!cerebro.type ? (
+               <>
+                 <Brain size={80} className="mx-auto text-purple-500 mb-6 animate-pulse" />
+                 <h2 className="text-2xl font-black text-purple-400 uppercase tracking-widest mb-6">PROTOCOLO CEREBRO</h2>
+                 <p className="text-sm text-slate-300 mb-8">Seleccione el objetivo del rastreo:</p>
+                 <div className="grid grid-cols-2 gap-4">
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); activateCerebro('member'); }}
+                        className="py-6 bg-purple-900/50 hover:bg-purple-600 border border-purple-500 text-white font-black uppercase tracking-widest rounded transition-all active:scale-95 flex flex-col items-center gap-2"
+                    >
+                        <User size={32}/> OPERATIVO
+                    </button>
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); activateCerebro('team'); }}
+                        className="py-6 bg-cyan-900/50 hover:bg-cyan-600 border border-cyan-500 text-white font-black uppercase tracking-widest rounded transition-all active:scale-95 flex flex-col items-center gap-2"
+                    >
+                        <Users size={32}/> ESCUADRÓN
+                    </button>
+                 </div>
+                 <button 
+                    onClick={(e) => { e.stopPropagation(); setCerebro({...cerebro, active:false}); }}
+                    className="mt-6 text-slate-500 text-xs hover:text-white underline"
+                >
+                    CANCELAR RASTREO
+                </button>
+               </>
+            ) : (
+               // IF MODE SELECTED (SEARCHING OR RESULT)
+               <>
+                 <div className={`mb-6 ${cerebro.searching ? 'animate-spin' : ''}`}>
+                    {cerebro.type === 'team' ? <Users size={64} className="mx-auto text-cyan-400"/> : <Brain size={64} className="mx-auto text-purple-500"/>}
+                 </div>
+                 <h2 className="text-xl font-black text-white uppercase tracking-widest mb-4">
+                    {cerebro.searching ? "RASTREANDO..." : (cerebro.type === 'team' ? "ESCUADRÓN LOCALIZADO" : "SUJETO LOCALIZADO")}
+                 </h2>
+                 
+                 <div className="text-3xl md:text-5xl font-mono font-black text-white mb-8 min-h-[4rem] flex items-center justify-center p-4 bg-black/40 rounded border border-white/10">
+                    {cerebro.target || <span className="animate-pulse text-slate-500">...</span>}
+                 </div>
+                
+                 {!cerebro.searching && (
+                    <div className="grid grid-cols-2 gap-4">
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); activateCerebro(cerebro.type); }}
+                            className="py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-widest rounded shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+                        >
+                            <RefreshCw size={16}/> RE-ESCANEAR
+                        </button>
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); setCerebro({...cerebro, active:false}); }}
+                            className="py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold uppercase tracking-widest rounded transition-all active:scale-95"
+                        >
+                            CERRAR
+                        </button>
+                    </div>
+                 )}
+               </>
+            )}
+
           </div>
         </div>
+      )}
+
+      {modal === 'memoryChallenge' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
+              <div className="bg-slate-900 border-2 border-cyan-500 p-6 rounded-sm w-full max-w-3xl shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-cyan-500/50 animate-pulse"></div>
+                  <h3 className="text-xl font-black text-cyan-400 mb-4 flex items-center gap-2"><Grid3X3 size={24}/> PROTOCOLO SINCRONIZACIÓN</h3>
+                  <p className="text-xs text-slate-400 mb-4 font-mono">EMPAREJA LOS CONCEPTOS</p>
+
+                  <div className="grid grid-cols-4 gap-3">
+                      {memoryState.cards.map((card) => (
+                          <div 
+                              key={card.id} 
+                              onClick={() => handleCardClick(card.id)}
+                              className={`h-24 rounded border flex items-center justify-center cursor-pointer transition-all duration-300 relative overflow-hidden ${
+                                  card.isMatched ? 'bg-green-900/50 border-green-500' :
+                                  card.isFlipped ? 'bg-cyan-900/50 border-cyan-400' : 
+                                  'bg-slate-800 border-slate-700 hover:bg-slate-700'
+                              }`}
+                          >
+                              {card.isFlipped || card.isMatched ? (
+                                  <p className="text-xs font-bold text-white text-center p-2 leading-tight">{card.content}</p>
+                              ) : (
+                                  <Shield size={32} className="text-slate-600 opacity-20" />
+                              )}
+                          </div>
+                      ))}
+                  </div>
+
+                  <button onClick={() => setModal(null)} className="mt-6 w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-bold uppercase rounded">CANCELAR</button>
+              </div>
+          </div>
       )}
 
       <style>{`
