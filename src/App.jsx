@@ -8,8 +8,10 @@ import {
   Users, ChevronsUp, Hexagon, ClipboardList, Swords, Brain, Volume2, VolumeX, List, 
   CheckCircle2, PlusCircle, Quote, Siren, Award, History, Trash2, X, Package, Dices, 
   Sparkles, Radio, BookOpen, Timer, Wifi, WifiOff, MessageSquare, ShieldCheck, Flame, Star, Calculator,
-  Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3
+  Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon
 } from 'lucide-react';
+
+const APP_VERSION = "v3.9.0 (THANOS)";
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
 const firebaseConfig = typeof __firebase_config !== 'undefined' 
@@ -355,7 +357,11 @@ class ErrorBoundary extends Component {
 
 // --- APP PRINCIPAL ---
 function AvengersTracker() {
-  const [teams, setTeams] = useState(INITIAL_TEAMS);
+  const [teams, setTeams] = useState(() => {
+     const saved = localStorage.getItem('avengers_teams');
+     return saved ? JSON.parse(saved) : INITIAL_TEAMS;
+  });
+  
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loggedInId, setLoggedInId] = useState(null);
@@ -376,7 +382,7 @@ function AvengersTracker() {
   const [tickerIdx, setTickerIdx] = useState(0);
   const [redAlertMode, setRedAlertMode] = useState(false);
   const [sound, setSound] = useState(false);
-  const [cerebro, setCerebro] = useState({ active: false, target: null, searching: false, type: null }); // Nuevo estado type para el menú
+  const [cerebro, setCerebro] = useState({ active: false, target: null, searching: false, type: null }); 
   const [confetti, setConfetti] = useState({ active: false, x: 0, y: 0 });
   const [toast, setToast] = useState(null);
   const [secretCount, setSecretCount] = useState(0);
@@ -399,6 +405,9 @@ function AvengersTracker() {
   const [combatState, setCombatState] = useState({ active: false, questions: [], currentIdx: 0, correctCount: 0 }); 
   const [combatInput, setCombatInput] = useState("");
   
+  // Boss Attack State
+  const [bossAttackState, setBossAttackState] = useState({ active: false, team: null, questions: [], currentIdx: 0, mistakes: 0 });
+
   const [bossMaxHp, setBossMaxHp] = useState(BOSS_BASE_HP);
   
   // MEMORY GAME STATE
@@ -425,32 +434,29 @@ function AvengersTracker() {
       const today = new Date().toDateString();
       const lastRunDate = localStorage.getItem('avengers_last_run_date');
       
+      const currentMax = parseFloat(localStorage.getItem('avengers_boss_hp')) || BOSS_BASE_HP;
+      setBossMaxHp(currentMax);
+
       if (lastRunDate !== today) {
-          // Reset daily progress
-          // Ensure we reset all daily counters
-          const updatedTeams = teams.map(t => ({ 
+          // Reset daily progress LOCAL STATE update immediately
+          setTeams(prev => prev.map(t => ({ 
               ...t, 
               dailyMath: 0, 
               dailyWord: 0, 
               dailyCombat: 0,
-              dailyMemory: 0, // NEW
+              dailyMemory: 0,
               lastDaily: today,
-              lastLoot: null
-          }));
-          setTeams(updatedTeams);
-          
+              lastLoot: null // Reset loot status daily
+          })));
+
           // Increase Boss HP by 10% daily (Compound)
-          const currentMax = parseFloat(localStorage.getItem('avengers_boss_hp')) || BOSS_BASE_HP;
           const newMax = Math.floor(currentMax * 1.1);
           setBossMaxHp(newMax);
           localStorage.setItem('avengers_boss_hp', newMax.toString());
           
           localStorage.setItem('avengers_last_run_date', today);
-      } else {
-          // Load existing daily max HP
-           const currentMax = parseFloat(localStorage.getItem('avengers_boss_hp')) || BOSS_BASE_HP;
-           setBossMaxHp(currentMax);
-      }
+          
+      } 
   }, []);
 
   // Auth
@@ -472,14 +478,16 @@ function AvengersTracker() {
     if(auth) onAuthStateChanged(auth, setUser);
   }, []);
 
-  // Data Hybrid
+  // Data Hybrid - PERSISTENCE FIX
   useEffect(() => {
     if (useLocal || !user || !db) { if (useLocal) setLoading(false); return; }
     try {
       const unsub = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'avengers_teams'), (snap) => {
-        if (snap.empty) { INITIAL_TEAMS.forEach(t => setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'avengers_teams', t.id), t)); }
-        else {
+        if (snap.empty) { 
+            teams.forEach(t => setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'avengers_teams', t.id), t)); 
+        } else {
           const tArr = []; let fMission=null, fAlert=false, fHist=[], fFury=null, fShake=false, fBossHp=null;
+          
           snap.docs.forEach(d => {
             if (d.id === 'mission_control') { 
                 const data=d.data(); 
@@ -487,30 +495,48 @@ function AvengersTracker() {
             }
             else { tArr.push(d.data()); }
           });
-          const merged = tArr.map(t => ({
-              ...INITIAL_TEAMS.find(it=>it.id===t.id)||t, 
-              points: t.points, 
-              shield: t.shield, 
-              badges: t.badges||[],
-              dailyMath: t.dailyMath || 0,
-              dailyWord: t.dailyWord || 0,
-              dailyCombat: t.dailyCombat || 0,
-              dailyMemory: t.dailyMemory || 0, // Sync new field
-              lastLoot: t.lastLoot || null // Sync loot effect
-          })).filter(t=>t.id).sort((a,b)=>b.points-a.points);
-          if(merged.length>0) setTeams(merged);
+
+          const merged = tArr.map(t => {
+             const staticData = INITIAL_TEAMS.find(it => it.id === t.id);
+             if (!staticData) return t;
+
+             return {
+                 ...staticData, // Keep theme, gif, name, etc.
+                 points: t.points ?? staticData.points, // DB priority
+                 shield: t.shield ?? staticData.shield,
+                 badges: t.badges ?? staticData.badges,
+                 dailyMath: t.dailyMath ?? 0,
+                 dailyWord: t.dailyWord ?? 0,
+                 dailyCombat: t.dailyCombat ?? 0,
+                 dailyMemory: t.dailyMemory ?? 0,
+                 lastLoot: t.lastLoot ?? null
+             };
+          }).sort((a,b)=>b.points-a.points);
+
+          if(merged.length > 0) setTeams(merged);
+          
           if(fMission) setMission(fMission);
           if(fAlert!==undefined) setRedAlertMode(fAlert);
-          if(fBossHp) setBossMaxHp(fBossHp); else if(!useLocal) safeUpdate('mission_control', {bossMaxHp: bossMaxHp}); 
+          
+          if(fBossHp) setBossMaxHp(fBossHp); 
+          else if(!useLocal && bossMaxHp) safeUpdate('mission_control', {bossMaxHp: bossMaxHp}); 
+          
           setFuryMessage(fFury);
           if(fShake) { setShaking(true); setTimeout(() => setShaking(false), 3000); playSfx('alarm'); }
           setHistory((fHist||[]).reverse().slice(0,50));
+          
+          const today = new Date().toDateString();
+          merged.forEach(t => {
+             if (t.lastDaily !== today) {
+                 safeUpdate(t.id, { dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: today, lastLoot: null });
+             }
+          });
         }
         setLoading(false);
       }, () => { setUseLocal(true); setLoading(false); });
       return () => unsub();
     } catch { setUseLocal(true); setLoading(false); }
-  }, [user, useLocal]);
+  }, [user, useLocal]); 
 
   // Ticker
   useEffect(() => {
@@ -523,11 +549,12 @@ function AvengersTracker() {
   }, []);
 
   // Helpers
-  const showToast = (msg, type='info') => setToast({ message: msg, type });
-  const triggerConfetti = (e) => { if(e) { setConfetti({active:true, x:e.clientX, y:e.clientY}); setTimeout(()=>setConfetti({active:false,x:0,y:0}), 1000); }};
-  const triggerSecretConfetti = () => { setConfetti({ active: true, x: window.innerWidth / 2, y: window.innerHeight / 2 }); setTimeout(() => setConfetti({ active: false, x: 0, y: 0 }), 1000); };
-  
-  // Data Logic
+  const safeUpdate = async (docId, data, merge=true) => {
+      if (useLocal || !db) { updateLocal(docId, data); return; }
+      try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'avengers_teams', docId), data, {merge:true}); }
+      catch (e) { setUseLocal(true); updateLocal(docId, data); showToast("Modo Offline", "error"); }
+  };
+
   const updateLocal = (docId, data) => {
       if (docId === 'mission_control') {
           if(data.text) setMission(data.text);
@@ -540,12 +567,10 @@ function AvengersTracker() {
       }
   };
 
-  const safeUpdate = async (docId, data, merge=true) => {
-      if (useLocal || !db) { updateLocal(docId, data); return; }
-      try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'avengers_teams', docId), data, {merge:true}); }
-      catch (e) { setUseLocal(true); updateLocal(docId, data); showToast("Modo Offline", "error"); }
-  };
-
+  const showToast = (msg, type='info') => setToast({ message: msg, type });
+  const triggerConfetti = (e) => { if(e) { setConfetti({active:true, x:e.clientX, y:e.clientY}); setTimeout(()=>setConfetti({active:false,x:0,y:0}), 1000); }};
+  const triggerSecretConfetti = () => { setConfetti({ active: true, x: window.innerWidth / 2, y: window.innerHeight / 2 }); setTimeout(() => setConfetti({ active: false, x: 0, y: 0 }), 1000); };
+  
   const logAction = (txt) => {
     const time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
     if (useLocal || !db) { setHistory(prev => [{time, text:txt}, ...prev]); return; }
@@ -650,7 +675,6 @@ function AvengersTracker() {
       } else { showToast("Fondos insuficientes", "error"); playSfx('error'); return false; }
   };
   
-  // NEW SNAP FUNCTIONALITY
   const handleSnap = async () => {
     if (!window.confirm("¿Ejecutar el Chasquido de Thanos? 2 equipos perderán la mitad de sus puntos.")) return;
     
@@ -671,8 +695,64 @@ function AvengersTracker() {
     triggerSecretConfetti(); // Visual feedback (maybe red confetti?)
     showToast("El equilibrio ha sido restaurado.", "info");
   };
+  
+  // BOSS ATTACK LOGIC (UPDATED)
+  const handleBossAttack = () => {
+    if (teams.length === 0) return;
+    setShaking(true);
+    playSfx('alarm');
+    speak("Thanos ataca. Iniciando protocolo de defensa.");
+    
+    // Select random team
+    const randomTeam = teams[Math.floor(Math.random() * teams.length)];
+    
+    // Select 6 questions (one for each stone)
+    // We shuffle ACADEMIC_QUESTIONS and pick 6
+    const randomQuestions = [...ACADEMIC_QUESTIONS].sort(() => 0.5 - Math.random()).slice(0, 6);
+    
+    setBossAttackState({ active: true, team: randomTeam, questions: randomQuestions, currentIdx: 0, mistakes: 0 });
+    setModal('bossAttack');
+    
+    setTimeout(() => setShaking(false), 3000);
+  };
+  
+  const submitBossAnswer = (inputVal) => {
+      const currentQ = bossAttackState.questions[bossAttackState.currentIdx];
+      const isCorrect = inputVal.toUpperCase().trim() === currentQ.a.toUpperCase();
+      
+      let newMistakes = bossAttackState.mistakes;
+      
+      if (isCorrect) {
+          playSfx('success');
+      } else {
+          playSfx('error');
+          newMistakes++;
+          // Immediate penalty
+          handlePts(bossAttackState.team.id, -10, null, true);
+          showToast(`¡FALLO! -10 Puntos. La respuesta era: ${currentQ.a}`, "error");
+      }
 
-  // NEW: Reset Daily Limits
+      if (bossAttackState.currentIdx < 5) { // 6 questions (0-5)
+          setBossAttackState(prev => ({ 
+              ...prev, 
+              currentIdx: prev.currentIdx + 1,
+              mistakes: newMistakes
+          }));
+      } else {
+          // Finished
+          if (newMistakes === 0) {
+              handlePts(bossAttackState.team.id, 50, null, true);
+              speak("Amenaza neutralizada. Recompensa otorgada.");
+              showToast("¡THANOS REPELIDO! +50 Puntos", "success");
+              triggerSecretConfetti();
+          } else {
+              speak("Defensa fallida. El universo ha sufrido daños.");
+              showToast("Ataque finalizado con daños.", "info");
+          }
+          setModal(null);
+      }
+  };
+
   const resetDailyLimits = async () => {
     if (!window.confirm("¿Reiniciar los límites de retos diarios para todos?")) return;
     teams.forEach(t => safeUpdate(t.id, { dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0 }));
@@ -703,11 +783,10 @@ function AvengersTracker() {
   const resolveDuel = (wid) => { if(wid){ const w=teams.find(t=>t.id===wid); handlePts(wid,5, null, true); logAction(`Civil War: Gana ${w.name}`); speak(`Gana ${w.name}`); playSfx('success'); } setModal(null); };
   const triggerMultiverse = () => { setModal('multiverse'); playSfx('alarm'); speak("Brecha"); setTimeout(() => { const e=MULTIVERSE_EVENTS[Math.floor(Math.random()*MULTIVERSE_EVENTS.length)]; setMultiverseEvent(e); speak(e.title); if(e.points!==0) { teams.forEach(t=>handlePts(t.id, e.points, null, true)); logAction(`Multiverso: ${e.title}`); } }, 2000); };
   const sendFuryMessage = () => { if(newFuryMsg.trim()) { safeUpdate('mission_control', { furyMsg: newFuryMsg }); playSfx('alarm'); speak("Mensaje de Fury"); setNewFuryMsg(""); }};
-  const handleBossAttack = () => { setShaking(true); playSfx('alarm'); speak("Thanos ataca"); safeUpdate('mission_control', { shaking: true }); setTimeout(() => { setShaking(false); safeUpdate('mission_control', { shaking: false }); }, 3000); };
+  
   const checkPass = (e) => { e.preventDefault(); const p = pass.toLowerCase().trim(); if (p === 'director_fury_00') { setIsAdmin(true); setLoggedInId(null); setModal(null); setPass(''); playSfx('success'); speak("Hola Director"); return; } const t = INITIAL_TEAMS.find(tm => tm.password === p); if (t) { setLoggedInId(t.id); setIsAdmin(false); setModal(null); setPass(''); playSfx('success'); speak(`Hola ${t.name}`); return; } playSfx('error'); showToast("Acceso denegado", "error"); };
   const handleLogoClick = () => { setSecretCount(p=>p+1); if(secretCount>4) { speak("Fiesta"); triggerSecretConfetti(); setSecretCount(0); } };
   
-  // MODIFIED CEREBRO LOGIC
   const openCerebroMenu = () => {
     setCerebro({ active: true, target: null, searching: false, type: null }); // Open menu mode
   };
@@ -1021,7 +1100,10 @@ function AvengersTracker() {
             <img src="https://i.ibb.co/Ndt35H2Z/SHIELD-CSB.png" alt="S.H.I.E.L.D." className="w-10 h-10 object-contain relative z-10 active:scale-95 transition-transform" />
           </div>
           <div>
-            <h1 className="text-xl font-black tracking-[0.2em] leading-none">AVENGERS <span className={redAlertMode ? "text-red-300" : "text-cyan-500"}>INITIATIVE</span></h1>
+            <div className="flex items-baseline gap-2">
+                <h1 className="text-xl font-black tracking-[0.2em] leading-none">AVENGERS <span className={redAlertMode ? "text-red-300" : "text-cyan-500"}>INITIATIVE</span></h1>
+                <span className="text-[9px] font-bold text-slate-500 bg-slate-800/50 px-1 rounded border border-slate-700">{APP_VERSION}</span>
+            </div>
             {/* DAILY QUOTE BANNER */}
             <div className="hidden md:block text-[10px] text-cyan-400/80 font-mono mt-1 overflow-hidden whitespace-nowrap">
                 <span className="animate-pulse">▮</span> {dailyQuote}
@@ -1033,7 +1115,7 @@ function AvengersTracker() {
 
         <div className="flex gap-2 items-center">
             {useLocal && <span className="text-[10px] text-orange-500 font-mono bg-orange-900/20 px-2 py-1 rounded border border-orange-500/50 flex items-center gap-1"><WifiOff size={10}/> LOCAL</span>}
-            {questionAvailable && <button onClick={()=>{setDailyQuestion(ACADEMIC_QUESTIONS[new Date().getDay()%ACADEMIC_QUESTIONS.length]); setShowAnswer(false); setModal('dailyQ'); speak("Transmisión entrante");}} className="animate-bounce bg-yellow-500/20 border border-yellow-500 px-3 py-1 rounded text-yellow-300 text-xs font-bold flex gap-1"><Radio size={12}/> MENSAJE</button>}
+            {questionAvailable && <button onClick={openDailyQuestion} className="animate-bounce bg-yellow-500/20 border border-yellow-500 px-3 py-1 rounded text-yellow-300 text-xs font-bold flex gap-1"><Radio size={12}/> MENSAJE</button>}
             
             {/* STUDENT TRAINING BUTTONS */}
             {loggedInId && (
@@ -1220,6 +1302,7 @@ function AvengersTracker() {
             );
           })}
         </section>
+        <div className="fixed bottom-1 right-1 z-[60] text-[8px] text-white/10 font-mono select-none pointer-events-none">{APP_VERSION}</div>
       </main>
 
       <footer className="fixed bottom-0 w-full bg-slate-950 border-t border-cyan-900 h-6 flex items-center overflow-hidden z-50">
@@ -1228,6 +1311,62 @@ function AvengersTracker() {
       </footer>
 
       {/* --- MODALS --- */}
+
+      {/* BOSS ATTACK MODAL */}
+      {modal === 'bossAttack' && bossAttackState.active && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
+             <div className="bg-slate-900 border-4 border-red-600 p-6 rounded-lg w-full max-w-lg shadow-[0_0_50px_rgba(220,38,38,0.5)] relative overflow-hidden animate-in zoom-in duration-300">
+                 
+                 <div className="flex justify-between items-center mb-6 border-b border-red-900/50 pb-4">
+                     <h3 className="text-2xl font-black text-red-500 uppercase tracking-widest flex items-center gap-2">
+                         <Skull size={32} className="animate-pulse"/> PROTOCOLO GUANTELETE
+                     </h3>
+                     <div className="text-xs font-mono text-slate-400">OBJETIVO: {bossAttackState.team.name}</div>
+                 </div>
+
+                 <div className="mb-8">
+                     <div className="flex justify-between text-xs font-bold text-slate-500 mb-2 uppercase">
+                         <span>Gema {bossAttackState.currentIdx + 1}/6</span>
+                         <span>Fallos: <span className="text-red-500">{bossAttackState.mistakes}</span></span>
+                     </div>
+                     <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                         <div 
+                            className="h-full transition-all duration-500" 
+                            style={{ 
+                                width: `${((bossAttackState.currentIdx) / 6) * 100}%`,
+                                backgroundColor: ['#3b82f6', '#ef4444', '#a855f7', '#eab308', '#22c55e', '#f97316'][bossAttackState.currentIdx] 
+                            }}
+                         ></div>
+                     </div>
+                 </div>
+
+                 <div className="bg-black/50 p-6 rounded border border-white/10 mb-6 text-center min-h-[8rem] flex items-center justify-center">
+                     <p className="text-xl font-bold text-white leading-relaxed">
+                         {bossAttackState.questions[bossAttackState.currentIdx].q}
+                     </p>
+                 </div>
+
+                 <div className="grid grid-cols-2 gap-4">
+                     <button 
+                         onClick={() => submitBossAnswer("INCORRECTO")} 
+                         className="py-4 bg-red-900/20 hover:bg-red-600 border border-red-600 text-red-200 font-bold uppercase rounded transition-all"
+                     >
+                         FALLO (-10 PTS)
+                     </button>
+                     <button 
+                         onClick={() => submitBossAnswer(bossAttackState.questions[bossAttackState.currentIdx].a)} 
+                         className="py-4 bg-green-900/20 hover:bg-green-600 border border-green-600 text-green-200 font-bold uppercase rounded transition-all"
+                     >
+                         ACIERTO
+                     </button>
+                 </div>
+                 
+                 <div className="mt-4 text-center">
+                    <p className="text-[10px] text-slate-500 font-mono">RESPUESTA: <span className="text-slate-300 font-bold">{bossAttackState.questions[bossAttackState.currentIdx].a}</span></p>
+                 </div>
+             </div>
+         </div>
+      )}
 
       {/* MATH CHALLENGE MODAL (STUDENT TRAINING) */}
       {modal === 'mathChallenge' && (
@@ -1327,6 +1466,39 @@ function AvengersTracker() {
                       <button onClick={() => setModal(null)} className="flex-1 py-3 text-xs text-slate-500 hover:text-white">ABORTAR</button>
                       <button onClick={submitCombatAnswer} className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded uppercase">DISPARAR</button>
                   </div>
+              </div>
+          </div>
+      )}
+
+      {/* MEMORY CHALLENGE MODAL */}
+      {modal === 'memoryChallenge' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
+              <div className="bg-slate-900 border-2 border-cyan-500 p-6 rounded-sm w-full max-w-3xl shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-cyan-500/50 animate-pulse"></div>
+                  <h3 className="text-xl font-black text-cyan-400 mb-4 flex items-center gap-2"><Grid3X3 size={24}/> PROTOCOLO SINCRONIZACIÓN</h3>
+                  <p className="text-xs text-slate-400 mb-4 font-mono">EMPAREJA LOS CONCEPTOS</p>
+
+                  <div className="grid grid-cols-4 gap-3">
+                      {memoryState.cards.map((card) => (
+                          <div 
+                              key={card.id} 
+                              onClick={() => handleCardClick(card.id)}
+                              className={`h-24 rounded border flex items-center justify-center cursor-pointer transition-all duration-300 relative overflow-hidden ${
+                                  card.isMatched ? 'bg-green-900/50 border-green-500' :
+                                  card.isFlipped ? 'bg-cyan-900/50 border-cyan-400' : 
+                                  'bg-slate-800 border-slate-700 hover:bg-slate-700'
+                              }`}
+                          >
+                              {card.isFlipped || card.isMatched ? (
+                                  <p className="text-xs font-bold text-white text-center p-2 leading-tight">{card.content}</p>
+                              ) : (
+                                  <Shield size={32} className="text-slate-600 opacity-20" />
+                              )}
+                          </div>
+                      ))}
+                  </div>
+
+                  <button onClick={() => setModal(null)} className="mt-6 w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-bold uppercase rounded">CANCELAR</button>
               </div>
           </div>
       )}
@@ -1613,38 +1785,6 @@ function AvengersTracker() {
 
           </div>
         </div>
-      )}
-
-      {modal === 'memoryChallenge' && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
-              <div className="bg-slate-900 border-2 border-cyan-500 p-6 rounded-sm w-full max-w-3xl shadow-2xl relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-cyan-500/50 animate-pulse"></div>
-                  <h3 className="text-xl font-black text-cyan-400 mb-4 flex items-center gap-2"><Grid3X3 size={24}/> PROTOCOLO SINCRONIZACIÓN</h3>
-                  <p className="text-xs text-slate-400 mb-4 font-mono">EMPAREJA LOS CONCEPTOS</p>
-
-                  <div className="grid grid-cols-4 gap-3">
-                      {memoryState.cards.map((card) => (
-                          <div 
-                              key={card.id} 
-                              onClick={() => handleCardClick(card.id)}
-                              className={`h-24 rounded border flex items-center justify-center cursor-pointer transition-all duration-300 relative overflow-hidden ${
-                                  card.isMatched ? 'bg-green-900/50 border-green-500' :
-                                  card.isFlipped ? 'bg-cyan-900/50 border-cyan-400' : 
-                                  'bg-slate-800 border-slate-700 hover:bg-slate-700'
-                              }`}
-                          >
-                              {card.isFlipped || card.isMatched ? (
-                                  <p className="text-xs font-bold text-white text-center p-2 leading-tight">{card.content}</p>
-                              ) : (
-                                  <Shield size={32} className="text-slate-600 opacity-20" />
-                              )}
-                          </div>
-                      ))}
-                  </div>
-
-                  <button onClick={() => setModal(null)} className="mt-6 w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-bold uppercase rounded">CANCELAR</button>
-              </div>
-          </div>
       )}
 
       <style>{`
