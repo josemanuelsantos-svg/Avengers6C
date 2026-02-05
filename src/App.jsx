@@ -11,7 +11,7 @@ import {
   Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon
 } from 'lucide-react';
 
-const APP_VERSION = "v3.9.0 (THANOS)";
+const APP_VERSION = "v3.9.4 (STABLE)";
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
 const firebaseConfig = typeof __firebase_config !== 'undefined' 
@@ -249,7 +249,7 @@ const COMBAT_QUESTIONS = {
   ]
 };
 
-// BOSS BASE HP - Ahora se recalcula dinámicamente
+// BOSS BASE HP
 const BOSS_BASE_HP = 1500;
 const ICONS = { cpu: Cpu, shield: Shield, zap: Zap, atom: Atom, target: Target, eye: Eye };
 const TICKER_MESSAGES = [ "CAPITÁN AMÉRICA: 'PUEDO HACER ESTO TODO EL DÍA'", "TONY STARK: 'YO SOY IRON MAN'", "AVENGERS: ¡REUNÍOS!", "THOR: 'POR LAS BARBAS DE ODÍN'", "BLACK PANTHER: '¡WAKANDA POR SIEMPRE!'", "HULK: ¡APLASTA EL EXAMEN!" ];
@@ -493,7 +493,10 @@ function AvengersTracker() {
                 const data=d.data(); 
                 fMission=data.text; fAlert=data.alert; fHist=data.history||[]; fFury=data.furyMsg; fShake=data.shaking; fBossHp=data.bossMaxHp;
             }
-            else { tArr.push(d.data()); }
+            else { 
+                // CRITICAL FIX: Ensure ID is part of the object pushed to array
+                tArr.push({ id: d.id, ...d.data() }); 
+            }
           });
 
           const merged = tArr.map(t => {
@@ -502,13 +505,14 @@ function AvengersTracker() {
 
              return {
                  ...staticData, // Keep theme, gif, name, etc.
-                 points: t.points ?? staticData.points, // DB priority
+                 points: t.points ?? staticData.points, 
                  shield: t.shield ?? staticData.shield,
                  badges: t.badges ?? staticData.badges,
-                 dailyMath: t.dailyMath ?? 0,
-                 dailyWord: t.dailyWord ?? 0,
-                 dailyCombat: t.dailyCombat ?? 0,
-                 dailyMemory: t.dailyMemory ?? 0,
+                 // CRITICAL FIX: Ensure daily values are not overwritten by 0 if they exist in DB
+                 dailyMath: (t.dailyMath !== undefined) ? t.dailyMath : (staticData.dailyMath || 0),
+                 dailyWord: (t.dailyWord !== undefined) ? t.dailyWord : (staticData.dailyWord || 0),
+                 dailyCombat: (t.dailyCombat !== undefined) ? t.dailyCombat : (staticData.dailyCombat || 0),
+                 dailyMemory: (t.dailyMemory !== undefined) ? t.dailyMemory : (staticData.dailyMemory || 0),
                  lastLoot: t.lastLoot ?? null
              };
           }).sort((a,b)=>b.points-a.points);
@@ -527,7 +531,7 @@ function AvengersTracker() {
           
           const today = new Date().toDateString();
           merged.forEach(t => {
-             if (t.lastDaily !== today) {
+             if (t.lastDaily && t.lastDaily !== today) {
                  safeUpdate(t.id, { dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: today, lastLoot: null });
              }
           });
@@ -612,17 +616,12 @@ function AvengersTracker() {
       else if(type === 'combat') update = { dailyCombat: newDaily };
       else if(type === 'memory') update = { dailyMemory: newDaily };
 
-      // Check for Global Bonus (All 4 categories completed)
-      const dMath = type === 'math' ? newDaily : (t.dailyMath || 0);
-      const dWord = type === 'word' ? newDaily : (t.dailyWord || 0);
-      const dCombat = type === 'combat' ? newDaily : (t.dailyCombat || 0);
-      const dMemory = type === 'memory' ? newDaily : (t.dailyMemory || 0);
-
-      if (dMath === 4 && dWord === 4 && dCombat === 4 && dMemory === 4 && newDaily === 4 && currentVal < 4) {
-          speak("¡Protocolo Vengador completado al 100%!");
+      // Line Completion Bonus: +1 extra point if this action completes the line (4/4)
+      if (newDaily === 4 && currentVal < 4) {
+          speak("¡Línea completada! Un punto extra.");
           triggerSecretConfetti();
-          showToast("¡SISTEMAS AL MÁXIMO! +4 Puntos Extra", "success");
-          handlePts(tid, 4, null, true); 
+          showToast("¡LÍNEA AL 100%! +1 Punto Extra", "success");
+          handlePts(tid, 1, null, true); 
       }
       
       safeUpdate(tid, update);
@@ -783,7 +782,6 @@ function AvengersTracker() {
   const resolveDuel = (wid) => { if(wid){ const w=teams.find(t=>t.id===wid); handlePts(wid,5, null, true); logAction(`Civil War: Gana ${w.name}`); speak(`Gana ${w.name}`); playSfx('success'); } setModal(null); };
   const triggerMultiverse = () => { setModal('multiverse'); playSfx('alarm'); speak("Brecha"); setTimeout(() => { const e=MULTIVERSE_EVENTS[Math.floor(Math.random()*MULTIVERSE_EVENTS.length)]; setMultiverseEvent(e); speak(e.title); if(e.points!==0) { teams.forEach(t=>handlePts(t.id, e.points, null, true)); logAction(`Multiverso: ${e.title}`); } }, 2000); };
   const sendFuryMessage = () => { if(newFuryMsg.trim()) { safeUpdate('mission_control', { furyMsg: newFuryMsg }); playSfx('alarm'); speak("Mensaje de Fury"); setNewFuryMsg(""); }};
-  
   const checkPass = (e) => { e.preventDefault(); const p = pass.toLowerCase().trim(); if (p === 'director_fury_00') { setIsAdmin(true); setLoggedInId(null); setModal(null); setPass(''); playSfx('success'); speak("Hola Director"); return; } const t = INITIAL_TEAMS.find(tm => tm.password === p); if (t) { setLoggedInId(t.id); setIsAdmin(false); setModal(null); setPass(''); playSfx('success'); speak(`Hola ${t.name}`); return; } playSfx('error'); showToast("Acceso denegado", "error"); };
   const handleLogoClick = () => { setSecretCount(p=>p+1); if(secretCount>4) { speak("Fiesta"); triggerSecretConfetti(); setSecretCount(0); } };
   
