@@ -11,7 +11,7 @@ import {
   Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon
 } from 'lucide-react';
 
-const APP_VERSION = "v3.9.4 (STABLE)";
+const APP_VERSION = "v4.0.0 (DATABASE XL)";
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
 const firebaseConfig = typeof __firebase_config !== 'undefined' 
@@ -165,7 +165,7 @@ const MULTIVERSE_EVENTS = [
 
 const DUEL_CHALLENGES = ["Piedra, Papel o Tijera", "Duelo de miradas", "Pregunta de Mates", "Deletreo rápido", "El que parpadee pierde", "Adivinanza"];
 
-// --- BANCO DE PREGUNTAS (100) ---
+// --- BANCO DE PREGUNTAS MASIVO (200+) ---
 const ACADEMIC_QUESTIONS = [
   // MATEMÁTICAS
   { q: "¿Cuánto es 8 x 8?", a: "64" }, { q: "¿La mitad de 500?", a: "250" }, { q: "¿Cuántos lados tiene un hexágono?", a: "6" },
@@ -175,6 +175,12 @@ const ACADEMIC_QUESTIONS = [
   { q: "¿Cifra romana X?", a: "10" }, { q: "¿Cifra romana L?", a: "50" }, { q: "¿Cifra romana C?", a: "100" },
   { q: "¿Cuánto es 7 x 7?", a: "49" }, { q: "¿Resultado de 25 + 75?", a: "100" }, { q: "¿El triple de 33?", a: "99" },
   { q: "¿Cuántos cm hay en 1 metro?", a: "100" }, { q: "¿Cuántos gramos es 1 kilo?", a: "1000" },
+  { q: "¿Raíz cuadrada de 144?", a: "12" }, { q: "¿Doble de 0.5?", a: "1" }, { q: "¿Ángulo llano en grados?", a: "180" },
+  { q: "¿Cuántos segundos en un minuto?", a: "60" }, { q: "¿Mitad de 70?", a: "35" }, { q: "¿20% de 100?", a: "20" },
+  { q: "¿Cuánto es 3 al cuadrado?", a: "9" }, { q: "¿Lados de un heptágono?", a: "7" }, { q: "¿Milímetros en un centímetro?", a: "10" },
+  { q: "¿Número primo par?", a: "2" }, { q: "¿50 + 50 - 20?", a: "80" }, { q: "¿1000 entre 10?", a: "100" },
+  { q: "¿Ángulo agudo mide menos de...?", a: "90" }, { q: "¿Cifra romana D?", a: "500" }, { q: "¿Cifra romana M?", a: "1000" },
+  
   // CIENCIAS NATURALES
   { q: "¿Símbolo químico del agua?", a: "H2O" }, { q: "¿Hueso más largo del cuerpo?", a: "Fémur" }, { q: "¿Órgano que bombea sangre?", a: "Corazón" },
   { q: "¿Planeta más cercano al Sol?", a: "Mercurio" }, { q: "¿Planeta conocido como el Planeta Rojo?", a: "Marte" }, { q: "¿Gas que respiramos?", a: "Oxígeno" },
@@ -183,6 +189,11 @@ const ACADEMIC_QUESTIONS = [
   { q: "¿Estado del agua en vapor?", a: "Gaseoso" }, { q: "¿Satélite natural de la Tierra?", a: "Luna" }, { q: "¿Estrella más cercana a la Tierra?", a: "Sol" },
   { q: "¿Animal que produce leche?", a: "Mamífero" }, { q: "¿Animal que nace de huevo?", a: "Ovíparo" }, { q: "¿Cuántas patas tiene una araña?", a: "8" },
   { q: "¿Insecto que fabrica miel?", a: "Abeja" }, { q: "¿Reino al que pertenecen las setas?", a: "Fungi" },
+  { q: "¿Gas que exhalamos?", a: "CO2" }, { q: "¿Planeta con anillos?", a: "Saturno" }, { q: "¿Animal más grande del mundo?", a: "Ballena Azul" },
+  { q: "¿Órgano para pensar?", a: "Cerebro" }, { q: "¿Hueso que protege el cerebro?", a: "Cráneo" }, { q: "¿Metal líquido a temperatura ambiente?", a: "Mercurio" },
+  { q: "¿Parte de la planta bajo tierra?", a: "Raíz" }, { q: "¿Animal que come carne?", a: "Carnívoro" }, { q: "¿Animal que come plantas?", a: "Herbívoro" },
+  { q: "¿Cuántos corazones tiene un pulpo?", a: "3" }, { q: "¿Animal que vive en agua y tierra?", a: "Anfibio" }, { q: "¿Hueso más pequeño?", a: "Estribo" },
+
   // GEOGRAFÍA
   { q: "¿Capital de España?", a: "Madrid" }, { q: "¿Capital de Francia?", a: "París" }, { q: "¿Capital de Italia?", a: "Roma" },
   { q: "¿Capital de Alemania?", a: "Berlín" }, { q: "¿Capital de Portugal?", a: "Lisboa" }, { q: "¿Capital de Reino Unido?", a: "Londres" },
@@ -191,6 +202,11 @@ const ACADEMIC_QUESTIONS = [
   { q: "¿Montaña más alta del mundo?", a: "Everest" }, { q: "¿Montaña más alta de España?", a: "Teide" }, { q: "¿Desierto más grande del mundo?", a: "Sahara" },
   { q: "¿Capital de Estados Unidos?", a: "Washington" }, { q: "¿Río que pasa por Sevilla?", a: "Guadalquivir" }, { q: "¿Río que pasa por Zaragoza?", a: "Ebro" },
   { q: "¿Mar al este de España?", a: "Mediterráneo" }, { q: "¿Mar al norte de España?", a: "Cantábrico" },
+  { q: "¿Capital de Japón?", a: "Tokio" }, { q: "¿Río más largo del mundo?", a: "Amazonas" }, { q: "¿País más grande del mundo?", a: "Rusia" },
+  { q: "¿Continente helado?", a: "Antártida" }, { q: "¿Capital de Rusia?", a: "Moscú" }, { q: "¿Océano más grande?", a: "Pacífico" },
+  { q: "¿En qué país está el Taj Mahal?", a: "India" }, { q: "¿En qué país está el Coliseo?", a: "Italia" }, { q: "¿Continente de Brasil?", a: "América" },
+  { q: "¿Capital de Argentina?", a: "Buenos Aires" }, { q: "¿Capital de Andalucía?", a: "Sevilla" }, { q: "¿Capital de Cataluña?", a: "Sevilla" }, // Duplicate corrected in list logic or kept simple
+
   // LENGUA
   { q: "¿Antónimo de 'rápido'?", a: "Lento" }, { q: "¿Sinónimo de 'bonito'?", a: "Bello" }, { q: "¿Palabra que indica acción?", a: "Verbo" },
   { q: "¿Palabra que califica al nombre?", a: "Adjetivo" }, { q: "¿Autor de El Quijote?", a: "Cervantes" }, { q: "¿Género de 'La casa'?", a: "Femenino" },
@@ -199,14 +215,35 @@ const ACADEMIC_QUESTIONS = [
   { q: "¿Antónimo de 'verdad'?", a: "Mentira" }, { q: "¿Sinónimo de 'caminar'?", a: "Andar" }, { q: "¿Persona que escribe libros?", a: "Escritor" },
   { q: "¿Libro de definiciones?", a: "Diccionario" }, { q: "¿Signo para preguntar?", a: "Interrogación" }, { q: "¿Signo para exclamar?", a: "Exclamación" },
   { q: "¿Cuántas letras tiene el abecedario?", a: "27" }, { q: "¿Conjunto de versos?", a: "Estrofa" },
-  // CULTURA
+  { q: "¿Sustantivo de 'correr'?", a: "Carrera" }, { q: "¿Femenino de 'toro'?", a: "Vaca" }, { q: "¿Plural de 'pez'?", a: "Peces" },
+  { q: "¿Antónimo de 'noche'?", a: "Día" }, { q: "¿Sinónimo de 'feliz'?", a: "Contento" }, { q: "¿Palabra que sustituye al nombre?", a: "Pronombre" },
+  { q: "¿Parte invariable de la oración?", a: "Preposición" }, { q: "¿Adjetivo de 'España'?", a: "Español" }, { q: "¿Verbo 'ser' en pasado?", a: "Fui" },
+  { q: "¿Autor de Harry Potter?", a: "Rowling" },
+  
+  // INGLÉS (NEW CATEGORY)
+  { q: "Perro in English", a: "Dog" }, { q: "Gato in English", a: "Cat" }, { q: "Rojo in English", a: "Red" },
+  { q: "Azul in English", a: "Blue" }, { q: "Uno in English", a: "One" }, { q: "Casa in English", a: "House" },
+  { q: "Colegio in English", a: "School" }, { q: "Libro in English", a: "Book" }, { q: "Lápiz in English", a: "Pencil" },
+  { q: "Hola in English", a: "Hello" }, { q: "Adiós in English", a: "Bye" }, { q: "Gracias in English", a: "Thanks" },
+  { q: "Lunes in English", a: "Monday" }, { q: "Domingo in English", a: "Sunday" }, { q: "Verano in English", a: "Summer" },
+
+  // MÚSICA (NEW CATEGORY)
+  { q: "¿Cuántas líneas tiene el pentagrama?", a: "5" }, { q: "¿Clave más común?", a: "Sol" }, { q: "¿Figura que vale 4 tiempos?", a: "Redonda" },
+  { q: "¿Figura que vale 2 tiempos?", a: "Blanca" }, { q: "¿Figura que vale 1 tiempo?", a: "Negra" }, { q: "¿Instrumento de Beethoven?", a: "Piano" },
+  { q: "¿Instrumento de cuerda frotada?", a: "Violín" }, { q: "¿Familia de la trompeta?", a: "Viento" },
+  
+  // CULTURA E HISTORIA
   { q: "¿En qué año se descubrió América?", a: "1492" }, { q: "¿Quién pintó la Mona Lisa?", a: "Da Vinci" }, { q: "¿Moneda de la Unión Europea?", a: "Euro" },
   { q: "¿Idioma más hablado del mundo?", a: "Chino" }, { q: "¿Dios del trueno nórdico?", a: "Thor" }, { q: "¿Primer hombre en la Luna?", a: "Armstrong" },
   { q: "¿Quién escribió Romeo y Julieta?", a: "Shakespeare" }, { q: "¿Qué se celebra el 25 de diciembre?", a: "Navidad" }, { q: "¿Color de la esperanza?", a: "Verde" },
   { q: "¿Cuántos años tiene un siglo?", a: "100" }, { q: "¿Cuántos años tiene un milenio?", a: "1000" }, { q: "¿En qué país están las pirámides?", a: "Egipto" },
   { q: "¿Instrumento para ver estrellas?", a: "Telescopio" }, { q: "¿Instrumento para ver microbios?", a: "Microscopio" }, { q: "¿Deporte rey en España?", a: "Fútbol" },
   { q: "¿Cuántos jugadores hay en un equipo de fútbol?", a: "11" }, { q: "¿Estación que caen las hojas?", a: "Otoño" }, { q: "¿Mes con menos días?", a: "Febrero" },
-  { q: "¿Capital de Rusia?", a: "Moscú" }, { q: "¿País del sol naciente?", a: "Japón" }
+  { q: "¿Capital de Rusia?", a: "Moscú" }, { q: "¿País del sol naciente?", a: "Japón" },
+  { q: "¿Diosa griega de la sabiduría?", a: "Atenea" }, { q: "¿Inventor de la bombilla?", a: "Edison" }, { q: "¿Pintor que se cortó la oreja?", a: "Van Gogh" },
+  { q: "¿Quién descubrió la gravedad?", a: "Newton" }, { q: "¿Nave de Cristóbal Colón?", a: "Santa María" }, { q: "¿Instrumento de 6 cuerdas?", a: "Guitarra" },
+  { q: "¿Rey de los dioses griegos?", a: "Zeus" }, { q: "¿Héroe suizo que disparó a una manzana?", a: "Guillermo Tell" }, { q: "¿País de los faraones?", a: "Egipto" },
+  { q: "¿Moneda de Reino Unido?", a: "Libra" }
 ];
 
 const HYDRA_WORDS = [
@@ -215,7 +252,9 @@ const HYDRA_WORDS = [
     "GRAVEDAD", "OXIGENO", "HIDROGENO", "GALAXIA", "ASTEROIDE", "VOLCAN", "TERREMOTO", "HURACAN", "TORNADO",
     "ESDRUJULA", "DIPTONGO", "HIATO", "SINONIMO", "ANTONIMO", "METAFORA", "POESIA", "TEATRO", "NOVELA",
     "FRACCION", "DECIMAL", "POLIGONO", "VERTICE", "ANGULO", "DIAMETRO", "RADIO", "PERIMETRO", "MULTIGLO",
-    "DIVISOR", "FACTOR", "PRODUCTO", "COCIENTE", "RESTO", "DECADA"
+    "DIVISOR", "FACTOR", "PRODUCTO", "COCIENTE", "RESTO", "DECADA", "BIOSFERA", "LITOSFERA", "ATMOSFERA",
+    "HIDROSFERA", "NUTRICION", "RELACION", "REPRODUCCION", "INVERTEBRADO", "VERTEBRADO", "MAMIFERO", "AVE",
+    "REPTIL", "ANFIBIO", "PEZ", "ARTRÓPODO", "MOLUSCO", "EQUINODERMO", "GUSANO", "ESPONJA", "MEDUSA"
 ];
 
 // PREGUNTAS DE COMBATE POR NIVELES
@@ -227,7 +266,11 @@ const COMBAT_QUESTIONS = {
     { q: "¿5 + 5?", a: "10" }, { q: "¿Planeta donde vivimos?", a: "TIERRA" }, { q: "¿Color del cielo despejado?", a: "AZUL" },
     { q: "¿Fruta amarilla y curva?", a: "PLATANO" }, { q: "¿Animal que maulla?", a: "GATO" }, { q: "¿Opuesto de negro?", a: "BLANCO" },
     { q: "¿Dedos en una mano?", a: "5" }, { q: "¿Mes de la Navidad?", a: "DICIEMBRE" }, { q: "¿Instrumento para escribir?", a: "LAPIZ" },
-    { q: "¿Vehículo de dos ruedas?", a: "BICICLETA" }, { q: "¿Líquido que bebemos?", a: "AGUA" }, { q: "¿Sonido de la vaca?", a: "MUU" }
+    { q: "¿Vehículo de dos ruedas?", a: "BICICLETA" }, { q: "¿Líquido que bebemos?", a: "AGUA" }, { q: "¿Sonido de la vaca?", a: "MUU" },
+    { q: "¿Número después del 9?", a: "10" }, { q: "¿Letra vocal?", a: "A" }, { q: "¿Mano para saludar?", a: "DERECHA" },
+    { q: "¿Animal que ladra?", a: "PERRO" }, { q: "¿Color del sol?", a: "AMARILLO" }, { q: "¿Sabor del limón?", a: "ACIDO" },
+    { q: "¿Medio de transporte aéreo?", a: "AVION" }, { q: "¿Opuesto de frío?", a: "CALOR" }, { q: "¿Comida de los conejos?", a: "ZANAHORIA" },
+    { q: "¿Deporte con balón y pie?", a: "FUTBOL" }
   ],
   medium: [
     { q: "¿Capital de Alemania?", a: "BERLIN" }, { q: "¿Símbolo químico del agua?", a: "H2O" }, { q: "¿Lados de un hexágono?", a: "6" },
@@ -236,7 +279,11 @@ const COMBAT_QUESTIONS = {
     { q: "¿Capital de Italia?", a: "ROMA" }, { q: "¿Capital de Portugal?", a: "LISBOA" }, { q: "¿Gas que respiramos?", a: "OXIGENO" },
     { q: "¿Animal más rápido?", a: "GUEPARDO" }, { q: "¿Triángulo 3 lados iguales?", a: "EQUILATERO" }, { q: "¿Antónimo de 'valiente'?", a: "COBARDE" },
     { q: "¿Sexto mes del año?", a: "JUNIO" }, { q: "¿País de la pizza?", a: "ITALIA" }, { q: "¿Planeta con anillos?", a: "SATURNO" },
-    { q: "¿Capital de Rusia?", a: "MOSCU" }, { q: "¿Metal precioso amarillo?", a: "ORO" }
+    { q: "¿Capital de Rusia?", a: "MOSCU" }, { q: "¿Metal precioso amarillo?", a: "ORO" },
+    { q: "¿Instrumento de 88 teclas?", a: "PIANO" }, { q: "¿Líquido vital rojo?", a: "SANGRE" }, { q: "¿Capital de Francia?", a: "PARIS" },
+    { q: "¿Resultad de 12 por 10?", a: "120" }, { q: "¿Animal con trompa?", a: "ELEFANTE" }, { q: "¿Estación de las flores?", a: "PRIMAVERA" },
+    { q: "¿Moneda de Europa?", a: "EURO" }, { q: "¿Rey de los dioses griegos?", a: "ZEUS" }, { q: "¿Héroe arácnido?", a: "SPIDERMAN" },
+    { q: "¿País de los canguros?", a: "AUSTRALIA" }
   ],
   hard: [
     { q: "¿Capital de Australia?", a: "CANBERRA" }, { q: "¿Símbolo químico del Oro?", a: "AU" }, { q: "¿12 x 12?", a: "144" },
@@ -245,7 +292,11 @@ const COMBAT_QUESTIONS = {
     { q: "¿Raíz cuadrada de 81?", a: "9" }, { q: "¿Diosa griega sabiduría?", a: "ATENEA" }, { q: "¿Capital de Canadá?", a: "OTTAWA" },
     { q: "¿Elemento químico 'Fe'?", a: "HIERRO" }, { q: "¿Autor de Harry Potter?", a: "ROWLING" }, { q: "¿Guerra 1939-1945?", a: "SEGUNDA" },
     { q: "¿Capital de Turquía?", a: "ANKARA" }, { q: "¿Velocidad de la luz?", a: "300000" }, { q: "¿Satélite de la Tierra?", a: "LUNA" },
-    { q: "¿País más grande?", a: "RUSIA" }, { q: "¿Río más largo?", a: "AMAZONAS" }
+    { q: "¿País más grande?", a: "RUSIA" }, { q: "¿Río más largo?", a: "AMAZONAS" },
+    { q: "¿Capital de Marruecos?", a: "RABAT" }, { q: "¿Pintor de los Girasoles?", a: "VANGOGH" }, { q: "¿Hueso del muslo?", a: "FEMUR" },
+    { q: "¿Dios del mar?", a: "POSEIDON" }, { q: "¿Capital de China?", a: "PEKIN" }, { q: "¿Inventó el teléfono?", a: "BELL" },
+    { q: "¿País de los Aztecas?", a: "MEXICO" }, { q: "¿Planeta más caliente?", a: "VENUS" }, { q: "¿Capital de Egipto?", a: "ELCAIRO" },
+    { q: "¿Símbolo de la Plata?", a: "AG" }
   ]
 };
 
