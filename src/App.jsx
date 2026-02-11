@@ -8,10 +8,10 @@ import {
   Users, ChevronsUp, Hexagon, ClipboardList, Swords, Brain, Volume2, VolumeX, List, 
   CheckCircle2, PlusCircle, Quote, Siren, Award, History, Trash2, X, Package, Dices, 
   Sparkles, Radio, BookOpen, Timer, Wifi, WifiOff, MessageSquare, ShieldCheck, Flame, Star, Calculator,
-  Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon
+  Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon, Edit3, Save, Upload
 } from 'lucide-react';
 
-const APP_VERSION = "v4.0.0 (DATABASE XL)";
+const APP_VERSION = "v4.2.0 (DATABASE XXL)";
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
 const firebaseConfig = typeof __firebase_config !== 'undefined' 
@@ -165,7 +165,7 @@ const MULTIVERSE_EVENTS = [
 
 const DUEL_CHALLENGES = ["Piedra, Papel o Tijera", "Duelo de miradas", "Pregunta de Mates", "Deletreo rápido", "El que parpadee pierde", "Adivinanza"];
 
-// --- BANCO DE PREGUNTAS MASIVO (200+) ---
+// --- BANCO DE PREGUNTAS (100) ---
 const ACADEMIC_QUESTIONS = [
   // MATEMÁTICAS
   { q: "¿Cuánto es 8 x 8?", a: "64" }, { q: "¿La mitad de 500?", a: "250" }, { q: "¿Cuántos lados tiene un hexágono?", a: "6" },
@@ -205,7 +205,7 @@ const ACADEMIC_QUESTIONS = [
   { q: "¿Capital de Japón?", a: "Tokio" }, { q: "¿Río más largo del mundo?", a: "Amazonas" }, { q: "¿País más grande del mundo?", a: "Rusia" },
   { q: "¿Continente helado?", a: "Antártida" }, { q: "¿Capital de Rusia?", a: "Moscú" }, { q: "¿Océano más grande?", a: "Pacífico" },
   { q: "¿En qué país está el Taj Mahal?", a: "India" }, { q: "¿En qué país está el Coliseo?", a: "Italia" }, { q: "¿Continente de Brasil?", a: "América" },
-  { q: "¿Capital de Argentina?", a: "Buenos Aires" }, { q: "¿Capital de Andalucía?", a: "Sevilla" }, { q: "¿Capital de Cataluña?", a: "Sevilla" }, // Duplicate corrected in list logic or kept simple
+  { q: "¿Capital de Argentina?", a: "Buenos Aires" }, { q: "¿Capital de Andalucía?", a: "Sevilla" }, { q: "¿Capital de Cataluña?", a: "Sevilla" }, 
 
   // LENGUA
   { q: "¿Antónimo de 'rápido'?", a: "Lento" }, { q: "¿Sinónimo de 'bonito'?", a: "Bello" }, { q: "¿Palabra que indica acción?", a: "Verbo" },
@@ -270,7 +270,14 @@ const COMBAT_QUESTIONS = {
     { q: "¿Número después del 9?", a: "10" }, { q: "¿Letra vocal?", a: "A" }, { q: "¿Mano para saludar?", a: "DERECHA" },
     { q: "¿Animal que ladra?", a: "PERRO" }, { q: "¿Color del sol?", a: "AMARILLO" }, { q: "¿Sabor del limón?", a: "ACIDO" },
     { q: "¿Medio de transporte aéreo?", a: "AVION" }, { q: "¿Opuesto de frío?", a: "CALOR" }, { q: "¿Comida de los conejos?", a: "ZANAHORIA" },
-    { q: "¿Deporte con balón y pie?", a: "FUTBOL" }
+    { q: "¿Deporte con balón y pie?", a: "FUTBOL" },
+    { q: "¿Color de la esmeralda?", a: "VERDE" }, { q: "¿Animal que relincha?", a: "CABALLO" }, { q: "¿Días en un año bisiesto?", a: "366" },
+    { q: "¿Instrumento para medir la temperatura?", a: "TERMOMETRO" }, { q: "¿Planeta más grande?", a: "JUPITER" }, { q: "¿Opuesto de arriba?", a: "ABAJO" },
+    { q: "¿Sexto día de la semana?", a: "SABADO" }, { q: "¿Capital de Francia?", a: "PARIS" }, { q: "¿Hielo es agua en estado...?", a: "SOLIDO" },
+    { q: "¿Animal con cuello muy largo?", a: "JIRAFA" }, { q: "¿Dedos en dos manos?", a: "10" }, { q: "¿Color de las fresas?", a: "ROJO" },
+    { q: "¿Rey de los mares (cuento)?", a: "TRITON" }, { q: "¿Fruta de Blancanieves?", a: "MANZANA" }, { q: "¿Sonido del perro?", a: "GUAU" },
+    { q: "¿Estación de la nieve?", a: "INVIERNO" }, { q: "¿Opuesto de encender?", a: "APAGAR" }, { q: "¿Vehículo que va por vías?", a: "TREN" },
+    { q: "¿Líquido de las vacas?", a: "LECHE" }, { q: "¿Color del carbón?", a: "NEGRO" }
   ],
   medium: [
     { q: "¿Capital de Alemania?", a: "BERLIN" }, { q: "¿Símbolo químico del agua?", a: "H2O" }, { q: "¿Lados de un hexágono?", a: "6" },
@@ -283,7 +290,14 @@ const COMBAT_QUESTIONS = {
     { q: "¿Instrumento de 88 teclas?", a: "PIANO" }, { q: "¿Líquido vital rojo?", a: "SANGRE" }, { q: "¿Capital de Francia?", a: "PARIS" },
     { q: "¿Resultad de 12 por 10?", a: "120" }, { q: "¿Animal con trompa?", a: "ELEFANTE" }, { q: "¿Estación de las flores?", a: "PRIMAVERA" },
     { q: "¿Moneda de Europa?", a: "EURO" }, { q: "¿Rey de los dioses griegos?", a: "ZEUS" }, { q: "¿Héroe arácnido?", a: "SPIDERMAN" },
-    { q: "¿País de los canguros?", a: "AUSTRALIA" }
+    { q: "¿País de los canguros?", a: "AUSTRALIA" },
+    { q: "¿Capital de Grecia?", a: "ATENAS" }, { q: "¿Hueso de la rodilla?", a: "ROTULA" }, { q: "¿Resultado de 9 x 9?", a: "81" },
+    { q: "¿País del sushi?", a: "JAPON" }, { q: "¿Verbo 'correr' en futuro?", a: "CORRERE" }, { q: "¿Animal más alto?", a: "JIRAFA" },
+    { q: "¿Continente de la Antártida?", a: "ANTARTIDA" }, { q: "¿Simbolo del Hidrógeno?", a: "H" }, { q: "¿Planeta más cercano al sol?", a: "MERCURIO" },
+    { q: "¿Capital de Reino Unido?", a: "LONDRES" }, { q: "¿Instrumento de percusión?", a: "TAMBOR" }, { q: "¿Pintor de 'Las Meninas'?", a: "VELAZQUEZ" },
+    { q: "¿Río que pasa por Toledo?", a: "TAJO" }, { q: "¿Cuerpo geométrico como una pelota?", a: "ESFERA" }, { q: "¿Antónimo de 'generoso'?", a: "TACAÑO" },
+    { q: "¿Mes con 28 días?", a: "FEBRERO" }, { q: "¿País de la Torre de Pisa?", a: "ITALIA" }, { q: "¿Planeta azul?", a: "TIERRA" },
+    { q: "¿Capital de Argentina?", a: "BUENOSAIRES" }, { q: "¿Metal de las latas?", a: "ALUMINIO" }
   ],
   hard: [
     { q: "¿Capital de Australia?", a: "CANBERRA" }, { q: "¿Símbolo químico del Oro?", a: "AU" }, { q: "¿12 x 12?", a: "144" },
@@ -296,7 +310,14 @@ const COMBAT_QUESTIONS = {
     { q: "¿Capital de Marruecos?", a: "RABAT" }, { q: "¿Pintor de los Girasoles?", a: "VANGOGH" }, { q: "¿Hueso del muslo?", a: "FEMUR" },
     { q: "¿Dios del mar?", a: "POSEIDON" }, { q: "¿Capital de China?", a: "PEKIN" }, { q: "¿Inventó el teléfono?", a: "BELL" },
     { q: "¿País de los Aztecas?", a: "MEXICO" }, { q: "¿Planeta más caliente?", a: "VENUS" }, { q: "¿Capital de Egipto?", a: "ELCAIRO" },
-    { q: "¿Símbolo de la Plata?", a: "AG" }
+    { q: "¿Símbolo de la Plata?", a: "AG" },
+    { q: "¿Capital de Noruega?", a: "OSLO" }, { q: "¿Símbolo químico del Hierro?", a: "FE" }, { q: "¿Raíz cuadrada de 121?", a: "11" },
+    { q: "¿Autor de 'Platero y yo'?", a: "JIMENEZ" }, { q: "¿Planeta enano?", a: "PLUTON" }, { q: "¿Río más largo de España?", a: "TAJO" },
+    { q: "¿Pintor del 'Grito'?", a: "MUNCH" }, { q: "¿Año llegada hombre a la Luna?", a: "1969" }, { q: "¿Diosa romana del amor?", a: "VENUS" },
+    { q: "¿Capital de Polonia?", a: "VARSOVIA" }, { q: "¿Elemento químico 'K'?", a: "POTASIO" }, { q: "¿Autor de 'El Principito'?", a: "EXUPERY" },
+    { q: "¿Guerra 1914-1918?", a: "PRIMERA" }, { q: "¿Capital de Suecia?", a: "ESTOCOLMO" }, { q: "¿Velocidad del sonido (aire)?", a: "343" },
+    { q: "¿Satélite de Júpiter?", a: "GANIMEDES" }, { q: "¿País más poblado?", a: "INDIA" }, { q: "¿Río que cruza Egipto?", a: "NILO" },
+    { q: "¿Monte más alto de Europa?", a: "ELBRUS" }, { q: "¿Capital de Hungría?", a: "BUDAPEST" }
   ]
 };
 
@@ -419,6 +440,7 @@ function AvengersTracker() {
   const [loading, setLoading] = useState(true);
   const [useLocal, setUseLocal] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null); 
+  const [editMode, setEditMode] = useState({}); // Stores which team is being edited { teamId: true/false }
   
   // UI States
   const [modal, setModal] = useState(null);
@@ -471,11 +493,15 @@ function AvengersTracker() {
   // ESTA ES LA CLAVE: useCallback para que la función no cambie y resetee el timer del toast
   const closeToast = useCallback(() => setToast(null), []);
 
-  // Backup local
+  // Persistent Local Storage Effect for teams
   useEffect(() => {
     localStorage.setItem('avengers_teams', JSON.stringify(teams));
+  }, [teams]);
+
+  // Persistent Local Storage Effect for mission
+  useEffect(() => {
     localStorage.setItem('avengers_mission', mission);
-  }, [teams, mission]);
+  }, [mission]);
 
   // Daily Quote, Boss HP Growth & Reset Logic
   useEffect(() => {
@@ -647,6 +673,40 @@ function AvengersTracker() {
     if (Math.abs(amt) >= 5) speak(`Puntos para ${t.name}`);
     safeUpdate(tid, { points: t.points + amt });
     if (amt !== 0) logAction(`${t.name}: ${amt > 0 ? '+' : ''}${amt} pts`);
+  };
+
+  // MANUAL EDIT POINTS
+  const handleManualEdit = (tid, val) => {
+      const newVal = parseInt(val);
+      if(!isNaN(newVal)) {
+          safeUpdate(tid, { points: newVal });
+          logAction(`${teams.find(t=>t.id===tid).name}: Manual Edit -> ${newVal}`);
+      }
+      setEditMode({ ...editMode, [tid]: false });
+  };
+
+  // BACKUP FUNCTIONALITY
+  const backupData = () => {
+     const data = JSON.stringify(teams);
+     navigator.clipboard.writeText(data);
+     showToast("Copia de seguridad copiada al portapapeles", "success");
+     speak("Backup completado");
+  };
+
+  const restoreData = async () => {
+     const data = prompt("Pega aquí el código de seguridad:");
+     if (data) {
+         try {
+             const parsed = JSON.parse(data);
+             if (Array.isArray(parsed)) {
+                 parsed.forEach(t => safeUpdate(t.id, t));
+                 showToast("Datos restaurados correctamente", "success");
+                 speak("Sistema restaurado");
+             }
+         } catch(e) {
+             showToast("Error al restaurar: Código inválido", "error");
+         }
+     }
   };
 
   const handleDailyProgress = (tid, type) => {
@@ -1187,6 +1247,8 @@ function AvengersTracker() {
 
             {isAdmin ? (
                 <>
+                  <button onClick={backupData} className="p-2 rounded border bg-blue-900/50 border-blue-500 hover:text-blue-300" title="Guardar Copia"><Save size={16}/></button>
+                  <button onClick={restoreData} className="p-2 rounded border bg-blue-900/50 border-blue-500 hover:text-blue-300" title="Restaurar Copia"><Upload size={16}/></button>
                   <button onClick={resetDailyLimits} className="p-2 rounded border bg-green-900/50 border-green-500 hover:text-green-300" title="Recargar Días"><RefreshCw size={16}/></button>
                   <button onClick={handleSnap} className="p-2 rounded border bg-slate-800 border-yellow-500 text-yellow-400 hover:scale-110 transition-transform" title="CHASQUIDO"><Hand size={16}/></button>
                   <button onClick={handleBossAttack} className="p-2 rounded border bg-red-900/80 border-red-500 text-white hover:scale-110 transition-transform animate-pulse" title="ATAQUE DE THANOS"><Skull size={16}/></button>
@@ -1274,8 +1336,34 @@ function AvengersTracker() {
 
                   <div>
                     <div className="flex justify-between items-start mb-3 relative z-10">
-                      <div className="flex gap-2 items-center"><div className={`w-10 h-10 rounded-full border border-white/20 bg-slate-900 overflow-hidden ${t.accent}`}><img src={t.gif} className="w-full h-full object-cover"/></div><div><div className={`text-[8px] font-black uppercase tracking-widest ${rInfo.color}`}>{rInfo.title}</div><h2 className="text-sm font-black uppercase tracking-wider text-white">{t.name}</h2></div></div>
-                      <span className={`text-2xl font-black font-mono tracking-tighter ${t.points<0?'text-red-400':'text-white'}`}>{t.points}</span>
+                      <div className="flex gap-2 items-center">
+                        <div className={`w-10 h-10 rounded-full border border-white/20 bg-slate-900 overflow-hidden ${t.accent}`}><img src={t.gif} className="w-full h-full object-cover"/></div>
+                        <div>
+                          <div className={`text-[8px] font-black uppercase tracking-widest ${rInfo.color}`}>{rInfo.title}</div>
+                          <h2 className="text-sm font-black uppercase tracking-wider text-white">{t.name}</h2>
+                        </div>
+                      </div>
+                      
+                      {/* POINTS DISPLAY & MANUAL EDIT */}
+                      <div className="flex items-center gap-2">
+                          {isAdmin && editMode[t.id] ? (
+                              <input 
+                                type="number" 
+                                autoFocus
+                                defaultValue={t.points}
+                                onBlur={(e) => handleManualEdit(t.id, e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleManualEdit(t.id, e.target.value)}
+                                className="w-16 bg-black border border-slate-500 rounded text-center text-sm font-mono text-white"
+                              />
+                          ) : (
+                              <span className={`text-2xl font-black font-mono tracking-tighter ${t.points<0?'text-red-400':'text-white'}`}>{t.points}</span>
+                          )}
+                          {isAdmin && (
+                              <button onClick={() => setEditMode({...editMode, [t.id]: true})} className="opacity-50 hover:opacity-100 text-slate-400 hover:text-white">
+                                  <Edit3 size={12}/>
+                              </button>
+                          )}
+                      </div>
                     </div>
                     
                     {/* WAKANDA LOOT EFFECT BADGE */}
