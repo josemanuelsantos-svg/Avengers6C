@@ -11,7 +11,7 @@ import {
   Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon, Edit3, Save, Upload
 } from 'lucide-react';
 
-const APP_VERSION = "v4.2.0 (DATABASE XXL)";
+const APP_VERSION = "v4.3.0 (ENDGAME)";
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
 const firebaseConfig = typeof __firebase_config !== 'undefined' 
@@ -123,6 +123,7 @@ const BADGES_LIST = [
     { icon: <Brain size={14}/>, name: "Ingenio", color: "text-purple-400" },
     { icon: <Shield size={14}/>, name: "Defensor", color: "text-green-400" },
     { icon: <Flame size={14}/>, name: "Racha", color: "text-orange-400" },
+    { icon: <Crown size={14}/>, name: "TITÁN", color: "text-yellow-500" }, // New Legendary Badge
 ];
 
 const DAILY_QUOTES = [
@@ -862,6 +863,32 @@ function AvengersTracker() {
           setModal(null);
       }
   };
+  
+  // INFINITY GAUNTLET LOGIC
+  const activateGauntlet = async (team) => {
+     if(!window.confirm("¿ACTIVAR EL GUANTELETE DEL INFINITO? ESTA ACCIÓN REINICIARÁ EL UNIVERSO.")) return;
+     
+     speak("Yo soy... inevitable.");
+     playSfx('alarm');
+     setShaking(true);
+     
+     // 1. Reset all teams to 0 points
+     for (const t of teams) {
+         await safeUpdate(t.id, { points: 0, dailyMath:0, dailyWord:0, dailyCombat:0, dailyMemory:0 });
+     }
+     
+     // 2. Award Titan Badge to the winner
+     const newBadges = [...(team.badges || []), { icon: <Crown size={14}/>, name: "TITÁN", color: "text-yellow-500" }];
+     await safeUpdate(team.id, { badges: newBadges });
+     
+     logAction(`${team.name} usó el GUANTELETE DEL INFINITO.`);
+     
+     setTimeout(() => {
+         setShaking(false);
+         speak("El universo ha sido reequilibrado.");
+         triggerSecretConfetti();
+     }, 3000);
+  };
 
   const resetDailyLimits = async () => {
     if (!window.confirm("¿Reiniciar los límites de retos diarios para todos?")) return;
@@ -1365,6 +1392,16 @@ function AvengersTracker() {
                           )}
                       </div>
                     </div>
+                    
+                    {/* GAUNTLET TRIGGER BUTTON */}
+                    {t.points >= 600 && (
+                       <button 
+                           onClick={() => activateGauntlet(t)}
+                           className="absolute top-2 left-1/2 -translate-x-1/2 z-30 bg-yellow-500 hover:bg-yellow-400 text-black text-[10px] font-black px-3 py-1 rounded shadow-[0_0_15px_rgba(234,179,8,0.6)] animate-bounce flex items-center gap-1"
+                       >
+                           <Hand size={12} /> USAR GUANTELETE
+                       </button>
+                    )}
                     
                     {/* WAKANDA LOOT EFFECT BADGE */}
                     {t.lastLoot && (
