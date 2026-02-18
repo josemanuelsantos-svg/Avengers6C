@@ -9,10 +9,10 @@ import {
   CheckCircle2, PlusCircle, Quote, Siren, Award, History, Trash2, X, Package, Dices, 
   Sparkles, Radio, BookOpen, Timer, Wifi, WifiOff, MessageSquare, ShieldCheck, Flame, Star, Calculator,
   Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon, Edit3, Save, Upload, Disc,
-  Plane, Gift
+  Plane, Gift, HandMetal
 } from 'lucide-react';
 
-const APP_VERSION = "v5.3.0 (HIGH STAKES)";
+const APP_VERSION = "v5.4.0 (SECURE & LOCKED)";
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
 const firebaseConfig = typeof __firebase_config !== 'undefined' 
@@ -97,7 +97,6 @@ const INITIAL_TEAMS = [
   },
 ];
 
-// --- MERCADO CON PRECIOS ACTUALIZADOS (x2) ---
 const REWARDS_LIST = [
   { id: 99, name: 'Campo de Fuerza', cost: 100, desc: 'Bloquea 1 sanción automáticamente' }, 
   { id: 66, name: 'El Chasquido', cost: 100, desc: 'Quita 50% pts a 2 rivales al azar' },
@@ -111,7 +110,6 @@ const REWARDS_LIST = [
   { id: 9, name: 'Hackeo', cost: 160, desc: 'Fondo pantalla profe' },
   { id: 10, name: 'Cine', cost: 300, desc: 'Película en clase' },
   { id: 12, name: 'Sin Botas', cost: 30, desc: 'Estar en calcetines' },
-  // NUEVAS RECOMPENSAS
   { id: 20, name: 'Silla del Director', cost: 120, desc: 'Sentarse en silla del profe (1 sesión)' },
   { id: 21, name: 'El Oráculo', cost: 90, desc: 'Ayuda del profe en 1 pregunta' },
   { id: 22, name: 'Mutis por el Foro', cost: 200, desc: 'El profe no puede hablar 5 min' },
@@ -120,11 +118,7 @@ const REWARDS_LIST = [
   { id: 23, name: 'FIESTA VENGADORA', cost: 1000, desc: '10 min libres para TODA la clase' }
 ];
 
-const PENALTIES_LIST = [
-  "Tablas multiplicar", "Copiar verbos", "Dibujo locomotor", "Capitales Europa", "Recoger clase",
-  "Informe de Daños (Redacción)", "Limpieza de Cubierta (Estanterías)", "Silencio de Radio (5 min)",
-  "Patrulla (Vuelta al patio)", "Orden Alfabético (Biblioteca)"
-];
+const PENALTIES_LIST = [ "Tablas multiplicar", "Copiar verbos", "Dibujo locomotor", "Capitales Europa", "Recoger clase", "Informe de Daños (Redacción)", "Limpieza de Cubierta (Estanterías)", "Silencio de Radio (5 min)", "Patrulla (Vuelta al patio)", "Orden Alfabético (Biblioteca)" ];
 
 const BADGES_LIST = [
     { icon: <Star size={14}/>, name: "Excelencia", color: "text-yellow-400" },
@@ -135,230 +129,37 @@ const BADGES_LIST = [
     { icon: <Crown size={14}/>, name: "TITÁN", color: "text-yellow-500" },
 ];
 
-const DAILY_QUOTES = [
-    "Un gran poder conlleva una gran responsabilidad.",
-    "No es sobre cuánto golpeamos, sino cuánto podemos resistir.",
-    "Vengadores, ¡Reuníos!",
-    "Solo si trabajamos juntos podremos vencer.",
-    "El conocimiento es la mejor arma.",
-    "Hasta el infinito y más allá.",
-    "Lo que hacemos ahora define nuestro futuro.",
-    "La paciencia es la clave de la victoria.",
-    "Nunca te rindas, incluso cuando las probabilidades estén en contra.",
-    "La verdadera fuerza está en el corazón."
-];
+const DAILY_QUOTES = [ "Un gran poder conlleva una gran responsabilidad.", "No es sobre cuánto golpeamos, sino cuánto podemos resistir.", "Vengadores, ¡Reuníos!", "Solo si trabajamos juntos podremos vencer.", "El conocimiento es la mejor arma.", "Hasta el infinito y más allá.", "Lo que hacemos ahora define nuestro futuro.", "La paciencia es la clave de la victoria.", "Nunca te rindas, incluso cuando las probabilidades estén en contra.", "La verdadera fuerza está en el corazón." ];
 
-const MISSION_BATTERY = [
-  { category: "Comportamiento", text: "OPERACIÓN SILENCIO" }, 
-  { category: "Orden", text: "PROTOCOLO LIMPIEZA" },
-  { category: "Académico", text: "ENTREGA PUNTUAL" }, 
-  { category: "Social", text: "TRABAJO EN EQUIPO" }
-];
+const MISSION_BATTERY = [ { category: "Comportamiento", text: "OPERACIÓN SILENCIO" }, { category: "Orden", text: "PROTOCOLO LIMPIEZA" }, { category: "Académico", text: "ENTREGA PUNTUAL" }, { category: "Social", text: "TRABAJO EN EQUIPO" } ];
 
-const INFINITY_STONES = [
-  { threshold: 100, color: 'text-blue-400', name: 'Espacio', perk: 'Teletransporte' },
-  { threshold: 200, color: 'text-red-500', name: 'Realidad', perk: 'Ilusión' },
-  { threshold: 300, color: 'text-purple-500', name: 'Poder', perk: 'Potencia' },
-  { threshold: 400, color: 'text-yellow-400', name: 'Mente', perk: 'Clarividencia' },
-  { threshold: 500, color: 'text-green-500', name: 'Tiempo', perk: 'Retroceso' },
-  { threshold: 600, color: 'text-orange-500', name: 'Alma', perk: 'Sacrificio' }
-];
+const INFINITY_STONES = [ { threshold: 100, color: 'text-blue-400', name: 'Espacio', perk: 'Teletransporte' }, { threshold: 200, color: 'text-red-500', name: 'Realidad', perk: 'Ilusión' }, { threshold: 300, color: 'text-purple-500', name: 'Poder', perk: 'Potencia' }, { threshold: 400, color: 'text-yellow-400', name: 'Mente', perk: 'Clarividencia' }, { threshold: 500, color: 'text-green-500', name: 'Tiempo', perk: 'Retroceso' }, { threshold: 600, color: 'text-orange-500', name: 'Alma', perk: 'Sacrificio' } ];
 
-const MULTIVERSE_EVENTS = [
-  { title: "CHASQUIDO INVERSO", desc: "¡El universo se reequilibra! Todos ganan +5 puntos.", points: 5, type: 'good' },
-  { title: "INVASIÓN SKRULL", desc: "Revisión sorpresa de material.", points: 0, type: 'neutral' },
-  { title: "FALLO EN MATRIX", desc: "La próxima tarea vale DOBLE puntuación.", points: 0, type: 'good' },
-  { title: "ATAQUE DE ULTRÓN", desc: "Hackeo de sistemas. Todos pierden -2 puntos.", points: -2, type: 'bad' },
-  { title: "VISITA DE STAN LEE", desc: "¡Excelsior! 5 minutos de tiempo libre.", points: 0, type: 'good' },
-  { title: "TORMENTA CUÁNTICA", desc: "Cambio de sitios aleatorio.", points: 0, type: 'neutral' },
-];
+const MULTIVERSE_EVENTS = [ { title: "CHASQUIDO INVERSO", desc: "¡El universo se reequilibra! Todos ganan +5 puntos.", points: 5, type: 'good' }, { title: "INVASIÓN SKRULL", desc: "Revisión sorpresa de material.", points: 0, type: 'neutral' }, { title: "FALLO EN MATRIX", desc: "La próxima tarea vale DOBLE puntuación.", points: 0, type: 'good' }, { title: "ATAQUE DE ULTRÓN", desc: "Hackeo de sistemas. Todos pierden -2 puntos.", points: -2, type: 'bad' }, { title: "VISITA DE STAN LEE", desc: "¡Excelsior! 5 minutos de tiempo libre.", points: 0, type: 'good' }, { title: "TORMENTA CUÁNTICA", desc: "Cambio de sitios aleatorio.", points: 0, type: 'neutral' } ];
 
 const DUEL_CHALLENGES = ["Piedra, Papel o Tijera", "Duelo de miradas", "Pregunta de Mates", "Deletreo rápido", "El que parpadee pierde", "Adivinanza"];
 
-// --- BANCO DE PREGUNTAS ---
+// PREGUNTAS RESUMIDAS
 const ACADEMIC_QUESTIONS = [
-  // MATEMÁTICAS
-  { q: "¿Cuánto es 8 x 8?", a: "64" }, { q: "¿La mitad de 500?", a: "250" }, { q: "¿Cuántos lados tiene un hexágono?", a: "6" },
-  { q: "¿Resultado de 100 entre 4?", a: "25" }, { q: "¿Grados de un ángulo recto?", a: "90" }, { q: "¿Cuántos minutos tiene una hora?", a: "60" },
-  { q: "¿Raíz cuadrada de 81?", a: "9" }, { q: "¿El doble de 150?", a: "300" }, { q: "¿Cuánto es 12 x 10?", a: "120" },
-  { q: "¿Lados de un triángulo?", a: "3" }, { q: "¿Nombre del polígono de 5 lados?", a: "Pentágono" }, { q: "¿Cifra romana V?", a: "5" },
-  { q: "¿Cifra romana X?", a: "10" }, { q: "¿Cifra romana L?", a: "50" }, { q: "¿Cifra romana C?", a: "100" },
-  { q: "¿Cuánto es 7 x 7?", a: "49" }, { q: "¿Resultado de 25 + 75?", a: "100" }, { q: "¿El triple de 33?", a: "99" },
-  { q: "¿Cuántos cm hay en 1 metro?", a: "100" }, { q: "¿Cuántos gramos es 1 kilo?", a: "1000" },
-  { q: "¿Raíz cuadrada de 144?", a: "12" }, { q: "¿Doble de 0.5?", a: "1" }, { q: "¿Ángulo llano en grados?", a: "180" },
-  { q: "¿Cuántos segundos en un minuto?", a: "60" }, { q: "¿Mitad de 70?", a: "35" }, { q: "¿20% de 100?", a: "20" },
-  { q: "¿Cuánto es 3 al cuadrado?", a: "9" }, { q: "¿Lados de un heptágono?", a: "7" }, { q: "¿Milímetros en un centímetro?", a: "10" },
-  { q: "¿Número primo par?", a: "2" }, { q: "¿50 + 50 - 20?", a: "80" }, { q: "¿1000 entre 10?", a: "100" },
-  { q: "¿Ángulo agudo mide menos de...?", a: "90" }, { q: "¿Cifra romana D?", a: "500" }, { q: "¿Cifra romana M?", a: "1000" },
-  // 1º ESO MATH
-  { q: "¿Resultado de (-3) + (-2)?", a: "-5" }, { q: "¿Resultado de 5 - (-2)?", a: "7" }, { q: "¿M.C.D. de 4 y 6?", a: "2" },
-  { q: "¿M.C.M. de 3 y 4?", a: "12" }, { q: "¿Cuánto es 2 elevado a 3?", a: "8" }, { q: "¿Raíz cuadrada de 169?", a: "13" },
-  { q: "¿Un número divisible por 2 acaba en...?", a: "Par" }, { q: "¿Resultado de -5 x -2?", a: "10" }, { q: "¿3/4 en decimal?", a: "0.75" },
-  
-  // CIENCIAS NATURALES
-  { q: "¿Símbolo químico del agua?", a: "H2O" }, { q: "¿Hueso más largo del cuerpo?", a: "Fémur" }, { q: "¿Órgano que bombea sangre?", a: "Corazón" },
-  { q: "¿Planeta más cercano al Sol?", a: "Mercurio" }, { q: "¿Planeta conocido como el Planeta Rojo?", a: "Marte" }, { q: "¿Gas que respiramos?", a: "Oxígeno" },
-  { q: "¿Cuántos dientes tiene un adulto?", a: "32" }, { q: "¿Animal más rápido del mundo?", a: "Guepardo" }, { q: "¿Rey de la selva?", a: "León" },
-  { q: "¿Proceso de las plantas para comer?", a: "Fotosíntesis" }, { q: "¿Líquido vital del cuerpo humano?", a: "Sangre" }, { q: "¿Estado del agua en hielo?", a: "Sólido" },
-  { q: "¿Estado del agua en vapor?", a: "Gaseoso" }, { q: "¿Satélite natural de la Tierra?", a: "Luna" }, { q: "¿Estrella más cercana a la Tierra?", a: "Sol" },
-  { q: "¿Animal que produce leche?", a: "Mamífero" }, { q: "¿Animal que nace de huevo?", a: "Ovíparo" }, { q: "¿Cuántas patas tiene una araña?", a: "8" },
-  { q: "¿Insecto que fabrica miel?", a: "Abeja" }, { q: "¿Reino al que pertenecen las setas?", a: "Fungi" },
-  { q: "¿Gas que exhalamos?", a: "CO2" }, { q: "¿Planeta con anillos?", a: "Saturno" }, { q: "¿Animal más grande del mundo?", a: "Ballena Azul" },
-  { q: "¿Órgano para pensar?", a: "Cerebro" }, { q: "¿Hueso que protege el cerebro?", a: "Cráneo" }, { q: "¿Metal líquido a temperatura ambiente?", a: "Mercurio" },
-  { q: "¿Parte de la planta bajo tierra?", a: "Raíz" }, { q: "¿Animal que come carne?", a: "Carnívoro" }, { q: "¿Animal que come plantas?", a: "Herbívoro" },
-  { q: "¿Cuántos corazones tiene un pulpo?", a: "3" }, { q: "¿Animal que vive en agua y tierra?", a: "Anfibio" }, { q: "¿Hueso más pequeño?", a: "Estribo" },
-  // 1º ESO CIENCIAS
-  { q: "¿Unidad básica de la vida?", a: "Célula" }, { q: "¿Célula sin núcleo definido?", a: "Procariota" }, { q: "¿Célula con núcleo?", a: "Eucariota" },
-  { q: "¿Reino de las bacterias?", a: "Monera" }, { q: "¿Animales sin columna vertebral?", a: "Invertebrados" }, { q: "¿Capa gaseosa de la Tierra?", a: "Atmósfera" },
-  { q: "¿Capa de agua de la Tierra?", a: "Hidrosfera" }, { q: "¿Parte sólida de la Tierra?", a: "Geosfera" }, { q: "¿Movimiento de la Tierra sobre sí misma?", a: "Rotación" },
-  
-  // GEOGRAFÍA E HISTORIA
-  { q: "¿Capital de España?", a: "Madrid" }, { q: "¿Capital de Francia?", a: "París" }, { q: "¿Capital de Italia?", a: "Roma" },
-  { q: "¿Capital de Alemania?", a: "Berlín" }, { q: "¿Capital de Portugal?", a: "Lisboa" }, { q: "¿Capital de Reino Unido?", a: "Londres" },
-  { q: "¿Río más largo de la Península?", a: "Tajo" }, { q: "¿Río más caudaloso de la Península?", a: "Ebro" }, { q: "¿Océano entre América y Europa?", a: "Atlántico" },
-  { q: "¿Continente donde está Egipto?", a: "África" }, { q: "¿Continente donde está China?", a: "Asia" }, { q: "¿País con forma de bota?", a: "Italia" },
-  { q: "¿Montaña más alta del mundo?", a: "Everest" }, { q: "¿Montaña más alta de España?", a: "Teide" }, { q: "¿Desierto más grande del mundo?", a: "Sahara" },
-  { q: "¿Capital de Estados Unidos?", a: "Washington" }, { q: "¿Río que pasa por Sevilla?", a: "Guadalquivir" }, { q: "¿Río que pasa por Zaragoza?", a: "Ebro" },
-  { q: "¿Mar al este de España?", a: "Mediterráneo" }, { q: "¿Mar al norte de España?", a: "Cantábrico" },
-  { q: "¿Capital de Japón?", a: "Tokio" }, { q: "¿Río más largo del mundo?", a: "Amazonas" }, { q: "¿País más grande del mundo?", a: "Rusia" },
-  { q: "¿Continente helado?", a: "Antártida" }, { q: "¿Capital de Rusia?", a: "Moscú" }, { q: "¿Océano más grande?", a: "Pacífico" },
-  { q: "¿En qué país está el Taj Mahal?", a: "India" }, { q: "¿En qué país está el Coliseo?", a: "Italia" }, { q: "¿Continente de Brasil?", a: "América" },
-  { q: "¿Capital de Argentina?", a: "Buenos Aires" }, { q: "¿Capital de Andalucía?", a: "Sevilla" }, { q: "¿Capital de Cataluña?", a: "Barcelona" },
-  // 1º ESO HISTORIA
-  { q: "¿Etapa antes de la Historia?", a: "Prehistoria" }, { q: "¿Río de la civilización egipcia?", a: "Nilo" }, { q: "¿Tumbas de los faraones?", a: "Pirámides" },
-  { q: "¿Escritura de los egipcios?", a: "Jeroglífica" }, { q: "¿Polis griega famosa por la guerra?", a: "Esparta" }, { q: "¿Polis griega famosa por la democracia?", a: "Atenas" },
-  { q: "¿Edificio romano para luchas?", a: "Coliseo" }, { q: "¿Idioma del Imperio Romano?", a: "Latín" }, { q: "¿Dios egipcio de los muertos?", a: "Osiris" },
-  
-  // LENGUA
-  { q: "¿Antónimo de 'rápido'?", a: "Lento" }, { q: "¿Sinónimo de 'bonito'?", a: "Bello" }, { q: "¿Palabra que indica acción?", a: "Verbo" },
-  { q: "¿Palabra que califica al nombre?", a: "Adjetivo" }, { q: "¿Autor de El Quijote?", a: "Cervantes" }, { q: "¿Género de 'La casa'?", a: "Femenino" },
-  { q: "¿Plural de 'luz'?", a: "Luces" }, { q: "¿Sílaba tónica de 'camión'?", a: "Mión" }, { q: "¿Palabra con tilde en la última sílaba?", a: "Aguda" },
-  { q: "¿Palabra con tilde en la penúltima?", a: "Llana" }, { q: "¿Palabra con tilde en la antepenúltima?", a: "Esdrújula" }, { q: "¿Letra que no suena en español?", a: "H" },
-  { q: "¿Antónimo de 'verdad'?", a: "Mentira" }, { q: "¿Sinónimo de 'caminar'?", a: "Andar" }, { q: "¿Persona que escribe libros?", a: "Escritor" },
-  { q: "¿Libro de definiciones?", a: "Diccionario" }, { q: "¿Signo para preguntar?", a: "Interrogación" }, { q: "¿Signo para exclamar?", a: "Exclamación" },
-  { q: "¿Cuántas letras tiene el abecedario?", a: "27" }, { q: "¿Conjunto de versos?", a: "Estrofa" },
-  { q: "¿Sustantivo de 'correr'?", a: "Carrera" }, { q: "¿Femenino de 'toro'?", a: "Vaca" }, { q: "¿Plural de 'pez'?", a: "Peces" },
-  { q: "¿Antónimo de 'noche'?", a: "Día" }, { q: "¿Sinónimo de 'feliz'?", a: "Contento" }, { q: "¿Palabra que sustituye al nombre?", a: "Pronombre" },
-  { q: "¿Parte invariable de la oración?", a: "Preposición" }, { q: "¿Adjetivo de 'España'?", a: "Español" }, { q: "¿Verbo 'ser' en pasado?", a: "Fui" },
-  { q: "¿Autor de Harry Potter?", a: "Rowling" },
-  // 1º ESO LENGUA
-  { q: "¿Determinante artículo determinado?", a: "El" }, { q: "¿Sujeto de 'Juan come pan'?", a: "Juan" }, { q: "¿Predicado de 'Juan come pan'?", a: "Come pan" },
-  { q: "¿Núcleo del predicado?", a: "Verbo" }, { q: "¿Grado del adjetivo 'muy alto'?", a: "Superlativo" }, { q: "¿Emisor en la comunicación?", a: "Quien habla" },
-  
-  // CULTURA
-  { q: "¿En qué año se descubrió América?", a: "1492" }, { q: "¿Quién pintó la Mona Lisa?", a: "Da Vinci" }, { q: "¿Moneda de la Unión Europea?", a: "Euro" },
-  { q: "¿Idioma más hablado del mundo?", a: "Chino" }, { q: "¿Dios del trueno nórdico?", a: "Thor" }, { q: "¿Primer hombre en la Luna?", a: "Armstrong" },
-  { q: "¿Quién escribió Romeo y Julieta?", a: "Shakespeare" }, { q: "¿Qué se celebra el 25 de diciembre?", a: "Navidad" }, { q: "¿Color de la esperanza?", a: "Verde" },
-  { q: "¿Cuántos años tiene un siglo?", a: "100" }, { q: "¿Cuántos años tiene un milenio?", a: "1000" }, { q: "¿En qué país están las pirámides?", a: "Egipto" },
-  { q: "¿Instrumento para ver estrellas?", a: "Telescopio" }, { q: "¿Instrumento para ver microbios?", a: "Microscopio" }, { q: "¿Deporte rey en España?", a: "Fútbol" },
-  { q: "¿Cuántos jugadores hay en un equipo de fútbol?", a: "11" }, { q: "¿Estación que caen las hojas?", a: "Otoño" }, { q: "¿Mes con menos días?", a: "Febrero" },
-  { q: "¿Capital de Rusia?", a: "Moscú" }, { q: "¿País del sol naciente?", a: "Japón" },
-  { q: "¿Diosa griega de la sabiduría?", a: "Atenea" }, { q: "¿Inventor de la bombilla?", a: "Edison" }, { q: "¿Pintor que se cortó la oreja?", a: "Van Gogh" },
-  { q: "¿Quién descubrió la gravedad?", a: "Newton" }, { q: "¿Nave de Cristóbal Colón?", a: "Santa María" }, { q: "¿Instrumento de 6 cuerdas?", a: "Guitarra" },
-  { q: "¿Rey de los dioses griegos?", a: "Zeus" }, { q: "¿Héroe suizo que disparó a una manzana?", a: "Guillermo Tell" }, { q: "¿País de los faraones?", a: "Egipto" },
-  { q: "¿Moneda de Reino Unido?", a: "Libra" },
-  
-  // INGLÉS
-  { q: "Perro in English", a: "Dog" }, { q: "Gato in English", a: "Cat" }, { q: "Rojo in English", a: "Red" },
-  { q: "Azul in English", a: "Blue" }, { q: "Uno in English", a: "One" }, { q: "Casa in English", a: "House" },
-  { q: "Colegio in English", a: "School" }, { q: "Libro in English", a: "Book" }, { q: "Lápiz in English", a: "Pencil" },
-  { q: "Hola in English", a: "Hello" }, { q: "Adiós in English", a: "Bye" }, { q: "Gracias in English", a: "Thanks" },
-  { q: "Lunes in English", a: "Monday" }, { q: "Domingo in English", a: "Sunday" }, { q: "Verano in English", a: "Summer" },
-  // 1º ESO INGLÉS
-  { q: "Pasado de 'Go'?", a: "Went" }, { q: "Plural de 'Child'?", a: "Children" }, { q: "Significado de 'Always'?", a: "Siempre" },
-  { q: "Opposite of 'Big'?", a: "Small" }, { q: "Color 'Yellow'?", a: "Amarillo" },
-
-  // MÚSICA (NEW CATEGORY)
-  { q: "¿Cuántas líneas tiene el pentagrama?", a: "5" }, { q: "¿Clave más común?", a: "Sol" }, { q: "¿Figura que vale 4 tiempos?", a: "Redonda" },
-  { q: "¿Figura que vale 2 tiempos?", a: "Blanca" }, { q: "¿Figura que vale 1 tiempo?", a: "Negra" }, { q: "¿Instrumento de Beethoven?", a: "Piano" },
-  { q: "¿Instrumento de cuerda frotada?", a: "Violín" }, { q: "¿Familia de la trompeta?", a: "Viento" },
+  { q: "¿Cuánto es 8 x 8?", a: "64" }, { q: "¿Capital de España?", a: "Madrid" }, { q: "¿Símbolo químico del agua?", a: "H2O" }, { q: "¿Antónimo de 'rápido'?", a: "Lento" }, 
+  { q: "¿3 al cuadrado?", a: "9" }, { q: "¿Capital de Francia?", a: "París" }, { q: "¿Hueso más largo?", a: "Fémur" }, { q: "Perro in English", a: "Dog" },
+  { q: "¿Planeta Rojo?", a: "Marte" }, { q: "¿Raíz de 81?", a: "9" }, { q: "¿Año descubrimiento América?", a: "1492" }, { q: "Blue in Spanish", a: "Azul" },
+  { q: "¿20% de 100?", a: "20" }, { q: "¿Capital de Italia?", a: "Roma" }, { q: "¿Gas que respiramos?", a: "Oxígeno" }, { q: "Summer in Spanish", a: "Verano" },
+  { q: "¿Lados de un triángulo?", a: "3" }, { q: "¿Autor del Quijote?", a: "Cervantes" }, { q: "¿Moneda de la UE?", a: "Euro" }, { q: "One in Spanish", a: "Uno" },
+  { q: "¿Resultado de (-2)+(-3)?", a: "-5" }, { q: "¿Capital de Japón?", a: "Tokio" }, { q: "¿Animal más rápido?", a: "Guepardo" }, { q: "Book in Spanish", a: "Libro" },
+  { q: "¿Capital de Alemania?", a: "Berlín" }, { q: "¿Lados hexágono?", a: "6" }, { q: "¿Símbolo Hierro?", a: "Fe" }, { q: "¿Pintor Guernica?", a: "Picasso" },
+  { q: "¿Planeta más grande?", a: "Júpiter" }, { q: "¿Capital Reino Unido?", a: "Londres" }, { q: "¿Verbo 'ir' en inglés?", a: "Go" }, { q: "¿5x5?", a: "25" },
+  { q: "¿Río más largo de España?", a: "Tajo" }, { q: "¿Cuántos continentes hay?", a: "6" }, { q: "¿Símbolo del oro?", a: "Au" }, { q: "¿Diosa sabiduría?", a: "Atenea" }
 ];
 
-const HYDRA_WORDS = [
-    "SUJETO", "PREDICADO", "VERBO", "ADJETIVO", "CELULA", "FOTOSINTESIS", "ENERGIA", "MATERIA", 
-    "PLANETA", "RELIEVE", "CLIMA", "EUROPA", "DEMOCRACIA", "CONSTITUCION", "ECOSYSTEMA", "VENGADORES", "ESCUDO",
-    "GRAVEDAD", "OXIGENO", "HIDROGENO", "GALAXIA", "ASTEROIDE", "VOLCAN", "TERREMOTO", "HURACAN", "TORNADO",
-    "ESDRUJULA", "DIPTONGO", "HIATO", "SINONIMO", "ANTONIMO", "METAFORA", "POESIA", "TEATRO", "NOVELA",
-    "FRACCION", "DECIMAL", "POLIGONO", "VERTICE", "ANGULO", "DIAMETRO", "RADIO", "PERIMETRO", "MULTIGLO",
-    "DIVISOR", "FACTOR", "PRODUCTO", "COCIENTE", "RESTO", "DECADA", "BIOSFERA", "LITOSFERA", "ATMOSFERA",
-    "HIDROSFERA", "NUTRICION", "RELACION", "REPRODUCCION", "INVERTEBRADO", "VERTEBRADO", "MAMIFERO", "AVE",
-    "REPTIL", "ANFIBIO", "PEZ", "ARTRÓPODO", "MOLUSCO", "EQUINODERMO", "GUSANO", "ESPONJA", "MEDUSA"
-];
+const HYDRA_WORDS = ["SUJETO", "PREDICADO", "VERBO", "ADJETIVO", "CELULA", "FOTOSINTESIS", "ENERGIA", "MATERIA", "PLANETA", "RELIEVE", "CLIMA", "EUROPA", "DEMOCRACIA", "CONSTITUCION", "ECOSYSTEMA", "VENGADORES", "ESCUDO", "GRAVEDAD", "OXIGENO", "HIDROGENO", "GALAXIA"];
 
-// PREGUNTAS DE COMBATE POR NIVELES
 const COMBAT_QUESTIONS = {
-  easy: [
-    { q: "¿Cuántas patas tiene una araña?", a: "8" }, { q: "¿Color del caballo blanco de Santiago?", a: "BLANCO" },
-    { q: "¿Capital de España?", a: "MADRID" }, { q: "¿2 x 5?", a: "10" }, { q: "¿Antónimo de 'alto'?", a: "BAJO" },
-    { q: "¿Rey de la selva?", a: "LEON" }, { q: "¿Días de la semana?", a: "7" }, { q: "¿Estación más calurosa?", a: "VERANO" },
-    { q: "¿5 + 5?", a: "10" }, { q: "¿Planeta donde vivimos?", a: "TIERRA" }, { q: "¿Color del cielo despejado?", a: "AZUL" },
-    { q: "¿Fruta amarilla y curva?", a: "PLATANO" }, { q: "¿Animal que maulla?", a: "GATO" }, { q: "¿Opuesto de negro?", a: "BLANCO" },
-    { q: "¿Dedos en una mano?", a: "5" }, { q: "¿Mes de la Navidad?", a: "DICIEMBRE" }, { q: "¿Instrumento para escribir?", a: "LAPIZ" },
-    { q: "¿Vehículo de dos ruedas?", a: "BICICLETA" }, { q: "¿Líquido que bebemos?", a: "AGUA" }, { q: "¿Sonido de la vaca?", a: "MUU" },
-    { q: "¿Número después del 9?", a: "10" }, { q: "¿Letra vocal?", a: "A" }, { q: "¿Mano para saludar?", a: "DERECHA" },
-    { q: "¿Animal que ladra?", a: "PERRO" }, { q: "¿Color del sol?", a: "AMARILLO" }, { q: "¿Sabor del limón?", a: "ACIDO" },
-    { q: "¿Medio de transporte aéreo?", a: "AVION" }, { q: "¿Opuesto de frío?", a: "CALOR" }, { q: "¿Comida de los conejos?", a: "ZANAHORIA" },
-    { q: "¿Deporte con balón y pie?", a: "FUTBOL" },
-    { q: "¿Color de la esmeralda?", a: "VERDE" }, { q: "¿Animal que relincha?", a: "CABALLO" }, { q: "¿Días en un año bisiesto?", a: "366" },
-    { q: "¿Instrumento para medir la temperatura?", a: "TERMOMETRO" }, { q: "¿Planeta más grande?", a: "JUPITER" }, { q: "¿Opuesto de arriba?", a: "ABAJO" },
-    { q: "¿Sexto día de la semana?", a: "SABADO" }, { q: "¿Capital de Francia?", a: "PARIS" }, { q: "¿Hielo es agua en estado...?", a: "SOLIDO" },
-    { q: "¿Animal con cuello muy largo?", a: "JIRAFA" }, { q: "¿Dedos en dos manos?", a: "10" }, { q: "¿Color de las fresas?", a: "ROJO" },
-    { q: "¿Rey de los mares (cuento)?", a: "TRITON" }, { q: "¿Fruta de Blancanieves?", a: "MANZANA" }, { q: "¿Sonido del perro?", a: "GUAU" },
-    { q: "¿Estación de la nieve?", a: "INVIERNO" }, { q: "¿Opuesto de encender?", a: "APAGAR" }, { q: "¿Vehículo que va por vías?", a: "TREN" },
-    { q: "¿Líquido de las vacas?", a: "LECHE" }, { q: "¿Color del carbón?", a: "NEGRO" },
-    // 1º ESO FÁCIL
-    { q: "¿El Sol es una...?", a: "ESTRELLA" }, { q: "¿3 al cuadrado?", a: "9" }, { q: "¿Capital de Portugal?", a: "LISBOA" },
-    { q: "¿Sustantivo de 'cantar'?", a: "CANCION" }, { q: "¿Nombre de nuestro planeta?", a: "TIERRA" }, { q: "¿Animal que vuela?", a: "PAJARO" }
-  ],
-  medium: [
-    { q: "¿Capital de Alemania?", a: "BERLIN" }, { q: "¿Símbolo químico del agua?", a: "H2O" }, { q: "¿Lados de un hexágono?", a: "6" },
-    { q: "¿Planeta rojo?", a: "MARTE" }, { q: "¿7 x 8?", a: "56" }, { q: "¿País de la Torre Eiffel?", a: "FRANCIA" },
-    { q: "¿Hueso más largo del cuerpo?", a: "FEMUR" }, { q: "¿Continente de Egipto?", a: "AFRICA" }, { q: "¿Verbo de 'canción'?", a: "CANTAR" },
-    { q: "¿Capital de Italia?", a: "ROMA" }, { q: "¿Capital de Portugal?", a: "LISBOA" }, { q: "¿Gas que respiramos?", a: "OXIGENO" },
-    { q: "¿Animal más rápido?", a: "GUEPARDO" }, { q: "¿Triángulo 3 lados iguales?", a: "EQUILATERO" }, { q: "¿Antónimo de 'valiente'?", a: "COBARDE" },
-    { q: "¿Sexto mes del año?", a: "JUNIO" }, { q: "¿País de la pizza?", a: "ITALIA" }, { q: "¿Planeta con anillos?", a: "SATURNO" },
-    { q: "¿Capital de Rusia?", a: "MOSCU" }, { q: "¿Metal precioso amarillo?", a: "ORO" },
-    { q: "¿Instrumento de 88 teclas?", a: "PIANO" }, { q: "¿Líquido vital rojo?", a: "SANGRE" }, { q: "¿Capital de Francia?", a: "PARIS" },
-    { q: "¿Resultad de 12 por 10?", a: "120" }, { q: "¿Animal con trompa?", a: "ELEFANTE" }, { q: "¿Estación de las flores?", a: "PRIMAVERA" },
-    { q: "¿Moneda de Europa?", a: "EURO" }, { q: "¿Rey de los dioses griegos?", a: "ZEUS" }, { q: "¿Héroe arácnido?", a: "SPIDERMAN" },
-    { q: "¿País de los canguros?", a: "AUSTRALIA" },
-    { q: "¿Capital de Grecia?", a: "ATENAS" }, { q: "¿Hueso de la rodilla?", a: "ROTULA" }, { q: "¿Resultado de 9 x 9?", a: "81" },
-    { q: "¿País del sushi?", a: "JAPON" }, { q: "¿Verbo 'correr' en futuro?", a: "CORRERE" }, { q: "¿Animal más alto?", a: "JIRAFA" },
-    { q: "¿Continente de la Antártida?", a: "ANTARTIDA" }, { q: "¿Simbolo del Hidrógeno?", a: "H" }, { q: "¿Planeta más cercano al sol?", a: "MERCURIO" },
-    { q: "¿Capital de Reino Unido?", a: "LONDRES" }, { q: "¿Instrumento de percusión?", a: "TAMBOR" }, { q: "¿Pintor de 'Las Meninas'?", a: "VELAZQUEZ" },
-    { q: "¿Río que pasa por Toledo?", a: "TAJO" }, { q: "¿Cuerpo geométrico como una pelota?", a: "ESFERA" }, { q: "¿Antónimo de 'generoso'?", a: "TACAÑO" },
-    { q: "¿Mes con 28 días?", a: "FEBRERO" }, { q: "¿País de la Torre de Pisa?", a: "ITALIA" }, { q: "¿Planeta azul?", a: "TIERRA" },
-    { q: "¿Capital de Argentina?", a: "BUENOSAIRES" }, { q: "¿Metal de las latas?", a: "ALUMINIO" },
-    // 1º ESO MEDIO
-    { q: "¿Resultado de (-2) + (-3)?", a: "-5" }, { q: "¿Capital de Egipto (antiguo)?", a: "MENFIS" }, { q: "¿Animal vertebrado con plumas?", a: "AVE" },
-    { q: "¿Palabra que califica al sustantivo?", a: "ADJETIVO" }, { q: "¿Diosa de la caza?", a: "ARTEMISA" }, { q: "¿MCD de 4 y 6?", a: "2" }
-  ],
-  hard: [
-    { q: "¿Capital de Australia?", a: "CANBERRA" }, { q: "¿Símbolo químico del Oro?", a: "AU" }, { q: "¿12 x 12?", a: "144" },
-    { q: "¿Autor del Quijote?", a: "CERVANTES" }, { q: "¿Planeta más grande?", a: "JUPITER" }, { q: "¿Río que pasa por Londres?", a: "TAMESIS" },
-    { q: "¿Pintor del Guernica?", a: "PICASSO" }, { q: "¿Capital de Portugal?", a: "LISBOA" }, { q: "¿Año descubrimiento América?", a: "1492" },
-    { q: "¿Raíz cuadrada de 81?", a: "9" }, { q: "¿Diosa griega sabiduría?", a: "ATENEA" }, { q: "¿Capital de Canadá?", a: "OTTAWA" },
-    { q: "¿Elemento químico 'Fe'?", a: "HIERRO" }, { q: "¿Autor de Harry Potter?", a: "ROWLING" }, { q: "¿Guerra 1939-1945?", a: "SEGUNDA" },
-    { q: "¿Capital de Turquía?", a: "ANKARA" }, { q: "¿Velocidad de la luz?", a: "300000" }, { q: "¿Satélite de la Tierra?", a: "LUNA" },
-    { q: "¿País más grande?", a: "RUSIA" }, { q: "¿Río más largo?", a: "AMAZONAS" },
-    { q: "¿Capital de Marruecos?", a: "RABAT" }, { q: "¿Pintor de los Girasoles?", a: "VANGOGH" }, { q: "¿Hueso del muslo?", a: "FEMUR" },
-    { q: "¿Dios del mar?", a: "POSEIDON" }, { q: "¿Capital de China?", a: "PEKIN" }, { q: "¿Inventó el teléfono?", a: "BELL" },
-    { q: "¿País de los Aztecas?", a: "MEXICO" }, { q: "¿Planeta más caliente?", a: "VENUS" }, { q: "¿Capital de Egipto?", a: "ELCAIRO" },
-    { q: "¿Símbolo de la Plata?", a: "AG" },
-    { q: "¿Capital de Noruega?", a: "OSLO" }, { q: "¿Símbolo químico del Hierro?", a: "FE" }, { q: "¿Raíz cuadrada de 121?", a: "11" },
-    { q: "¿Autor de 'Platero y yo'?", a: "JIMENEZ" }, { q: "¿Planeta enano?", a: "PLUTON" }, { q: "¿Río más largo de España?", a: "TAJO" },
-    { q: "¿Pintor del 'Grito'?", a: "MUNCH" }, { q: "¿Año llegada hombre a la Luna?", a: "1969" }, { q: "¿Diosa romana del amor?", a: "VENUS" },
-    { q: "¿Capital de Polonia?", a: "VARSOVIA" }, { q: "¿Elemento químico 'K'?", a: "POTASIO" }, { q: "¿Autor de 'El Principito'?", a: "EXUPERY" },
-    { q: "¿Guerra 1914-1918?", a: "PRIMERA" }, { q: "¿Capital de Suecia?", a: "ESTOCOLMO" }, { q: "¿Velocidad del sonido (aire)?", a: "343" },
-    { q: "¿Satélite de Júpiter?", a: "GANIMEDES" }, { q: "¿País más poblado?", a: "INDIA" }, { q: "¿Río que cruza Egipto?", a: "NILO" },
-    { q: "¿Monte más alto de Europa?", a: "ELBRUS" }, { q: "¿Capital de Hungría?", a: "BUDAPEST" },
-    // 1º ESO DIFÍCIL
-    { q: "¿Resultado de (-5) x (-4)?", a: "20" }, { q: "¿Capital del Imperio Romano?", a: "ROMA" }, { q: "¿Organismo unicelular sin núcleo?", a: "BACTERIA" },
-    { q: "¿Autor de la Odisea?", a: "HOMERO" }, { q: "¿Río más largo de África?", a: "NILO" }, { q: "¿Símbolo químico del Sodio?", a: "NA" }
-  ]
+  easy: [{ q: "¿2+2?", a: "4" }, { q: "¿Capital España?", a: "MADRID" }, { q: "¿Color sol?", a: "AMARILLO" }, { q: "¿Días semana?", a: "7" }],
+  medium: [{ q: "¿Capital Francia?", a: "PARIS" }, { q: "¿6x8?", a: "48" }, { q: "¿Hueso largo?", a: "FEMUR" }, { q: "¿Planeta anillos?", a: "SATURNO" }],
+  hard: [{ q: "¿Raíz 144?", a: "12" }, { q: "¿Capital Australia?", a: "CANBERRA" }, { q: "¿Símbolo Oro?", a: "AU" }, { q: "¿Guerra Civil?", a: "1936" }]
 };
 
-// BOSS BASE HP
 const BOSS_BASE_HP = 1500;
 const ICONS = { cpu: Cpu, shield: Shield, zap: Zap, atom: Atom, target: Target, eye: Eye };
 const TICKER_MESSAGES = [ "CAPITÁN AMÉRICA: 'PUEDO HACER ESTO TODO EL DÍA'", "TONY STARK: 'YO SOY IRON MAN'", "AVENGERS: ¡REUNÍOS!", "THOR: 'POR LAS BARBAS DE ODÍN'", "BLACK PANTHER: '¡WAKANDA POR SIEMPRE!'", "HULK: ¡APLASTA EL EXAMEN!" ];
@@ -403,35 +204,10 @@ const playSfx = (type) => {
     } catch (e) {}
 };
 
-// COMPONENTES AUXILIARES
-const Confeti = ({ active, x, y }) => {
-  if (!active) return null;
-  return (
-    <div className="pointer-events-none fixed z-50" style={{ left: x, top: y }}>
-      {[...Array(40)].map((_, i) => (
-        <div key={i} className="absolute w-2 h-2 rounded-full animate-confetti" style={{ backgroundColor: ['#ef4444', '#3b82f6', '#eab308'][i%3], '--tx': `${Math.random()*300-150}px`, '--ty': `${Math.random()*300-150}px`}} />
-      ))}
-    </div>
-  );
-};
+const Confeti = ({ active, x, y }) => { if (!active) return null; return (<div className="pointer-events-none fixed z-50" style={{ left: x, top: y }}>{[...Array(40)].map((_, i) => (<div key={i} className="absolute w-2 h-2 rounded-full animate-confetti" style={{ backgroundColor: ['#ef4444', '#3b82f6', '#eab308'][i%3], '--tx': `${Math.random()*300-150}px`, '--ty': `${Math.random()*300-150}px`}} />))}</div>); };
+const Toast = ({ message, type, onClose }) => { useEffect(() => { const t = setTimeout(onClose, 3000); return () => clearTimeout(t); }, [onClose]); const bg = type === 'success' ? 'bg-green-500/20 border-green-500' : type === 'error' ? 'bg-red-500/20 border-red-500' : 'bg-blue-500/20 border-blue-500'; const icon = type === 'success' ? <CheckCircle2 /> : type === 'error' ? <AlertTriangle /> : <Info />; return (<div className={`fixed top-24 right-4 z-50 flex items-center gap-3 p-4 rounded-lg border ${bg} backdrop-blur-md shadow-2xl animate-in slide-in-from-right fade-in duration-300 max-w-sm`}><div className={type === 'success' ? 'text-green-400' : type === 'error' ? 'text-red-400' : 'text-blue-400'}>{icon}</div><p className="text-sm font-bold text-white">{message}</p></div>); };
 
-const Toast = ({ message, type, onClose }) => {
-  useEffect(() => { 
-    const t = setTimeout(onClose, 3000); 
-    return () => clearTimeout(t); 
-  }, [onClose]); 
-  
-  const bg = type === 'success' ? 'bg-green-500/20 border-green-500' : type === 'error' ? 'bg-red-500/20 border-red-500' : 'bg-blue-500/20 border-blue-500';
-  const icon = type === 'success' ? <CheckCircle2 /> : type === 'error' ? <AlertTriangle /> : <Info />;
-  return (
-    <div className={`fixed top-24 right-4 z-50 flex items-center gap-3 p-4 rounded-lg border ${bg} backdrop-blur-md shadow-2xl animate-in slide-in-from-right fade-in duration-300 max-w-sm`}>
-      <div className={type === 'success' ? 'text-green-400' : type === 'error' ? 'text-red-400' : 'text-blue-400'}>{icon}</div>
-      <p className="text-sm font-bold text-white">{message}</p>
-    </div>
-  );
-};
-
-// NEW QUINJET COMPONENT
+// QUINJET COMPONENT
 const Quinjet = ({ x, onClick }) => (
     <div 
         onClick={onClick}
@@ -447,19 +223,10 @@ const Quinjet = ({ x, onClick }) => (
 );
 
 
-class ErrorBoundary extends Component {
-  constructor(props) { super(props); this.state = { hasError: false }; }
-  static getDerivedStateFromError(error) { return { hasError: true }; }
-  render() { if (this.state.hasError) return <div className="p-10 text-red-500 bg-black">Error crítico. Recarga la página.</div>; return this.props.children; }
-}
+class ErrorBoundary extends Component { constructor(props) { super(props); this.state = { hasError: false }; } static getDerivedStateFromError(error) { return { hasError: true }; } render() { if (this.state.hasError) return <div className="p-10 text-red-500 bg-black">Error crítico. Recarga la página.</div>; return this.props.children; } }
 
-// --- APP PRINCIPAL ---
 function AvengersTracker() {
-  const [teams, setTeams] = useState(() => {
-     const saved = localStorage.getItem('avengers_teams');
-     return saved ? JSON.parse(saved) : INITIAL_TEAMS;
-  });
-  
+  const [teams, setTeams] = useState(() => { const saved = localStorage.getItem('avengers_teams'); return saved ? JSON.parse(saved) : INITIAL_TEAMS; });
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loggedInId, setLoggedInId] = useState(null);
@@ -467,8 +234,6 @@ function AvengersTracker() {
   const [useLocal, setUseLocal] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null); 
   const [editMode, setEditMode] = useState({}); 
-  
-  // UI States
   const [modal, setModal] = useState(null);
   const [selTeam, setSelTeam] = useState(null);
   const [pass, setPass] = useState('');
@@ -498,6 +263,7 @@ function AvengersTracker() {
 
   // QUINJET STATE
   const [quinjet, setQuinjet] = useState({ active: false, x: -10 });
+  const [quinjetProcessing, setQuinjetProcessing] = useState(false);
 
   const [mathState, setMathState] = useState({ active: false, questions: [], currentIdx: 0, level: 2 });
   const [mathInput, setMathInput] = useState("");
@@ -523,11 +289,10 @@ function AvengersTracker() {
 
   // Quinjet Animation Logic
   useEffect(() => {
-      // Randomly spawn quinjet
       const spawnTimer = setInterval(() => {
-          if (!quinjet.active && Math.random() < 0.02) { // 2% chance every 5s check
+          if (!quinjet.active && Math.random() < 0.02) { 
                setQuinjet({ active: true, x: -10 });
-               playSfx('click'); // Subtle cue
+               playSfx('click'); 
           }
       }, 5000);
 
@@ -536,7 +301,7 @@ function AvengersTracker() {
           const animate = () => {
               setQuinjet(prev => {
                   if (prev.x > 110) return { active: false, x: -10 };
-                  return { ...prev, x: prev.x + 0.2 }; // Speed
+                  return { ...prev, x: prev.x + 0.2 }; 
               });
               animFrame = requestAnimationFrame(animate);
           };
@@ -550,17 +315,18 @@ function AvengersTracker() {
   }, [quinjet.active]);
 
   const handleQuinjetClick = () => {
-      if (!loggedInId) {
-          showToast("¡Inicia sesión para reclamar el suministro!", "error");
+      if (quinjetProcessing || !loggedInId) {
+          if(!loggedInId) showToast("¡Inicia sesión para reclamar el suministro!", "error");
           return;
       }
+      setQuinjetProcessing(true);
       playSfx('success');
       handlePts(loggedInId, 5, null, true);
       showToast("¡SUMINISTRO INTERCEPTADO! +5 PTS", "success");
       setQuinjet({ active: false, x: -10 });
       triggerSecretConfetti();
+      setTimeout(() => setQuinjetProcessing(false), 1000);
   };
-
 
   useEffect(() => {
       const day = new Date().getDate();
@@ -631,7 +397,6 @@ function AvengersTracker() {
   const backupData = () => { const data = JSON.stringify(teams); navigator.clipboard.writeText(data); showToast("Copia de seguridad copiada al portapapeles", "success"); speak("Backup completado"); };
   const restoreData = async () => { const data = prompt("Pega aquí el código de seguridad:"); if (data) { try { const parsed = JSON.parse(data); if (Array.isArray(parsed)) { parsed.forEach(t => safeUpdate(t.id, t)); showToast("Datos restaurados correctamente", "success"); speak("Sistema restaurado"); } } catch(e) { showToast("Error al restaurar: Código inválido", "error"); } } };
 
-  // --- RESTORED RESET FUNCTION ---
   const reset = async () => {
     if (!window.confirm("¿Reiniciar temporada?")) return;
     for (const t of teams) {
@@ -658,19 +423,14 @@ function AvengersTracker() {
     showToast("Temporada reiniciada", "success");
   };
 
-  // RESTORED CLEAR FURY MESSAGE FUNCTION
   const clearFuryMessage = () => {
       safeUpdate('mission_control', { furyMsg: null });
       setFuryMessage(null);
       speak("Transmisión finalizada");
   };
 
-  // ADDED MISSING SETTIMER FUNCTION (JUST IN CASE)
   const setTimer = (minutes) => {
-      // This is a placeholder since the timer modal was removed from direct access,
-      // but keeps the code robust if re-added later.
       const target = Date.now() + minutes * 60000;
-      // We don't display it currently, but this prevents crashes if called
       setModal(null);
   };
 
@@ -695,10 +455,8 @@ function AvengersTracker() {
           showToast("¡LÍNEA AL 100%! +1 Punto Extra", "success");
           handlePts(tid, 1, null, true); 
       }
-      
       safeUpdate(tid, update);
-
-      // Underdog check: Is this team in the bottom 2?
+      
       const sorted = [...teams].sort((a,b) => b.points - a.points);
       const rank = sorted.findIndex(tm => tm.id === tid);
       
@@ -741,7 +499,6 @@ function AvengersTracker() {
               speak("Defensa fallida. El universo ha sufrido daños."); 
               showToast("Ataque finalizado con daños.", "info"); 
           } 
-          // Small delay before closing to show result
           setTimeout(() => {
               setModal(null); 
               setIsProcessing(false);
@@ -750,7 +507,7 @@ function AvengersTracker() {
   };
   const activateGauntlet = async (team) => { if(!window.confirm("¿ACTIVAR EL GUANTELETE DEL INFINITO? ESTA ACCIÓN REINICIARÁ EL UNIVERSO.")) return; speak("Yo soy... inevitable."); playSfx('alarm'); setShaking(true); const oneWeekLater = new Date(); oneWeekLater.setDate(oneWeekLater.getDate() + 7); const doublePointsTimestamp = oneWeekLater.getTime(); for (const t of teams) { if (t.id === team.id) { const newBadges = [...(t.badges || []), { icon: <Crown size={14}/>, name: "TITÁN", color: "text-yellow-500" }]; await safeUpdate(t.id, { points: 25, dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, shield: true, badges: newBadges, doublePointsUntil: doublePointsTimestamp }); } else { await safeUpdate(t.id, { points: 0, dailyMath:0, dailyWord:0, dailyCombat:0, dailyMemory:0 }); } } logAction(`${team.name} usó el GUANTELETE: Universo reiniciado. ${team.name} obtiene supremacía.`); setTimeout(() => { setShaking(false); speak("El universo ha sido reequilibrado."); triggerSecretConfetti(); }, 3000); };
   const resetDailyLimits = async () => { if (!window.confirm("¿Reiniciar los límites de retos diarios para todos?")) return; teams.forEach(t => safeUpdate(t.id, { dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0 })); speak("Protocolos de entrenamiento reiniciados."); showToast("Límites diarios reseteados.", "success"); };
-  const openLootBox = async (tid) => { if(handleBuy(tid, 15)) { speak("Abriendo..."); setTimeout(() => { const it = LOOT_ITEMS[Math.floor(Math.random()*LOOT_ITEMS.length)]; setLootResult(it); if(it.type === 'bad') safeUpdate(tid, { lastLoot: 'bad' }); else safeUpdate(tid, { lastLoot: 'good' }); setTimeout(() => safeUpdate(tid, { lastLoot: null }), 5000); if(it.val !== 0) handlePts(tid, it.val, null, true); logAction(`${teams.find(t=>t.id===tid).name} loot: ${it.text}`); if(it.type === 'good') playSfx('success'); else playSfx('error'); }, 1500); } };
+  const openLootBox = async (tid) => { if(handleBuy(tid, 30)) { speak("Abriendo..."); setTimeout(() => { const it = LOOT_ITEMS[Math.floor(Math.random()*LOOT_ITEMS.length)]; setLootResult(it); if(it.type === 'bad') safeUpdate(tid, { lastLoot: 'bad' }); else safeUpdate(tid, { lastLoot: 'good' }); setTimeout(() => safeUpdate(tid, { lastLoot: null }), 5000); if(it.val !== 0) handlePts(tid, it.val, null, true); logAction(`${teams.find(t=>t.id===tid).name} loot: ${it.text}`); if(it.type === 'good') playSfx('success'); else playSfx('error'); }, 1500); } };
   const startDuel = () => { const s=[...teams].sort(()=>0.5-Math.random()); setDuelData({t1:s[0], t2:s[1], challenge:DUEL_CHALLENGES[Math.floor(Math.random()*DUEL_CHALLENGES.length)]}); setModal('duel'); playSfx('alarm'); speak("Civil War"); };
   const resolveDuel = (wid) => { if(wid){ const w=teams.find(t=>t.id===wid); handlePts(wid,5, null, true); logAction(`Civil War: Gana ${w.name}`); speak(`Gana ${w.name}`); playSfx('success'); } setModal(null); };
   const triggerMultiverse = () => { setModal('multiverse'); playSfx('alarm'); speak("Brecha"); setTimeout(() => { const e=MULTIVERSE_EVENTS[Math.floor(Math.random()*MULTIVERSE_EVENTS.length)]; setMultiverseEvent(e); speak(e.title); if(e.points!==0) { teams.forEach(t=>handlePts(t.id, e.points, null, true)); logAction(`Multiverso: ${e.title}`); } }, 2000); };
@@ -999,14 +756,20 @@ function AvengersTracker() {
                       </div>
                     </div>
                     
-                    {/* GAUNTLET TRIGGER BUTTON */}
+                    {/* GAUNTLET TRIGGER BUTTON OR BADGE */}
                     {t.points >= 600 && (
-                       <button 
-                           onClick={() => activateGauntlet(t)}
-                           className="absolute top-2 left-1/2 -translate-x-1/2 z-30 bg-yellow-500 hover:bg-yellow-400 text-black text-[10px] font-black px-3 py-1 rounded shadow-[0_0_15px_rgba(234,179,8,0.6)] animate-bounce flex items-center gap-1"
-                       >
-                           <Hand size={12} /> USAR GUANTELETE
-                       </button>
+                        (isAdmin || loggedInId === t.id) ? (
+                            <button 
+                                onClick={() => activateGauntlet(t)}
+                                className="absolute top-2 left-1/2 -translate-x-1/2 z-30 bg-yellow-500 hover:bg-yellow-400 text-black text-[10px] font-black px-3 py-1 rounded shadow-[0_0_15px_rgba(234,179,8,0.6)] animate-bounce flex items-center gap-1"
+                            >
+                                <HandMetal size={12} /> USAR GUANTELETE
+                            </button>
+                        ) : (
+                            <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 bg-yellow-900/50 text-yellow-500 border border-yellow-500/50 text-[9px] font-black px-2 py-0.5 rounded shadow-lg flex items-center gap-1 opacity-80">
+                                <AlertOctagon size={10} /> GUANTELETE CARGADO
+                            </div>
+                        )
                     )}
                     
                     {/* WAKANDA LOOT EFFECT BADGE */}
@@ -1018,7 +781,7 @@ function AvengersTracker() {
                     
                     {/* UNDERDOG BADGE - MOVED TO BOTTOM RIGHT */}
                     {isUnderdog && (
-                        <div className="absolute bottom-2 right-2 z-20 px-2 py-1 rounded text-[9px] font-bold uppercase animate-pulse bg-cyan-500 text-black shadow-lg border border-cyan-400 flex items-center gap-1">
+                        <div className="absolute bottom-2 right-2 z-20 px-2 py-1 rounded text-[8px] font-bold uppercase animate-pulse bg-cyan-500 text-black shadow-lg border border-cyan-400 flex items-center gap-1">
                             <TrendingUp size={10}/> REFUERZOS (+1)
                         </div>
                     )}
