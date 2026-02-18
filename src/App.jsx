@@ -11,7 +11,7 @@ import {
   Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon, Edit3, Save, Upload, Disc
 } from 'lucide-react';
 
-const APP_VERSION = "v4.6.2 (HOTFIX)";
+const APP_VERSION = "v5.0.0 (GOLD MASTER)";
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
 const firebaseConfig = typeof __firebase_config !== 'undefined' 
@@ -111,7 +111,11 @@ const REWARDS_LIST = [
   { id: 12, name: 'Sin Botas', cost: 15, desc: 'Estar en calcetines' }
 ];
 
-const PENALTIES_LIST = [ "Tablas multiplicar", "Copiar verbos", "Dibujo locomotor", "Capitales Europa", "Recoger clase", "Informe de Daños (Redacción)", "Limpieza de Cubierta (Estanterías)", "Silencio de Radio (5 min)", "Patrulla (Vuelta al patio)", "Orden Alfabético (Biblioteca)" ];
+const PENALTIES_LIST = [
+  "Tablas multiplicar", "Copiar verbos", "Dibujo locomotor", "Capitales Europa", "Recoger clase",
+  "Informe de Daños (Redacción)", "Limpieza de Cubierta (Estanterías)", "Silencio de Radio (5 min)",
+  "Patrulla (Vuelta al patio)", "Orden Alfabético (Biblioteca)"
+];
 
 const BADGES_LIST = [
     { icon: <Star size={14}/>, name: "Excelencia", color: "text-yellow-400" },
@@ -122,13 +126,43 @@ const BADGES_LIST = [
     { icon: <Crown size={14}/>, name: "TITÁN", color: "text-yellow-500" },
 ];
 
-const DAILY_QUOTES = [ "Un gran poder conlleva una gran responsabilidad.", "No es sobre cuánto golpeamos, sino cuánto podemos resistir.", "Vengadores, ¡Reuníos!", "Solo si trabajamos juntos podremos vencer.", "El conocimiento es la mejor arma.", "Hasta el infinito y más allá.", "Lo que hacemos ahora define nuestro futuro.", "La paciencia es la clave de la victoria.", "Nunca te rindas, incluso cuando las probabilidades estén en contra.", "La verdadera fuerza está en el corazón." ];
+const DAILY_QUOTES = [
+    "Un gran poder conlleva una gran responsabilidad.",
+    "No es sobre cuánto golpeamos, sino cuánto podemos resistir.",
+    "Vengadores, ¡Reuníos!",
+    "Solo si trabajamos juntos podremos vencer.",
+    "El conocimiento es la mejor arma.",
+    "Hasta el infinito y más allá.",
+    "Lo que hacemos ahora define nuestro futuro.",
+    "La paciencia es la clave de la victoria.",
+    "Nunca te rindas, incluso cuando las probabilidades estén en contra.",
+    "La verdadera fuerza está en el corazón."
+];
 
-const MISSION_BATTERY = [ { category: "Comportamiento", text: "OPERACIÓN SILENCIO" }, { category: "Orden", text: "PROTOCOLO LIMPIEZA" }, { category: "Académico", text: "ENTREGA PUNTUAL" }, { category: "Social", text: "TRABAJO EN EQUIPO" } ];
+const MISSION_BATTERY = [
+  { category: "Comportamiento", text: "OPERACIÓN SILENCIO" }, 
+  { category: "Orden", text: "PROTOCOLO LIMPIEZA" },
+  { category: "Académico", text: "ENTREGA PUNTUAL" }, 
+  { category: "Social", text: "TRABAJO EN EQUIPO" }
+];
 
-const INFINITY_STONES = [ { threshold: 100, color: 'text-blue-400', name: 'Espacio', perk: 'Teletransporte' }, { threshold: 200, color: 'text-red-500', name: 'Realidad', perk: 'Ilusión' }, { threshold: 300, color: 'text-purple-500', name: 'Poder', perk: 'Potencia' }, { threshold: 400, color: 'text-yellow-400', name: 'Mente', perk: 'Clarividencia' }, { threshold: 500, color: 'text-green-500', name: 'Tiempo', perk: 'Retroceso' }, { threshold: 600, color: 'text-orange-500', name: 'Alma', perk: 'Sacrificio' } ];
+const INFINITY_STONES = [
+  { threshold: 100, color: 'text-blue-400', name: 'Espacio', perk: 'Teletransporte' },
+  { threshold: 200, color: 'text-red-500', name: 'Realidad', perk: 'Ilusión' },
+  { threshold: 300, color: 'text-purple-500', name: 'Poder', perk: 'Potencia' },
+  { threshold: 400, color: 'text-yellow-400', name: 'Mente', perk: 'Clarividencia' },
+  { threshold: 500, color: 'text-green-500', name: 'Tiempo', perk: 'Retroceso' },
+  { threshold: 600, color: 'text-orange-500', name: 'Alma', perk: 'Sacrificio' }
+];
 
-const MULTIVERSE_EVENTS = [ { title: "CHASQUIDO INVERSO", desc: "¡El universo se reequilibra! Todos ganan +5 puntos.", points: 5, type: 'good' }, { title: "INVASIÓN SKRULL", desc: "Revisión sorpresa de material.", points: 0, type: 'neutral' }, { title: "FALLO EN MATRIX", desc: "La próxima tarea vale DOBLE puntuación.", points: 0, type: 'good' }, { title: "ATAQUE DE ULTRÓN", desc: "Hackeo de sistemas. Todos pierden -2 puntos.", points: -2, type: 'bad' }, { title: "VISITA DE STAN LEE", desc: "¡Excelsior! 5 minutos de tiempo libre.", points: 0, type: 'good' }, { title: "TORMENTA CUÁNTICA", desc: "Cambio de sitios aleatorio.", points: 0, type: 'neutral' } ];
+const MULTIVERSE_EVENTS = [
+  { title: "CHASQUIDO INVERSO", desc: "¡El universo se reequilibra! Todos ganan +5 puntos.", points: 5, type: 'good' },
+  { title: "INVASIÓN SKRULL", desc: "Revisión sorpresa de material.", points: 0, type: 'neutral' },
+  { title: "FALLO EN MATRIX", desc: "La próxima tarea vale DOBLE puntuación.", points: 0, type: 'good' },
+  { title: "ATAQUE DE ULTRÓN", desc: "Hackeo de sistemas. Todos pierden -2 puntos.", points: -2, type: 'bad' },
+  { title: "VISITA DE STAN LEE", desc: "¡Excelsior! 5 minutos de tiempo libre.", points: 0, type: 'good' },
+  { title: "TORMENTA CUÁNTICA", desc: "Cambio de sitios aleatorio.", points: 0, type: 'neutral' },
+];
 
 const DUEL_CHALLENGES = ["Piedra, Papel o Tijera", "Duelo de miradas", "Pregunta de Mates", "Deletreo rápido", "El que parpadee pierde", "Adivinanza"];
 
@@ -342,6 +376,7 @@ const getRankInfo = (p) => {
   return { title: 'LEYENDA', color: 'text-purple-300', glow: 'shadow-[0_0_30px_rgba(168,85,247,0.3)]', iconScale: 1.5, next: 1000, total: 600 };
 };
 
+// SFX
 const playSfx = (type) => {
     try {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -486,7 +521,6 @@ function AvengersTracker() {
     if (finalAmt !== 0) logAction(`${t.name}: ${finalAmt > 0 ? '+' : ''}${finalAmt} pts`);
   };
 
-  // MANUAL EDIT POINTS
   const handleManualEdit = (tid, val) => { const newVal = parseInt(val); if(!isNaN(newVal)) { safeUpdate(tid, { points: newVal }); logAction(`${teams.find(t=>t.id===tid).name}: Manual Edit -> ${newVal}`); } setEditMode({ ...editMode, [tid]: false }); };
   const backupData = () => { const data = JSON.stringify(teams); navigator.clipboard.writeText(data); showToast("Copia de seguridad copiada al portapapeles", "success"); speak("Backup completado"); };
   const restoreData = async () => { const data = prompt("Pega aquí el código de seguridad:"); if (data) { try { const parsed = JSON.parse(data); if (Array.isArray(parsed)) { parsed.forEach(t => safeUpdate(t.id, t)); showToast("Datos restaurados correctamente", "success"); speak("Sistema restaurado"); } } catch(e) { showToast("Error al restaurar: Código inválido", "error"); } } };
@@ -518,6 +552,22 @@ function AvengersTracker() {
     showToast("Temporada reiniciada", "success");
   };
 
+  // RESTORED CLEAR FURY MESSAGE FUNCTION
+  const clearFuryMessage = () => {
+      safeUpdate('mission_control', { furyMsg: null });
+      setFuryMessage(null);
+      speak("Transmisión finalizada");
+  };
+
+  // ADDED MISSING SETTIMER FUNCTION (JUST IN CASE)
+  const setTimer = (minutes) => {
+      // This is a placeholder since the timer modal was removed from direct access,
+      // but keeps the code robust if re-added later.
+      const target = Date.now() + minutes * 60000;
+      // We don't display it currently, but this prevents crashes if called
+      setModal(null);
+  };
+
   const handleDailyProgress = (tid, type) => {
       const t = teams.find(i => i.id === tid); if(!t) return;
       let currentVal = 0;
@@ -540,8 +590,14 @@ function AvengersTracker() {
           handlePts(tid, 1, null, true); 
       }
       safeUpdate(tid, update);
-      const rank = teams.findIndex(tm => tm.id === tid);
-      if (rank >= teams.length - 2 && teams.length > 2) { showToast("¡BONUS DE REMONTADA! +1 Extra", "success"); handlePts(tid, 1, null, true); }
+      // Underdog check: Is this team in the bottom 2?
+      const sorted = [...teams].sort((a,b) => b.points - a.points);
+      const rank = sorted.findIndex(tm => tm.id === tid);
+      
+      if (rank >= sorted.length - 2 && sorted.length > 2) {
+          showToast("¡BONUS DE REMONTADA! +1 Extra", "success");
+          handlePts(tid, 1, null, true); 
+      }
   };
 
   const handleBadge = (tid, badge) => { const t = teams.find(i => i.id === tid); if(!t) return; const newBadges = [...(t.badges || []), badge]; safeUpdate(tid, { badges: newBadges }); logAction(`${t.name} ganó medalla ${badge.name}`); playSfx('success'); triggerSecretConfetti(); };
@@ -666,6 +722,9 @@ function AvengersTracker() {
                     <button onClick={startMemoryChallenge} className="bg-cyan-500/20 border border-cyan-500 px-3 py-1 rounded text-cyan-300 text-xs font-bold flex gap-1 items-center hover:bg-cyan-500/40 transition-colors">
                         <Grid3X3 size={14}/> MEMORIA
                     </button>
+                    <button onClick={openStarkRoulette} className="bg-orange-500/20 border border-orange-500 px-3 py-1 rounded text-orange-300 text-xs font-bold flex gap-1 items-center hover:bg-orange-500/40 transition-colors animate-pulse">
+                        <Disc size={14}/> RULETA
+                    </button>
                 </div>
             )}
 
@@ -743,10 +802,11 @@ function AvengersTracker() {
           {teams.map(t => {
             const Icon = ICONS[t.iconKey] || Shield;
             const isMine = loggedInId === t.id;
-            const isLeader = t.id === leaderId;
-            const isNeg = t.points < 0;
-            const isCrit = t.points < -20;
             const rInfo = getRankInfo(t.points);
+
+            // FIX: Calculation within map scope
+            const isUnderdog = (sortedTeams.findIndex(st => st.id === t.id) >= sortedTeams.length - 2) && sortedTeams.length > 2;
+            const isNeg = t.points < 0;
 
             return (
               <div key={t.id} className={`relative group rounded p-[1px] transition-all ${isMine?'scale-[1.02] z-10':'hover:scale-[1.01]'}`}>
@@ -809,6 +869,13 @@ function AvengersTracker() {
                             {t.lastLoot === 'bad' ? '¡MALDICIÓN!' : '¡SUERTE!'}
                         </div>
                     )}
+                    
+                    {/* UNDERDOG BADGE */}
+                    {isUnderdog && (
+                        <div className="absolute top-8 right-12 z-20 px-2 py-1 rounded text-[8px] font-bold uppercase animate-bounce bg-cyan-500 text-black shadow-lg border border-cyan-400">
+                            REFUERZOS EN CAMINO (+1 Extra)
+                        </div>
+                    )}
 
                     {/* DAILY ENERGY CELLS */}
                     <div className="flex flex-col gap-1 mb-2">
@@ -856,6 +923,7 @@ function AvengersTracker() {
                   </div>
                   <div className="relative z-10 mt-auto">
                     <div className="mb-4 relative pl-3 border-l-2 border-white/10 group-hover:border-white/30 transition-colors"><p className={`text-xs italic font-medium leading-tight ${t.accent} opacity-80`}>"{t.quote}"</p></div>
+                    {/* Admin and User buttons logic remains same as provided in previous full code block, just visually placed here */}
                     {isAdmin && (
                       <div className="grid gap-1">
                         <div className="flex gap-1">{[1,5,10].map(v => <button key={v} onClick={(e)=>handlePts(t.id, v, e)} className={`${CTRL_BTN_CLASS} bg-green-900/20 text-green-400 border-green-500/30 hover:bg-green-500 hover:text-black`}>+{v}</button>)}</div>
