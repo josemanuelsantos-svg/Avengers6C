@@ -8,10 +8,11 @@ import {
   Users, ChevronsUp, Hexagon, ClipboardList, Swords, Brain, Volume2, VolumeX, List, 
   CheckCircle2, PlusCircle, Quote, Siren, Award, History, Trash2, X, Package, Dices, 
   Sparkles, Radio, BookOpen, Timer, Wifi, WifiOff, MessageSquare, ShieldCheck, Flame, Star, Calculator,
-  Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon, Edit3, Save, Upload, Disc
+  Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon, Edit3, Save, Upload, Disc,
+  Plane, Gift
 } from 'lucide-react';
 
-const APP_VERSION = "v5.0.0 (GOLD MASTER)";
+const APP_VERSION = "v5.3.0 (HIGH STAKES)";
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
 const firebaseConfig = typeof __firebase_config !== 'undefined' 
@@ -96,19 +97,27 @@ const INITIAL_TEAMS = [
   },
 ];
 
+// --- MERCADO CON PRECIOS ACTUALIZADOS (x2) ---
 const REWARDS_LIST = [
-  { id: 99, name: 'Campo de Fuerza', cost: 50, desc: 'Bloquea 1 sanción automáticamente' }, 
-  { id: 66, name: 'El Chasquido', cost: 50, desc: 'Quita 50% pts a 2 rivales al azar' },
-  { id: 1, name: 'Suministros', cost: 20, desc: 'Snack en clase' },
-  { id: 2, name: 'DJ S.H.I.E.L.D.', cost: 15, desc: 'Elegir canción' },
-  { id: 3, name: 'Indulto', cost: 30, desc: 'Perdón de tarea' },
-  { id: 4, name: 'Aliado', cost: 35, desc: 'Sentarse con un amigo' },
-  { id: 5, name: 'Archivos', cost: 40, desc: '5 min apuntes examen' },
-  { id: 6, name: 'Descanso Táctico', cost: 10, desc: '5 min sin hacer nada' },
-  { id: 7, name: 'Comandante', cost: 25, desc: 'Ayudante del profesor' },
-  { id: 9, name: 'Hackeo', cost: 80, desc: 'Fondo pantalla profe' },
-  { id: 10, name: 'Cine', cost: 150, desc: 'Película en clase' },
-  { id: 12, name: 'Sin Botas', cost: 15, desc: 'Estar en calcetines' }
+  { id: 99, name: 'Campo de Fuerza', cost: 100, desc: 'Bloquea 1 sanción automáticamente' }, 
+  { id: 66, name: 'El Chasquido', cost: 100, desc: 'Quita 50% pts a 2 rivales al azar' },
+  { id: 1, name: 'Suministros', cost: 40, desc: 'Snack en clase' },
+  { id: 2, name: 'DJ S.H.I.E.L.D.', cost: 30, desc: 'Elegir canción' },
+  { id: 3, name: 'Indulto', cost: 60, desc: 'Perdón de tarea' },
+  { id: 4, name: 'Aliado', cost: 70, desc: 'Sentarse con un amigo' },
+  { id: 5, name: 'Archivos', cost: 80, desc: '5 min apuntes examen' },
+  { id: 6, name: 'Descanso Táctico', cost: 20, desc: '5 min sin hacer nada' },
+  { id: 7, name: 'Comandante', cost: 50, desc: 'Ayudante del profesor' },
+  { id: 9, name: 'Hackeo', cost: 160, desc: 'Fondo pantalla profe' },
+  { id: 10, name: 'Cine', cost: 300, desc: 'Película en clase' },
+  { id: 12, name: 'Sin Botas', cost: 30, desc: 'Estar en calcetines' },
+  // NUEVAS RECOMPENSAS
+  { id: 20, name: 'Silla del Director', cost: 120, desc: 'Sentarse en silla del profe (1 sesión)' },
+  { id: 21, name: 'El Oráculo', cost: 90, desc: 'Ayuda del profe en 1 pregunta' },
+  { id: 22, name: 'Mutis por el Foro', cost: 200, desc: 'El profe no puede hablar 5 min' },
+  { id: 24, name: 'Día de Pijamas', cost: 400, desc: 'Venir a clase en pijama' },
+  { id: 25, name: 'VETO DE DEBERES', cost: 800, desc: '¡Sin deberes para TODA la clase hoy!' },
+  { id: 23, name: 'FIESTA VENGADORA', cost: 1000, desc: '10 min libres para TODA la clase' }
 ];
 
 const PENALTIES_LIST = [
@@ -166,7 +175,7 @@ const MULTIVERSE_EVENTS = [
 
 const DUEL_CHALLENGES = ["Piedra, Papel o Tijera", "Duelo de miradas", "Pregunta de Mates", "Deletreo rápido", "El que parpadee pierde", "Adivinanza"];
 
-// --- BANCO DE PREGUNTAS MASIVO (250+) ---
+// --- BANCO DE PREGUNTAS ---
 const ACADEMIC_QUESTIONS = [
   // MATEMÁTICAS
   { q: "¿Cuánto es 8 x 8?", a: "64" }, { q: "¿La mitad de 500?", a: "250" }, { q: "¿Cuántos lados tiene un hexágono?", a: "6" },
@@ -186,7 +195,7 @@ const ACADEMIC_QUESTIONS = [
   { q: "¿M.C.M. de 3 y 4?", a: "12" }, { q: "¿Cuánto es 2 elevado a 3?", a: "8" }, { q: "¿Raíz cuadrada de 169?", a: "13" },
   { q: "¿Un número divisible por 2 acaba en...?", a: "Par" }, { q: "¿Resultado de -5 x -2?", a: "10" }, { q: "¿3/4 en decimal?", a: "0.75" },
   
-  // CIENCIAS NATURALES (Primaria & 1º ESO)
+  // CIENCIAS NATURALES
   { q: "¿Símbolo químico del agua?", a: "H2O" }, { q: "¿Hueso más largo del cuerpo?", a: "Fémur" }, { q: "¿Órgano que bombea sangre?", a: "Corazón" },
   { q: "¿Planeta más cercano al Sol?", a: "Mercurio" }, { q: "¿Planeta conocido como el Planeta Rojo?", a: "Marte" }, { q: "¿Gas que respiramos?", a: "Oxígeno" },
   { q: "¿Cuántos dientes tiene un adulto?", a: "32" }, { q: "¿Animal más rápido del mundo?", a: "Guepardo" }, { q: "¿Rey de la selva?", a: "León" },
@@ -394,12 +403,63 @@ const playSfx = (type) => {
     } catch (e) {}
 };
 
-const Confeti = ({ active, x, y }) => { if (!active) return null; return (<div className="pointer-events-none fixed z-50" style={{ left: x, top: y }}>{[...Array(40)].map((_, i) => (<div key={i} className="absolute w-2 h-2 rounded-full animate-confetti" style={{ backgroundColor: ['#ef4444', '#3b82f6', '#eab308'][i%3], '--tx': `${Math.random()*300-150}px`, '--ty': `${Math.random()*300-150}px`}} />))}</div>); };
-const Toast = ({ message, type, onClose }) => { useEffect(() => { const t = setTimeout(onClose, 3000); return () => clearTimeout(t); }, [onClose]); const bg = type === 'success' ? 'bg-green-500/20 border-green-500' : type === 'error' ? 'bg-red-500/20 border-red-500' : 'bg-blue-500/20 border-blue-500'; const icon = type === 'success' ? <CheckCircle2 /> : type === 'error' ? <AlertTriangle /> : <Info />; return (<div className={`fixed top-24 right-4 z-50 flex items-center gap-3 p-4 rounded-lg border ${bg} backdrop-blur-md shadow-2xl animate-in slide-in-from-right fade-in duration-300 max-w-sm`}><div className={type === 'success' ? 'text-green-400' : type === 'error' ? 'text-red-400' : 'text-blue-400'}>{icon}</div><p className="text-sm font-bold text-white">{message}</p></div>); };
-class ErrorBoundary extends Component { constructor(props) { super(props); this.state = { hasError: false }; } static getDerivedStateFromError(error) { return { hasError: true }; } render() { if (this.state.hasError) return <div className="p-10 text-red-500 bg-black">Error crítico. Recarga la página.</div>; return this.props.children; } }
+// COMPONENTES AUXILIARES
+const Confeti = ({ active, x, y }) => {
+  if (!active) return null;
+  return (
+    <div className="pointer-events-none fixed z-50" style={{ left: x, top: y }}>
+      {[...Array(40)].map((_, i) => (
+        <div key={i} className="absolute w-2 h-2 rounded-full animate-confetti" style={{ backgroundColor: ['#ef4444', '#3b82f6', '#eab308'][i%3], '--tx': `${Math.random()*300-150}px`, '--ty': `${Math.random()*300-150}px`}} />
+      ))}
+    </div>
+  );
+};
 
+const Toast = ({ message, type, onClose }) => {
+  useEffect(() => { 
+    const t = setTimeout(onClose, 3000); 
+    return () => clearTimeout(t); 
+  }, [onClose]); 
+  
+  const bg = type === 'success' ? 'bg-green-500/20 border-green-500' : type === 'error' ? 'bg-red-500/20 border-red-500' : 'bg-blue-500/20 border-blue-500';
+  const icon = type === 'success' ? <CheckCircle2 /> : type === 'error' ? <AlertTriangle /> : <Info />;
+  return (
+    <div className={`fixed top-24 right-4 z-50 flex items-center gap-3 p-4 rounded-lg border ${bg} backdrop-blur-md shadow-2xl animate-in slide-in-from-right fade-in duration-300 max-w-sm`}>
+      <div className={type === 'success' ? 'text-green-400' : type === 'error' ? 'text-red-400' : 'text-blue-400'}>{icon}</div>
+      <p className="text-sm font-bold text-white">{message}</p>
+    </div>
+  );
+};
+
+// NEW QUINJET COMPONENT
+const Quinjet = ({ x, onClick }) => (
+    <div 
+        onClick={onClick}
+        className="fixed top-20 z-[60] cursor-pointer hover:scale-110 transition-transform"
+        style={{ left: `${x}%` }}
+    >
+        <div className="relative">
+            <Plane size={48} className="text-slate-200 fill-slate-800 drop-shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
+            <div className="absolute top-1/2 left-0 w-8 h-1 bg-cyan-400 blur-sm -translate-x-full"></div>
+            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-yellow-500 text-black text-[8px] font-black px-1 rounded animate-pulse">SUPPLY</div>
+        </div>
+    </div>
+);
+
+
+class ErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { hasError: false }; }
+  static getDerivedStateFromError(error) { return { hasError: true }; }
+  render() { if (this.state.hasError) return <div className="p-10 text-red-500 bg-black">Error crítico. Recarga la página.</div>; return this.props.children; }
+}
+
+// --- APP PRINCIPAL ---
 function AvengersTracker() {
-  const [teams, setTeams] = useState(() => { const saved = localStorage.getItem('avengers_teams'); return saved ? JSON.parse(saved) : INITIAL_TEAMS; });
+  const [teams, setTeams] = useState(() => {
+     const saved = localStorage.getItem('avengers_teams');
+     return saved ? JSON.parse(saved) : INITIAL_TEAMS;
+  });
+  
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loggedInId, setLoggedInId] = useState(null);
@@ -407,6 +467,8 @@ function AvengersTracker() {
   const [useLocal, setUseLocal] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null); 
   const [editMode, setEditMode] = useState({}); 
+  
+  // UI States
   const [modal, setModal] = useState(null);
   const [selTeam, setSelTeam] = useState(null);
   const [pass, setPass] = useState('');
@@ -434,6 +496,9 @@ function AvengersTracker() {
   // LOCK STATE FOR PREVENTING MULTIPLE SUBMISSIONS
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // QUINJET STATE
+  const [quinjet, setQuinjet] = useState({ active: false, x: -10 });
+
   const [mathState, setMathState] = useState({ active: false, questions: [], currentIdx: 0, level: 2 });
   const [mathInput, setMathInput] = useState("");
   const [streak, setStreak] = useState(0);
@@ -455,6 +520,47 @@ function AvengersTracker() {
 
   useEffect(() => { localStorage.setItem('avengers_teams', JSON.stringify(teams)); }, [teams]);
   useEffect(() => { localStorage.setItem('avengers_mission', mission); }, [mission]);
+
+  // Quinjet Animation Logic
+  useEffect(() => {
+      // Randomly spawn quinjet
+      const spawnTimer = setInterval(() => {
+          if (!quinjet.active && Math.random() < 0.02) { // 2% chance every 5s check
+               setQuinjet({ active: true, x: -10 });
+               playSfx('click'); // Subtle cue
+          }
+      }, 5000);
+
+      let animFrame;
+      if (quinjet.active) {
+          const animate = () => {
+              setQuinjet(prev => {
+                  if (prev.x > 110) return { active: false, x: -10 };
+                  return { ...prev, x: prev.x + 0.2 }; // Speed
+              });
+              animFrame = requestAnimationFrame(animate);
+          };
+          animFrame = requestAnimationFrame(animate);
+      }
+
+      return () => {
+          clearInterval(spawnTimer);
+          if (animFrame) cancelAnimationFrame(animFrame);
+      };
+  }, [quinjet.active]);
+
+  const handleQuinjetClick = () => {
+      if (!loggedInId) {
+          showToast("¡Inicia sesión para reclamar el suministro!", "error");
+          return;
+      }
+      playSfx('success');
+      handlePts(loggedInId, 5, null, true);
+      showToast("¡SUMINISTRO INTERCEPTADO! +5 PTS", "success");
+      setQuinjet({ active: false, x: -10 });
+      triggerSecretConfetti();
+  };
+
 
   useEffect(() => {
       const day = new Date().getDate();
@@ -589,7 +695,9 @@ function AvengersTracker() {
           showToast("¡LÍNEA AL 100%! +1 Punto Extra", "success");
           handlePts(tid, 1, null, true); 
       }
+      
       safeUpdate(tid, update);
+
       // Underdog check: Is this team in the bottom 2?
       const sorted = [...teams].sort((a,b) => b.points - a.points);
       const rank = sorted.findIndex(tm => tm.id === tid);
@@ -604,7 +712,42 @@ function AvengersTracker() {
   const handleBuy = async (teamId, cost, itemId) => { if (!isAdmin && loggedInId !== teamId) { showToast("Sin permiso", "error"); return false; } const t = teams.find(tm => tm.id === teamId); if (t.points >= cost) { playSfx('click'); if (itemId === 99) { safeUpdate(teamId, { points: t.points - cost, shield: true }); logAction(`${t.name} compró Escudo`); } else if (itemId === 66) { await safeUpdate(teamId, { points: t.points - cost }); logAction(`${t.name} compró EL GUANTELETE`); speak("Yo soy... inevitable."); playSfx('alarm'); const rivals = teams.filter(tm => tm.id !== teamId); const shuffled = [...rivals].sort(() => 0.5 - Math.random()); const victims = shuffled.slice(0, 2); for (const victim of victims) { if (victim.shield) { await safeUpdate(victim.id, { shield: false }); logAction(`${victim.name} bloqueó el Chasquido`); } else { const halved = Math.floor(victim.points / 2); await safeUpdate(victim.id, { points: halved }); logAction(`${t.name} chasqueó a ${victim.name}`); } } triggerSecretConfetti(); } else { await safeUpdate(teamId, { points: t.points - cost }); logAction(`${t.name} gastó ${cost} pts`); } if(!modal?.includes('loot')) setModal(null); showToast("Compra exitosa", "success"); return true; } else { showToast("Fondos insuficientes", "error"); playSfx('error'); return false; } };
   const handleSnap = async () => { if (!window.confirm("¿Ejecutar el Chasquido de Thanos? 2 equipos perderán la mitad de sus puntos.")) return; playSfx('alarm'); speak("Yo soy... inevitable."); const shuffled = [...teams].sort(() => 0.5 - Math.random()); const victims = shuffled.slice(0, 2); for (const team of victims) { const newPoints = Math.floor(team.points / 2); await safeUpdate(team.id, { points: newPoints }); logAction(`${team.name} sufrió el Chasquido`); } triggerSecretConfetti(); showToast("El equilibrio ha sido restaurado.", "info"); };
   const handleBossAttack = () => { if (teams.length === 0) return; setShaking(true); playSfx('alarm'); speak("Thanos ataca. Iniciando protocolo de defensa."); const randomTeam = teams[Math.floor(Math.random() * teams.length)]; const randomQuestions = [...ACADEMIC_QUESTIONS].sort(() => 0.5 - Math.random()).slice(0, 6); setBossAttackState({ active: true, team: randomTeam, questions: randomQuestions, currentIdx: 0, mistakes: 0 }); setModal('bossAttack'); setTimeout(() => setShaking(false), 3000); };
-  const submitBossAnswer = (inputVal) => { const currentQ = bossAttackState.questions[bossAttackState.currentIdx]; const isCorrect = inputVal.toUpperCase().trim() === currentQ.a.toUpperCase(); let newMistakes = bossAttackState.mistakes; if (isCorrect) { playSfx('success'); } else { playSfx('error'); newMistakes++; handlePts(bossAttackState.team.id, -10, null, true); showToast(`¡FALLO! -10 Puntos. La respuesta era: ${currentQ.a}`, "error"); } if (bossAttackState.currentIdx < 5) { setBossAttackState(prev => ({ ...prev, currentIdx: prev.currentIdx + 1, mistakes: newMistakes })); } else { if (newMistakes === 0) { handlePts(bossAttackState.team.id, 50, null, true); speak("Amenaza neutralizada. Recompensa otorgada."); showToast("¡THANOS REPELIDO! +50 Puntos", "success"); triggerSecretConfetti(); } else { speak("Defensa fallida. El universo ha sufrido daños."); showToast("Ataque finalizado con daños.", "info"); } setModal(null); } };
+  const submitBossAnswer = (inputVal) => { 
+      if (isProcessing) return;
+      setIsProcessing(true);
+      const currentQ = bossAttackState.questions[bossAttackState.currentIdx]; 
+      const isCorrect = inputVal.toUpperCase().trim() === currentQ.a.toUpperCase(); 
+      let newMistakes = bossAttackState.mistakes; 
+      
+      if (isCorrect) { 
+          playSfx('success'); 
+      } else { 
+          playSfx('error'); 
+          newMistakes++; 
+          handlePts(bossAttackState.team.id, -10, null, true); 
+          showToast(`¡FALLO! -10 Puntos. La respuesta era: ${currentQ.a}`, "error"); 
+      } 
+      
+      if (bossAttackState.currentIdx < 5) { 
+          setBossAttackState(prev => ({ ...prev, currentIdx: prev.currentIdx + 1, mistakes: newMistakes })); 
+          setIsProcessing(false);
+      } else { 
+          if (newMistakes === 0) { 
+              handlePts(bossAttackState.team.id, 50, null, true); 
+              speak("Amenaza neutralizada. Recompensa otorgada."); 
+              showToast("¡THANOS REPELIDO! +50 Puntos", "success"); 
+              triggerSecretConfetti(); 
+          } else { 
+              speak("Defensa fallida. El universo ha sufrido daños."); 
+              showToast("Ataque finalizado con daños.", "info"); 
+          } 
+          // Small delay before closing to show result
+          setTimeout(() => {
+              setModal(null); 
+              setIsProcessing(false);
+          }, 1500);
+      } 
+  };
   const activateGauntlet = async (team) => { if(!window.confirm("¿ACTIVAR EL GUANTELETE DEL INFINITO? ESTA ACCIÓN REINICIARÁ EL UNIVERSO.")) return; speak("Yo soy... inevitable."); playSfx('alarm'); setShaking(true); const oneWeekLater = new Date(); oneWeekLater.setDate(oneWeekLater.getDate() + 7); const doublePointsTimestamp = oneWeekLater.getTime(); for (const t of teams) { if (t.id === team.id) { const newBadges = [...(t.badges || []), { icon: <Crown size={14}/>, name: "TITÁN", color: "text-yellow-500" }]; await safeUpdate(t.id, { points: 25, dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, shield: true, badges: newBadges, doublePointsUntil: doublePointsTimestamp }); } else { await safeUpdate(t.id, { points: 0, dailyMath:0, dailyWord:0, dailyCombat:0, dailyMemory:0 }); } } logAction(`${team.name} usó el GUANTELETE: Universo reiniciado. ${team.name} obtiene supremacía.`); setTimeout(() => { setShaking(false); speak("El universo ha sido reequilibrado."); triggerSecretConfetti(); }, 3000); };
   const resetDailyLimits = async () => { if (!window.confirm("¿Reiniciar los límites de retos diarios para todos?")) return; teams.forEach(t => safeUpdate(t.id, { dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0 })); speak("Protocolos de entrenamiento reiniciados."); showToast("Límites diarios reseteados.", "success"); };
   const openLootBox = async (tid) => { if(handleBuy(tid, 15)) { speak("Abriendo..."); setTimeout(() => { const it = LOOT_ITEMS[Math.floor(Math.random()*LOOT_ITEMS.length)]; setLootResult(it); if(it.type === 'bad') safeUpdate(tid, { lastLoot: 'bad' }); else safeUpdate(tid, { lastLoot: 'good' }); setTimeout(() => safeUpdate(tid, { lastLoot: null }), 5000); if(it.val !== 0) handlePts(tid, it.val, null, true); logAction(`${teams.find(t=>t.id===tid).name} loot: ${it.text}`); if(it.type === 'good') playSfx('success'); else playSfx('error'); }, 1500); } };
@@ -650,20 +793,22 @@ function AvengersTracker() {
           if (mathState.currentIdx < 4) { 
               setMathState(prev => ({ ...prev, level: nextLevel, currentIdx: prev.currentIdx + 1, questions: [...prev.questions, generateMathQuestion(nextLevel)] })); 
               setMathInput(""); 
-              setIsProcessing(false);
-          } else { 
-              handlePts(loggedInId, 1, null, true); handleDailyProgress(loggedInId, 'math'); logAction(`${teams.find(t=>t.id===loggedInId).name} completó Mates.`); setModal(null); showToast("¡Correcto! +1 Punto", "success"); speak("Excelente trabajo."); triggerSecretConfetti(); setIsProcessing(false);
-          } 
+              handlePts(loggedInId, 1, null, true); handleDailyProgress(loggedInId, 'math'); logAction(`${teams.find(t=>t.id===loggedInId).name} completó Mates.`); 
+              showToast("¡Correcto! +1 Punto", "success"); speak("Excelente trabajo."); triggerSecretConfetti(); 
+              setTimeout(() => { setModal(null); setIsProcessing(false); }, 1000);
+          } else {
+             setIsProcessing(false);
+          }
       } else { 
           let nextLevel = Math.max(1, mathState.level - 1); playSfx('error'); speak("Fallo. Recalibrando nivel."); showToast(`Incorrecto. Era ${currentQ.a}. Bajando dificultad...`, "info"); setMathState({ active: true, questions: [generateMathQuestion(nextLevel)], currentIdx: 0, level: nextLevel }); setMathInput(""); setStreak(0); setIsProcessing(false);
       } 
   };
   const startWordChallenge = () => { const t = teams.find(t => t.id === loggedInId); if ((t.dailyWord || 0) >= 4) { showToast("Batería de Lengua al 100%.", "info"); playSfx('error'); return; } const word = HYDRA_WORDS[Math.floor(Math.random() * HYDRA_WORDS.length)]; const scrambled = word.split('').sort(() => 0.5 - Math.random()).join(''); setWordState({ active: true, word: word, scrambled: scrambled }); setWordInput(""); setModal('wordChallenge'); speak("Desencriptando transmisión de Hydra."); };
-  const submitWordAnswer = () => { if (isProcessing) return; setIsProcessing(true); if (wordInput.toUpperCase().trim() === wordState.word) { handlePts(loggedInId, 1, null, true); handleDailyProgress(loggedInId, 'word'); playSfx('success'); logAction(`${teams.find(t=>t.id===loggedInId).name} desencriptó ${wordState.word}`); setModal(null); showToast("¡Código Descifrado! +1 Punto", "success"); } else { playSfx('error'); showToast("Código incorrecto", "error"); setWordInput(""); } setIsProcessing(false); };
+  const submitWordAnswer = () => { if (isProcessing) return; setIsProcessing(true); if (wordInput.toUpperCase().trim() === wordState.word) { handlePts(loggedInId, 1, null, true); handleDailyProgress(loggedInId, 'word'); playSfx('success'); logAction(`${teams.find(t=>t.id===loggedInId).name} desencriptó ${wordState.word}`); showToast("¡Código Descifrado! +1 Punto", "success"); setTimeout(() => { setModal(null); setIsProcessing(false); }, 1000); } else { playSfx('error'); showToast("Código incorrecto", "error"); setWordInput(""); setIsProcessing(false); } };
   const startCombatChallenge = () => { if (!loggedInId) return; const t = teams.find(t => t.id === loggedInId); if ((t.dailyCombat || 0) >= 4) { showToast("Batería de Combate al 100%.", "info"); playSfx('error'); return; } const shuffled = [ ...COMBAT_QUESTIONS.easy.map(q => ({...q, diff: 'easy'})), ...COMBAT_QUESTIONS.medium.map(q => ({...q, diff: 'medium'})), ...COMBAT_QUESTIONS.hard.map(q => ({...q, diff: 'hard'})) ]; const selected = shuffled.sort(() => 0.5 - Math.random()).slice(0, 5); setCombatState({ active: true, questions: selected, currentIdx: 0, correctCount: 0 }); setCombatInput(""); setModal('combatChallenge'); speak("Simulación de combate iniciada. Tanda de 5 objetivos."); };
-  const submitCombatAnswer = () => { if (isProcessing) return; setIsProcessing(true); const currentQ = combatState.questions[combatState.currentIdx]; const isCorrect = combatInput.toUpperCase().trim() === currentQ.a; let newCorrectCount = combatState.correctCount + (isCorrect ? 1 : 0); if (isCorrect) { playSfx('success'); showToast("¡Objetivo neutralizado!", "success"); } else { playSfx('error'); showToast(`Fallo. Era: ${currentQ.a}`, "error"); } if (combatState.currentIdx < 4) { setCombatState(prev => ({ ...prev, currentIdx: prev.currentIdx + 1, correctCount: newCorrectCount })); setCombatInput(""); setIsProcessing(false); } else { if (newCorrectCount === 5) { handlePts(loggedInId, 1, null, true); handleDailyProgress(loggedInId, 'combat'); logAction(`${teams.find(t=>t.id===loggedInId).name} superó la simulación (5/5).`); showToast("¡Simulación Perfecta! +1 Punto", "success"); speak("Simulación completada con éxito."); triggerSecretConfetti(); } else { showToast(`Simulación finalizada. ${newCorrectCount}/5 aciertos.`, "info"); speak("Simulación fallida. Se requiere 100% de efectividad."); } setModal(null); setCombatInput(""); setIsProcessing(false); } };
+  const submitCombatAnswer = () => { if (isProcessing) return; setIsProcessing(true); const currentQ = combatState.questions[combatState.currentIdx]; const isCorrect = combatInput.toUpperCase().trim() === currentQ.a; let newCorrectCount = combatState.correctCount + (isCorrect ? 1 : 0); if (isCorrect) { playSfx('success'); showToast("¡Objetivo neutralizado!", "success"); } else { playSfx('error'); showToast(`Fallo. Era: ${currentQ.a}`, "error"); } if (combatState.currentIdx < 4) { setCombatState(prev => ({ ...prev, currentIdx: prev.currentIdx + 1, correctCount: newCorrectCount })); setCombatInput(""); setIsProcessing(false); } else { if (newCorrectCount === 5) { handlePts(loggedInId, 1, null, true); handleDailyProgress(loggedInId, 'combat'); logAction(`${teams.find(t=>t.id===loggedInId).name} superó la simulación (5/5).`); showToast("¡Simulación Perfecta! +1 Punto", "success"); speak("Simulación completada con éxito."); triggerSecretConfetti(); } else { showToast(`Simulación finalizada. ${newCorrectCount}/5 aciertos.`, "info"); speak("Simulación fallida. Se requiere 100% de efectividad."); } setTimeout(() => { setModal(null); setIsProcessing(false); }, 1000); } };
   const startMemoryChallenge = () => { if (!loggedInId) return; const t = teams.find(t => t.id === loggedInId); if ((t.dailyMemory || 0) >= 4) { showToast("Batería de Memoria al 100%.", "info"); playSfx('error'); return; } const shuffledQs = [...ACADEMIC_QUESTIONS].sort(() => 0.5 - Math.random()).slice(0, 6); const cards = []; shuffledQs.forEach((item, index) => { cards.push({ id: `q-${index}`, content: item.q, type: 'q', pairId: index, isFlipped: false, isMatched: false }); cards.push({ id: `a-${index}`, content: item.a, type: 'a', pairId: index, isFlipped: false, isMatched: false }); }); cards.sort(() => 0.5 - Math.random()); setMemoryState({ active: true, cards: cards, flipped: [], matched: [], lock: false }); setModal('memoryChallenge'); speak("Protocolo de Sincronización iniciado."); };
-  const handleCardClick = (id) => { if (memoryState.lock) return; const clickedCard = memoryState.cards.find(c => c.id === id); if (!clickedCard || clickedCard.isFlipped || clickedCard.isMatched) return; playSfx('click'); const newCards = memoryState.cards.map(c => c.id === id ? { ...c, isFlipped: true } : c); const newFlipped = [...memoryState.flipped, clickedCard]; setMemoryState({ ...memoryState, cards: newCards, flipped: newFlipped }); if (newFlipped.length === 2) { setMemoryState(prev => ({ ...prev, lock: true })); if (newFlipped[0].pairId === newFlipped[1].pairId) { playSfx('success'); setTimeout(() => { const matchedCards = newCards.map(c => (c.id === newFlipped[0].id || c.id === newFlipped[1].id) ? { ...c, isMatched: true } : c); const newMatched = [...memoryState.matched, newFlipped[0].pairId]; if (newMatched.length === 6) { handlePts(loggedInId, 1, null, true); handleDailyProgress(loggedInId, 'memory'); logAction(`${teams.find(t=>t.id===loggedInId).name} completó Sincronización.`); setModal(null); showToast("¡Sincronización Completa! +1 Punto", "success"); speak("Sistemas sincronizados."); triggerSecretConfetti(); } else { setMemoryState(prev => ({ ...prev, cards: matchedCards, flipped: [], lock: false, matched: newMatched })); } }, 1000); } else { playSfx('error'); setTimeout(() => { const resetCards = newCards.map(c => (c.id === newFlipped[0].id || c.id === newFlipped[1].id) ? { ...c, isFlipped: false } : c); setMemoryState(prev => ({ ...prev, cards: resetCards, flipped: [], lock: false })); }, 1000); } } };
+  const handleCardClick = (id) => { if (memoryState.lock) return; const clickedCard = memoryState.cards.find(c => c.id === id); if (!clickedCard || clickedCard.isFlipped || clickedCard.isMatched) return; playSfx('click'); const newCards = memoryState.cards.map(c => c.id === id ? { ...c, isFlipped: true } : c); const newFlipped = [...memoryState.flipped, clickedCard]; setMemoryState({ ...memoryState, cards: newCards, flipped: newFlipped }); if (newFlipped.length === 2) { setMemoryState(prev => ({ ...prev, lock: true })); if (newFlipped[0].pairId === newFlipped[1].pairId) { playSfx('success'); setTimeout(() => { const matchedCards = newCards.map(c => (c.id === newFlipped[0].id || c.id === newFlipped[1].id) ? { ...c, isMatched: true } : c); const newMatched = [...memoryState.matched, newFlipped[0].pairId]; if (newMatched.length === 6) { handlePts(loggedInId, 1, null, true); handleDailyProgress(loggedInId, 'memory'); logAction(`${teams.find(t=>t.id===loggedInId).name} completó Sincronización.`); setModal(null); showToast("¡Sincronización Completa! +1 Punto", "success"); speak("Sistemas sincronizados."); triggerSecretConfetti(); setTimeout(() => setModal(null), 1000); } else { setMemoryState(prev => ({ ...prev, cards: matchedCards, flipped: [], lock: false, matched: newMatched })); } }, 1000); } else { playSfx('error'); setTimeout(() => { const resetCards = newCards.map(c => (c.id === newFlipped[0].id || c.id === newFlipped[1].id) ? { ...c, isFlipped: false } : c); setMemoryState(prev => ({ ...prev, cards: resetCards, flipped: [], lock: false })); }, 1000); } } };
 
   // Render Vars
   const totalPoints = teams.reduce((a, b) => a + Math.max(0, b.points), 0);
@@ -681,6 +826,7 @@ function AvengersTracker() {
     <div className={`min-h-screen bg-[#020617] text-white font-sans pb-20 overflow-x-hidden ${redAlertMode ? 'border-4 border-red-600' : ''} ${shaking ? 'animate-[shake_0.5s_ease-in-out_infinite]' : ''}`}>
       {confetti.active && (<div className="fixed pointer-events-none z-50" style={{left: confetti.x, top: confetti.y}}>{[...Array(40)].map((_,i) => <div key={i} className="absolute w-2 h-2 rounded-full animate-confetti" style={{ backgroundColor: ['#ef4444', '#3b82f6', '#eab308', '#22c55e', '#a855f7'][Math.floor(Math.random() * 5)], '--tx': `${Math.random()*300-150}px`, '--ty': `${Math.random()*300-150}px`, '--r': `${Math.random() * 360}deg` }} />)}</div>)}
       {toast && <Toast message={toast.message} type={toast.type} onClose={closeToast} />}
+      {quinjet.active && <Quinjet x={quinjet.x} onClick={handleQuinjetClick} />}
 
       <header className={`relative z-20 w-full p-4 border-b flex flex-wrap justify-between items-center gap-4 ${redAlertMode ? 'bg-red-900/90 border-red-500' : 'bg-slate-900/90 border-cyan-500/30'}`}>
         <div className="flex items-center gap-3">
@@ -870,10 +1016,10 @@ function AvengersTracker() {
                         </div>
                     )}
                     
-                    {/* UNDERDOG BADGE */}
+                    {/* UNDERDOG BADGE - MOVED TO BOTTOM RIGHT */}
                     {isUnderdog && (
-                        <div className="absolute top-8 right-12 z-20 px-2 py-1 rounded text-[8px] font-bold uppercase animate-bounce bg-cyan-500 text-black shadow-lg border border-cyan-400">
-                            REFUERZOS EN CAMINO (+1 Extra)
+                        <div className="absolute bottom-2 right-2 z-20 px-2 py-1 rounded text-[9px] font-bold uppercase animate-pulse bg-cyan-500 text-black shadow-lg border border-cyan-400 flex items-center gap-1">
+                            <TrendingUp size={10}/> REFUERZOS (+1)
                         </div>
                     )}
 
