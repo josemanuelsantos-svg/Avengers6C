@@ -11,7 +11,7 @@ import {
   Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon, Edit3, Save, Upload, Disc
 } from 'lucide-react';
 
-const APP_VERSION = "v5.1.0 (LOCK & STABILITY)";
+const APP_VERSION = "v5.4.0 (STABLE MASTER)";
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
 const firebaseConfig = typeof __firebase_config !== 'undefined' 
@@ -503,6 +503,7 @@ function AvengersTracker() {
   const [timerInput, setTimerInput] = useState(5);
   const [duelData, setDuelData] = useState(null);
   
+  // STARK ROULETTE
   const [starkSpinning, setStarkSpinning] = useState(false);
   const [starkPrize, setStarkPrize] = useState(null);
 
@@ -528,7 +529,7 @@ function AvengersTracker() {
     localStorage.setItem('avengers_mission', mission);
   }, [mission]);
 
-  // Daily Quote, Boss HP Growth & Reset Logic
+  // Daily Quote & Boss HP Growth
   useEffect(() => {
       const day = new Date().getDate();
       setDailyQuote(DAILY_QUOTES[day % DAILY_QUOTES.length]);
@@ -611,7 +612,8 @@ function AvengersTracker() {
                  dailyMemory: (t.dailyMemory !== undefined) ? t.dailyMemory : (staticData.dailyMemory || 0),
                  lastLoot: t.lastLoot ?? null,
                  doublePointsUntil: t.doublePointsUntil ?? 0,
-                 lastSpin: t.lastSpin ?? ''
+                 lastSpin: t.lastSpin ?? '',
+                 gif: t.gif ?? staticData.gif
              };
           }).sort((a,b)=>b.points-a.points);
 
@@ -640,15 +642,25 @@ function AvengersTracker() {
     } catch { setUseLocal(true); setLoading(false); }
   }, [user, useLocal]); 
 
-  // Ticker
+  // --- Ticker & Transmisión Sorpresa (Aviso) ---
   useEffect(() => {
     const t = setInterval(() => {
       setTickerIdx(p => (p + 1) % TICKER_MESSAGES.length);
-      const h = new Date().getHours() + new Date().getMinutes()/60;
-      setQuestionAvailable(h >= 9 && h <= 12.5);
-    }, 1000);
+    }, 6000);
     return () => clearInterval(t);
   }, []);
+
+  useEffect(() => {
+    const radioTimer = setInterval(() => {
+        if (!questionAvailable) {
+            if (Math.random() < 0.05) { 
+                setQuestionAvailable(true);
+                setTimeout(() => setQuestionAvailable(false), 300000); 
+            }
+        }
+    }, 60000);
+    return () => clearInterval(radioTimer);
+  }, [questionAvailable]);
 
   // Helpers
   const safeUpdate = async (docId, data, merge=true) => {
@@ -776,37 +788,49 @@ function AvengersTracker() {
       closeAllModals();
   };
 
-  const handleDailyProgress = (tid, type) => {
-      const t = teams.find(i => i.id === tid); if(!t) return;
+  // --- LOGICA DE RESOLUCIÓN DE RETOS (CENTRALIZADA) ---
+  const handleTaskCompletion = (tid, type) => {
+      const t = teams.find(i => i.id === tid); 
+      if(!t) return;
+      
       let currentVal = 0;
       if(type === 'math') currentVal = t.dailyMath || 0;
       else if(type === 'word') currentVal = t.dailyWord || 0;
       else if(type === 'combat') currentVal = t.dailyCombat || 0;
       else if(type === 'memory') currentVal = t.dailyMemory || 0;
 
-      const newDaily = Math.min(currentVal + 1, 4);
+      if (currentVal >= 4) return; // Ya no pueden subir más hoy de esta categoría
+
+      const newDaily = currentVal + 1;
       let update = {};
       if(type === 'math') update = { dailyMath: newDaily };
       else if(type === 'word') update = { dailyWord: newDaily };
       else if(type === 'combat') update = { dailyCombat: newDaily };
       else if(type === 'memory') update = { dailyMemory: newDaily };
 
-      if (newDaily === 4 && currentVal < 4) {
-          speak("¡Línea completada! Un punto extra.");
-          triggerSecretConfetti();
-          showToast("¡LÍNEA AL 100%! +1 Punto Extra", "success");
-          handlePts(tid, 1, null, true); 
+      let ptsToAdd = 1; // 1 Punto base por acertar
+      let messageParts = ["+1 Punto Base"];
+
+      // Bonus por completar la línea
+      if (newDaily === 4) {
+          ptsToAdd += 1;
+          messageParts.push("+1 Extra (Línea)");
       }
       
-      safeUpdate(tid, update);
-
+      // Bonus Remontada (Underdog)
       const sorted = [...teams].sort((a,b) => b.points - a.points);
       const rank = sorted.findIndex(tm => tm.id === tid);
-      
       if (rank >= sorted.length - 2 && sorted.length > 2) {
-          showToast("¡BONUS DE REMONTADA! +1 Extra", "success");
-          handlePts(tid, 1, null, true); 
+          ptsToAdd += 1;
+          messageParts.push("+1 Extra (Refuerzos)");
       }
+
+      safeUpdate(tid, update);
+      handlePts(tid, ptsToAdd, null, true); 
+      
+      speak(`Reto superado. ${ptsToAdd} puntos conseguidos.`);
+      showToast(`¡Reto Superado! ${messageParts.join(" | ")}`, "success");
+      logAction(`${t.name} superó simulación de ${type} (+${ptsToAdd} pts)`);
   };
 
   const handleBadge = (tid, badge) => { const t = teams.find(i => i.id === tid); if(!t) return; const newBadges = [...(t.badges || []), badge]; safeUpdate(tid, { badges: newBadges }); logAction(`${t.name} ganó medalla ${badge.name}`); playSfx('success'); triggerSecretConfetti(); };
@@ -910,6 +934,8 @@ function AvengersTracker() {
   
   const activateGauntlet = async (team) => {
      if(!window.confirm("¿ACTIVAR EL GUANTELETE DEL INFINITO? ESTA ACCIÓN REINICIARÁ EL UNIVERSO.")) return;
+
+     const customGif = window.prompt("¡Poder Absoluto! Introduce la URL de un GIF animado para tu equipo (déjalo en blanco para mantener el actual):");
      
      speak("Yo soy... inevitable.");
      playSfx('alarm');
@@ -922,13 +948,19 @@ function AvengersTracker() {
      for (const t of teams) {
          if (t.id === team.id) {
              const newBadges = [...(t.badges || []), { icon: <Crown size={14}/>, name: "TITÁN", color: "text-yellow-500" }];
-             await safeUpdate(t.id, { 
+             let updates = { 
                  points: 25, 
                  dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0,
                  shield: true, 
                  badges: newBadges,
                  doublePointsUntil: doublePointsTimestamp
-             });
+             };
+             
+             if (customGif && customGif.trim() !== "") {
+                 updates.gif = customGif.trim();
+             }
+             
+             await safeUpdate(t.id, updates);
          } else {
              await safeUpdate(t.id, { points: 0, dailyMath:0, dailyWord:0, dailyCombat:0, dailyMemory:0 });
          }
@@ -943,8 +975,6 @@ function AvengersTracker() {
      }, 3000);
   };
 
-  const resetDailyLimits = async () => { if (!window.confirm("¿Reiniciar los límites de retos diarios para todos?")) return; teams.forEach(t => safeUpdate(t.id, { dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0 })); speak("Protocolos de entrenamiento reiniciados."); showToast("Límites diarios reseteados.", "success"); };
-  
   const openLootBox = async (tid) => { if(handleBuy(tid, 15)) { speak("Abriendo..."); setTimeout(() => { const it = LOOT_ITEMS[Math.floor(Math.random()*LOOT_ITEMS.length)]; setLootResult(it); if(it.type === 'bad') safeUpdate(tid, { lastLoot: 'bad' }); else safeUpdate(tid, { lastLoot: 'good' }); setTimeout(() => safeUpdate(tid, { lastLoot: null }), 5000); if(it.val !== 0) handlePts(tid, it.val, null, true); logAction(`${teams.find(t=>t.id===tid).name} loot: ${it.text}`); if(it.type === 'good') playSfx('success'); else playSfx('error'); }, 1500); } };
   const startDuel = () => { const s=[...teams].sort(()=>0.5-Math.random()); setDuelData({t1:s[0], t2:s[1], challenge:DUEL_CHALLENGES[Math.floor(Math.random()*DUEL_CHALLENGES.length)]}); setModal('duel'); playSfx('alarm'); speak("Civil War"); };
   const resolveDuel = (wid) => { if(wid){ const w=teams.find(t=>t.id===wid); handlePts(wid,5, null, true); logAction(`Civil War: Gana ${w.name}`); speak(`Gana ${w.name}`); playSfx('success'); } closeAllModals(); };
@@ -979,6 +1009,7 @@ function AvengersTracker() {
       setShowAnswer(false); 
       setModal('dailyQ'); 
       speak("Transmisión entrante."); 
+      setQuestionAvailable(false);
   };
   
   const openStarkRoulette = () => { if (!loggedInId) return; const t = teams.find(t => t.id === loggedInId); const today = new Date().toDateString(); if (t.lastSpin === today) { showToast("Ya has tirado hoy. Vuelve mañana.", "error"); playSfx('error'); return; } setModal('roulette'); setStarkSpinning(false); setStarkPrize(null); };
@@ -1018,7 +1049,9 @@ function AvengersTracker() {
               setMathState(prev => ({ ...prev, level: nextLevel, currentIdx: prev.currentIdx + 1, questions: [...prev.questions, generateMathQuestion(nextLevel)] })); 
               setMathInput(""); 
           } else { 
-              handlePts(loggedInId, 1, null, true); handleDailyProgress(loggedInId, 'math'); logAction(`${teams.find(t=>t.id===loggedInId).name} completó Mates.`); closeAllModals(); showToast("¡Correcto! +1 Punto", "success"); speak("Excelente trabajo."); triggerSecretConfetti(); 
+              handleTaskCompletion(loggedInId, 'math');
+              closeAllModals(); 
+              triggerSecretConfetti(); 
           } 
       } else { 
           let nextLevel = Math.max(1, mathState.level - 1); playSfx('error'); speak("Fallo. Recalibrando nivel."); showToast(`Incorrecto. Era ${currentQ.a}. Bajando dificultad...`, "info"); setMathState({ active: true, questions: [generateMathQuestion(nextLevel)], currentIdx: 0, level: nextLevel }); setMathInput(""); setStreak(0); 
@@ -1035,7 +1068,8 @@ function AvengersTracker() {
       if (!wordState.active) return;
 
       if (wordInput.toUpperCase().trim() === wordState.word) { 
-          handlePts(loggedInId, 1, null, true); handleDailyProgress(loggedInId, 'word'); playSfx('success'); logAction(`${teams.find(t=>t.id===loggedInId).name} desencriptó ${wordState.word}`); closeAllModals(); showToast("¡Código Descifrado! +1 Punto", "success"); 
+          handleTaskCompletion(loggedInId, 'word');
+          closeAllModals(); 
       } else { 
           playSfx('error'); showToast("Código incorrecto", "error"); setWordInput(""); 
       } 
@@ -1060,7 +1094,8 @@ function AvengersTracker() {
           setCombatState(prev => ({ ...prev, currentIdx: prev.currentIdx + 1, correctCount: newCorrectCount })); setCombatInput(""); 
       } else { 
           if (newCorrectCount === 5) { 
-              handlePts(loggedInId, 1, null, true); handleDailyProgress(loggedInId, 'combat'); logAction(`${teams.find(t=>t.id===loggedInId).name} superó la simulación (5/5).`); showToast("¡Simulación Perfecta! +1 Punto", "success"); speak("Simulación completada con éxito."); triggerSecretConfetti(); 
+              handleTaskCompletion(loggedInId, 'combat');
+              triggerSecretConfetti(); 
           } else { 
               showToast(`Simulación finalizada. ${newCorrectCount}/5 aciertos.`, "info"); speak("Simulación fallida. Se requiere 100% de efectividad."); 
           } 
@@ -1088,7 +1123,9 @@ function AvengersTracker() {
                   const matchedCards = newCards.map(c => (c.id === newFlipped[0].id || c.id === newFlipped[1].id) ? { ...c, isMatched: true } : c); 
                   const newMatched = [...memoryState.matched, newFlipped[0].pairId]; 
                   if (newMatched.length === 6) { 
-                      handlePts(loggedInId, 1, null, true); handleDailyProgress(loggedInId, 'memory'); logAction(`${teams.find(t=>t.id===loggedInId).name} completó Sincronización.`); closeAllModals(); showToast("¡Sincronización Completa! +1 Punto", "success"); speak("Sistemas sincronizados."); triggerSecretConfetti(); 
+                      handleTaskCompletion(loggedInId, 'memory');
+                      closeAllModals(); 
+                      triggerSecretConfetti(); 
                   } else { 
                       setMemoryState(prev => ({ ...prev, cards: matchedCards, flipped: [], lock: false, matched: newMatched })); 
                   } 
@@ -1137,6 +1174,8 @@ function AvengersTracker() {
             </div>
           </div>
         </div>
+        
+        {/* CRONOMETER REMOVED */}
 
         <div className="flex gap-2 items-center">
             {useLocal && <span className="text-[10px] text-orange-500 font-mono bg-orange-900/20 px-2 py-1 rounded border border-orange-500/50 flex items-center gap-1"><WifiOff size={10}/> LOCAL</span>}
@@ -1154,6 +1193,7 @@ function AvengersTracker() {
                     <button onClick={startCombatChallenge} className="bg-red-500/20 border border-red-500 px-3 py-1 rounded text-red-300 text-xs font-bold flex gap-1 items-center hover:bg-red-500/40 transition-colors">
                         <Target size={14}/> COMBATE
                     </button>
+                    {/* NEW MEMORY BUTTON */}
                     <button onClick={startMemoryChallenge} className="bg-cyan-500/20 border border-cyan-500 px-3 py-1 rounded text-cyan-300 text-xs font-bold flex gap-1 items-center hover:bg-cyan-500/40 transition-colors">
                         <Grid3X3 size={14}/> MEMORIA
                     </button>
@@ -1195,7 +1235,7 @@ function AvengersTracker() {
              <div className="absolute top-0 right-0 w-20 h-20 bg-cyan-500/5 rounded-bl-full pointer-events-none"></div>
              <h3 className="text-lg font-black text-cyan-400 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-cyan-500/20 pb-2"><TrendingUp size={20} /> Clasificación</h3>
              <div className="space-y-3 flex-1">
-                {teams.map((t, i) => {
+                {sortedTeams.map((t, i) => {
                    const rInfo = getRankInfo(t.points);
                    const isNeg = t.points < 0;
                    const clr = i === 0 ? "text-yellow-400" : i === 1 ? "text-slate-300" : i === 2 ? "text-orange-400" : "text-slate-500";
@@ -1239,7 +1279,7 @@ function AvengersTracker() {
             const isMine = loggedInId === t.id;
             const rInfo = getRankInfo(t.points);
 
-            // FIX: Calculation within map scope
+            // Calculation within map scope to prevent undefined errors
             const isUnderdog = (sortedTeams.findIndex(st => st.id === t.id) >= sortedTeams.length - 2) && sortedTeams.length > 2;
             const isNeg = t.points < 0;
 
@@ -1247,7 +1287,7 @@ function AvengersTracker() {
               <div key={t.id} className={`relative group rounded p-[1px] transition-all ${isMine?'scale-[1.02] z-10':'hover:scale-[1.01]'}`}>
                 <div className={`absolute inset-0 rounded bg-gradient-to-b ${t.theme} opacity-30`}></div>
                 <div className={`h-full bg-slate-950/90 border ${isMine?'border-yellow-500':t.border.split(' ')[0]} p-4 rounded backdrop-blur-xl flex flex-col justify-between shadow-xl relative overflow-hidden`}>
-                  <div className="absolute -right-0 -bottom-0 w-40 h-40 opacity-10 pointer-events-none transition-transform group-hover:scale-110" style={{mixBlendMode:'luminosity'}}><img src={t.gif} className="w-full h-full object-cover"/></div>
+                  <div className="absolute -right-0 -bottom-0 w-40 h-40 opacity-10 pointer-events-none transition-transform group-hover:scale-110" style={{mixBlendMode:'luminosity'}}><img src={t.gif} className="w-full h-full object-cover" onError={(e) => e.target.src="https://i.ibb.co/27K5dCBM/b751779a4a3bbc38f9268036cdb5af5a.gif"}/></div>
                   
                   {/* SHIELD OVERLAY */}
                   {t.shield && (
@@ -1259,10 +1299,17 @@ function AvengersTracker() {
                   <div>
                     <div className="flex justify-between items-start mb-3 relative z-10">
                       <div className="flex gap-2 items-center">
-                        <div className={`w-10 h-10 rounded-full border border-white/20 bg-slate-900 overflow-hidden ${t.accent}`}><img src={t.gif} className="w-full h-full object-cover"/></div>
-                        <div>
+                        <div className={`w-10 h-10 rounded-full border border-white/20 bg-slate-900 overflow-hidden ${t.accent}`}><img src={t.gif} className="w-full h-full object-cover" onError={(e) => e.target.src="https://i.ibb.co/27K5dCBM/b751779a4a3bbc38f9268036cdb5af5a.gif"}/></div>
+                        <div className="flex flex-col">
                           <div className={`text-[8px] font-black uppercase tracking-widest ${rInfo.color}`}>{rInfo.title}</div>
-                          <h2 className="text-sm font-black uppercase tracking-wider text-white">{t.name}</h2>
+                          <div className="flex items-center gap-2">
+                             <h2 className="text-sm font-black uppercase tracking-wider text-white truncate max-w-[140px] leading-none">{t.name}</h2>
+                             {isUnderdog && (
+                                <span className="bg-cyan-500 text-black text-[7px] px-1 py-0.5 rounded-sm animate-pulse font-bold" title="Refuerzos de S.H.I.E.L.D. en camino (+1 Punto Extra)">
+                                   🔥 BONUS
+                                </span>
+                             )}
+                          </div>
                         </div>
                       </div>
                       
@@ -1289,7 +1336,7 @@ function AvengersTracker() {
                     </div>
                     
                     {/* GAUNTLET TRIGGER BUTTON */}
-                    {t.points >= 600 && (
+                    {t.points >= 600 && isMine && (
                        <button 
                            onClick={() => activateGauntlet(t)}
                            className="absolute top-2 left-1/2 -translate-x-1/2 z-30 bg-yellow-500 hover:bg-yellow-400 text-black text-[10px] font-black px-3 py-1 rounded shadow-[0_0_15px_rgba(234,179,8,0.6)] animate-bounce flex items-center gap-1"
@@ -1302,13 +1349,6 @@ function AvengersTracker() {
                     {t.lastLoot && (
                         <div className={`absolute top-2 right-12 z-20 px-2 py-1 rounded text-[9px] font-bold uppercase animate-pulse shadow-lg ${t.lastLoot === 'bad' ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}>
                             {t.lastLoot === 'bad' ? '¡MALDICIÓN!' : '¡SUERTE!'}
-                        </div>
-                    )}
-                    
-                    {/* UNDERDOG BADGE */}
-                    {isUnderdog && (
-                        <div className="absolute top-8 right-12 z-20 px-2 py-1 rounded text-[8px] font-bold uppercase animate-bounce bg-cyan-500 text-black shadow-lg border border-cyan-400">
-                            REFUERZOS EN CAMINO (+1 Extra)
                         </div>
                     )}
 
@@ -1411,6 +1451,8 @@ function AvengersTracker() {
           </div>
       )}
       
+      {/* ... OTROS MODALES DE JUEGO Y HERRAMIENTAS ... */}
+      
       {modal === 'bossAttack' && bossAttackState.active && (
          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
              <div className="bg-slate-900 border-4 border-red-600 p-6 rounded-lg w-full max-w-lg shadow-[0_0_50px_rgba(220,38,38,0.5)] relative overflow-hidden animate-in zoom-in duration-300">
@@ -1466,7 +1508,7 @@ function AvengersTracker() {
          </div>
       )}
 
-      {/* MATH CHALLENGE MODAL (STUDENT TRAINING) */}
+      {/* MATH CHALLENGE MODAL */}
       {modal === 'mathChallenge' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
               <div className="bg-slate-900 border-2 border-green-500 p-6 rounded-sm w-full max-w-sm shadow-2xl relative overflow-hidden">
@@ -1614,6 +1656,23 @@ function AvengersTracker() {
                       ))}
                   </div>
                   <button onClick={closeAllModals} className="mt-4 w-full text-xs text-slate-500">Cancelar</button>
+              </div>
+          </div>
+      )}
+
+      {furyMessage && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-6 animate-in zoom-in duration-300">
+              <div className="max-w-2xl w-full border-4 border-red-600 bg-slate-900 p-8 shadow-[0_0_50px_rgba(220,38,38,0.5)] relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-2 bg-red-600 animate-pulse"></div>
+                  <div className="absolute bottom-0 left-0 w-full h-2 bg-red-600 animate-pulse"></div>
+                  <div className="flex flex-col items-center gap-6 text-center relative z-10">
+                      <div className="bg-red-600 text-black p-3 rounded-full animate-bounce"><Shield size={64} /></div>
+                      <h1 className="text-4xl md:text-6xl font-black text-white tracking-widest uppercase">PRIORIDAD ALPHA</h1>
+                      <div className="w-full h-px bg-red-600/50 my-2"></div>
+                      <p className="text-2xl md:text-3xl font-mono text-red-400 font-bold leading-relaxed typing-effect">{furyMessage}</p>
+                      {isAdmin && <button onClick={clearFuryMessage} className="mt-8 px-8 py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs uppercase tracking-widest rounded border border-slate-600">Cancelar Alerta</button>}
+                  </div>
+                  <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-0 pointer-events-none bg-[length:100%_4px,3px_100%]"></div>
               </div>
           </div>
       )}
@@ -1794,6 +1853,75 @@ function AvengersTracker() {
               </div>
               <div className="space-y-6">{['Comportamiento', 'Académico', 'Organización', 'Social', 'Especial'].map(cat => (<div key={cat}><h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 border-b border-white/5 pb-1">{cat}</h4><div className="grid grid-cols-1 md:grid-cols-2 gap-3">{MISSION_BATTERY.filter(m => m.category === cat).map((m, i) => (<button key={i} onClick={() => updateM(m.text)} className="text-left bg-slate-800/50 hover:bg-blue-600/20 border border-white/5 hover:border-blue-500/50 p-3 rounded-sm transition-all group flex items-start gap-3">{mission === m.text ? <CheckCircle2 size={16} className="text-green-400 mt-0.5 shrink-0" /> : <PlusCircle size={16} className="text-slate-500 group-hover:text-blue-400 mt-0.5 shrink-0" />}<span className={`text-sm ${mission === m.text ? 'text-green-300 font-bold' : 'text-slate-300 group-hover:text-white'}`}>{m.text}</span></button>))}</div></div>))}</div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {cerebro.active && (
+        <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4">
+          <div className="absolute inset-0" onClick={()=>{if(!cerebro.searching)setCerebro({...cerebro, active:false})}}></div>
+          <div className="relative z-10 text-center bg-slate-900/80 p-8 rounded-xl border border-purple-500/30 backdrop-blur-sm max-w-lg w-full mx-4 shadow-[0_0_50px_rgba(168,85,247,0.2)]">
+            
+            {/* IF NO MODE SELECTED */}
+            {!cerebro.type ? (
+               <>
+                 <Brain size={80} className="mx-auto text-purple-500 mb-6 animate-pulse" />
+                 <h2 className="text-2xl font-black text-purple-400 uppercase tracking-widest mb-6">PROTOCOLO CEREBRO</h2>
+                 <p className="text-sm text-slate-300 mb-8">Seleccione el objetivo del rastreo:</p>
+                 <div className="grid grid-cols-2 gap-4">
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); activateCerebro('member'); }}
+                        className="py-6 bg-purple-900/50 hover:bg-purple-600 border border-purple-500 text-white font-black uppercase tracking-widest rounded transition-all active:scale-95 flex flex-col items-center gap-2"
+                    >
+                        <User size={32}/> OPERATIVO
+                    </button>
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); activateCerebro('team'); }}
+                        className="py-6 bg-cyan-900/50 hover:bg-cyan-600 border border-cyan-500 text-white font-black uppercase tracking-widest rounded transition-all active:scale-95 flex flex-col items-center gap-2"
+                    >
+                        <Users size={32}/> ESCUADRÓN
+                    </button>
+                 </div>
+                 <button 
+                    onClick={(e) => { e.stopPropagation(); setCerebro({...cerebro, active:false}); }}
+                    className="mt-6 text-slate-500 text-xs hover:text-white underline"
+                >
+                    CANCELAR RASTREO
+                </button>
+               </>
+            ) : (
+               // IF MODE SELECTED (SEARCHING OR RESULT)
+               <>
+                 <div className={`mb-6 ${cerebro.searching ? 'animate-spin' : ''}`}>
+                    {cerebro.type === 'team' ? <Users size={64} className="mx-auto text-cyan-400"/> : <Brain size={64} className="mx-auto text-purple-500"/>}
+                 </div>
+                 <h2 className="text-xl font-black text-white uppercase tracking-widest mb-4">
+                    {cerebro.searching ? "RASTREANDO..." : (cerebro.type === 'team' ? "ESCUADRÓN LOCALIZADO" : "SUJETO LOCALIZADO")}
+                 </h2>
+                 
+                 <div className="text-3xl md:text-5xl font-mono font-black text-white mb-8 min-h-[4rem] flex items-center justify-center p-4 bg-black/40 rounded border border-white/10">
+                    {cerebro.target || <span className="animate-pulse text-slate-500">...</span>}
+                 </div>
+                
+                 {!cerebro.searching && (
+                    <div className="grid grid-cols-2 gap-4">
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); activateCerebro(cerebro.type); }}
+                            className="py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-widest rounded shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+                        >
+                            <RefreshCw size={16}/> RE-ESCANEAR
+                        </button>
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); setCerebro({...cerebro, active:false}); }}
+                            className="py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold uppercase tracking-widest rounded transition-all active:scale-95"
+                        >
+                            CERRAR
+                        </button>
+                    </div>
+                 )}
+               </>
+            )}
+
           </div>
         </div>
       )}
