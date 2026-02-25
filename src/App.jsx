@@ -1356,7 +1356,7 @@ function AvengersTracker() {
                     </div>
                     
                     {/* GAUNTLET TRIGGER BUTTON */}
-                    {t.points >= 600 && isMine && (
+                    {t.points >= 600 && (isMine || isAdmin) && (
                        <button 
                            onClick={() => activateGauntlet(t)}
                            className="absolute top-2 left-1/2 -translate-x-1/2 z-30 bg-yellow-500 hover:bg-yellow-400 text-black text-[10px] font-black px-3 py-1 rounded shadow-[0_0_15px_rgba(234,179,8,0.6)] animate-bounce flex items-center gap-1"
