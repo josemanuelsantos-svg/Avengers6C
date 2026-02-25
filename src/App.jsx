@@ -11,7 +11,7 @@ import {
   Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon, Edit3, Save, Upload, Disc
 } from 'lucide-react';
 
-const APP_VERSION = "v5.4.0 (STABLE MASTER)";
+const APP_VERSION = "v5.6.2 (STABLE MASTER - FIX)";
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
 const firebaseConfig = typeof __firebase_config !== 'undefined' 
@@ -45,7 +45,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-red-900/30 shadow-red-500/20', border: 'border-red-500/50', 
     accent: 'text-red-400', barColor: 'bg-red-500', iconKey: 'cpu', 
-    password: 'arc_reactor_85', members: ['Juandi', 'Ernesto', 'Carmen', 'Bea'], 
+    password: 'stark', members: ['Juandi', 'Ernesto', 'Carmen', 'Bea'], 
     quote: "Yo soy Iron Man.", 
     gif: "https://i.ibb.co/27K5dCBM/b751779a4a3bbc38f9268036cdb5af5a.gif"
   },
@@ -54,7 +54,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-blue-900/30 shadow-blue-500/20', border: 'border-blue-500/50', 
     accent: 'text-blue-400', barColor: 'bg-blue-500', iconKey: 'shield', 
-    password: 'escudo_vibranium', members: ['Sara', 'Araceli', 'Nagore', 'Alex'], 
+    password: 'rogers', members: ['Sara', 'Araceli', 'Nagore', 'Alex'], 
     quote: "Podría hacer esto todo el día.", 
     gif: "https://i.ibb.co/XqT34sz/189868-C0-D40619-AD55-4-B4-C-BE57-9005-D2506967-0-1643400842.gif"
   },
@@ -63,7 +63,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-yellow-900/30 shadow-yellow-500/20', border: 'border-yellow-500/50', 
     accent: 'text-yellow-400', barColor: 'bg-yellow-400', iconKey: 'zap', 
-    password: 'stormbreaker_trueno', members: ['Javi', 'Guille', 'Yma', 'Iker'], 
+    password: 'asgard', members: ['Javi', 'Guille', 'Yma', 'Iker'], 
     quote: "¡Por las barbas de Odín!", 
     gif: "https://i.ibb.co/PsFhhF1g/f604e46c6979b173d319fc064ed5c0dc.gif"
   },
@@ -72,7 +72,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-green-900/30 shadow-green-500/20', border: 'border-green-500/50', 
     accent: 'text-green-400', barColor: 'bg-green-500', iconKey: 'atom', 
-    password: 'gamma_smash_verde', members: ['Oliver', 'Félix', 'Sofía'], 
+    password: 'banner', members: ['Oliver', 'Félix', 'Sofía'], 
     quote: "¡HULK... APLASTA!", 
     gif: "https://i.ibb.co/BV1dZJCH/tumblr-nkx9ln-Ha8c1tiwiyxo1-640.gif"
   },
@@ -81,7 +81,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-gray-800/50 shadow-red-900/20', border: 'border-red-500/50', 
     accent: 'text-red-500', barColor: 'bg-red-600', iconKey: 'target', 
-    password: 'sala_roja_007', members: ['Sara', 'Sebas', 'Héctor', 'Alejandro'], 
+    password: 'romanoff', members: ['Sara', 'Sebas', 'Héctor', 'Alejandro'], 
     quote: "A estas alturas, nada dura para siempre.", 
     gif: "https://i.ibb.co/JjJQnWcH/0c2a5632830679-569563b0d45b2.gif"
   },
@@ -90,7 +90,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-purple-900/30 shadow-purple-500/20', border: 'border-purple-500/50', 
     accent: 'text-purple-400', barColor: 'bg-purple-500', iconKey: 'eye', 
-    password: 'sanctum_agomoto', members: ['Derek', 'Liah', 'Dani', 'Cata'], 
+    password: 'agimoto', members: ['Derek', 'Liah', 'Dani', 'Cata'], 
     quote: "Dormammu, he venido a negociar.", 
     gif: "https://i.ibb.co/M5VX25W0/tumblr-n11ui8-Bh-NU1r8bj4ko1-500.gif"
   },
@@ -723,7 +723,7 @@ function AvengersTracker() {
       const newVal = parseInt(val);
       if(!isNaN(newVal)) {
           safeUpdate(tid, { points: newVal });
-          logAction(`${teams.find(t=>t.id===tid).name}: Manual Edit -> ${newVal}`);
+          logAction(`${teams.find(t=>t.id===tid)?.name}: Manual Edit -> ${newVal}`);
       }
       setEditMode({ ...editMode, [tid]: false });
   };
@@ -749,6 +749,13 @@ function AvengersTracker() {
              showToast("Error al restaurar: Código inválido", "error");
          }
      }
+  };
+
+  const resetDailyLimits = async () => { 
+      if (!window.confirm("¿Reiniciar los límites de retos diarios para todos?")) return; 
+      teams.forEach(t => safeUpdate(t.id, { dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0 })); 
+      speak("Protocolos de entrenamiento reiniciados."); 
+      showToast("Límites diarios reseteados.", "success"); 
   };
 
   const reset = async () => {
@@ -985,13 +992,28 @@ function AvengersTracker() {
       e.preventDefault(); 
       try {
           const p = pass.toLowerCase().trim(); 
-          if (p === 'director_fury_00') { setIsAdmin(true); setLoggedInId(null); closeAllModals(); setPass(''); try{playSfx('success'); speak("Hola Director");}catch(err){} return; } 
+          if (p === 'director_fury_00' || p === 'avengers') { 
+              setIsAdmin(true); 
+              setLoggedInId(null); 
+              closeAllModals(); 
+              setPass(''); 
+              try{playSfx('success'); speak("Hola Director");}catch(err){} 
+              return; 
+          } 
           const t = INITIAL_TEAMS.find(tm => tm.password === p); 
-          if (t) { setLoggedInId(t.id); setIsAdmin(false); closeAllModals(); setPass(''); try{playSfx('success'); speak(`Hola ${t.name}`);}catch(err){} return; } 
-          try{playSfx('error');}catch(err){} showToast("Acceso denegado", "error"); 
+          if (t) { 
+              setLoggedInId(t.id); 
+              setIsAdmin(false); 
+              closeAllModals(); 
+              setPass(''); 
+              try{playSfx('success'); speak(`Hola ${t.name}`);}catch(err){} 
+              return; 
+          } 
+          try{playSfx('error');}catch(err){} 
+          showToast("Acceso denegado. Clave incorrecta.", "error"); 
       } catch (err) {
           console.error("Login Error:", err);
-          showToast("Error de acceso. Reintente.", "error");
+          showToast("Error de sistema.", "error");
       }
   };
 
@@ -1174,8 +1196,6 @@ function AvengersTracker() {
             </div>
           </div>
         </div>
-        
-        {/* CRONOMETER REMOVED */}
 
         <div className="flex gap-2 items-center">
             {useLocal && <span className="text-[10px] text-orange-500 font-mono bg-orange-900/20 px-2 py-1 rounded border border-orange-500/50 flex items-center gap-1"><WifiOff size={10}/> LOCAL</span>}
@@ -1388,7 +1408,7 @@ function AvengersTracker() {
                     <div className="flex justify-between bg-slate-900/50 p-1 rounded mb-3 border border-white/5 relative z-10">{INFINITY_STONES.map((s,i)=>(<div key={i} title={s.name} className={t.points>=s.threshold?s.color:'text-slate-800'}><Hexagon size={12} fill="currentColor"/></div>))}</div>
                     <div className="mb-4 relative z-10 pl-2 border-l border-white/10"><div className="text-[9px] uppercase tracking-widest opacity-50 font-bold text-slate-300 mb-1">OPERATIVOS</div>
                     <div className="grid grid-cols-2 gap-1 mt-1">
-                        {t.members.map((m, idx) => (
+                        {t.members?.map((m, idx) => (
                             <div key={idx} className="bg-cyan-900/20 border border-cyan-500/30 rounded px-2 py-1 text-[10px] text-cyan-100 font-mono text-center shadow-[0_0_5px_rgba(6,182,212,0.1)]">
                                 {m}
                             </div>
@@ -1871,7 +1891,7 @@ function AvengersTracker() {
                  <div className="grid grid-cols-2 gap-4">
                     <button 
                         onClick={(e) => { e.stopPropagation(); activateCerebro('member'); }}
-                        className="py-6 bg-purple-900/50 hover:bg-purple-600 border border-purple-500 text-white font-black uppercase tracking-widest rounded transition-all active:scale-95 flex flex-col items-center gap-2"
+                        className="py-6 bg-purple-900/50 hover:bg-purple-600 border border-purple-500 text-white font-black uppercase tracking-widest rounded transition-all active:scale-scale flex flex-col items-center gap-2"
                     >
                         <User size={32}/> OPERATIVO
                     </button>
