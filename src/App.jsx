@@ -8,10 +8,10 @@ import {
   Users, ChevronsUp, Hexagon, ClipboardList, Swords, Brain, Volume2, VolumeX, List, 
   CheckCircle2, PlusCircle, Quote, Siren, Award, History, Trash2, X, Package, Dices, 
   Sparkles, Radio, BookOpen, Timer, Wifi, WifiOff, MessageSquare, ShieldCheck, Flame, Star, Calculator,
-  Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon, Edit3, Save, Upload, Disc
+  Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon, Settings, Save, Upload, Disc
 } from 'lucide-react';
 
-const APP_VERSION = "v5.7.0 (FINAL GOLD MASTER)";
+const APP_VERSION = "v6.1.0 (LOGIN & GAUNTLET FIX)";
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
 const firebaseConfig = typeof __firebase_config !== 'undefined' 
@@ -45,7 +45,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-red-900/30 shadow-red-500/20', border: 'border-red-500/50', 
     accent: 'text-red-400', barColor: 'bg-red-500', iconKey: 'cpu', 
-    password: 'stark', members: ['Juandi', 'Ernesto', 'Carmen', 'Bea'], 
+    password: 'arc_reactor_85', members: ['Juandi', 'Ernesto', 'Carmen', 'Bea'], 
     quote: "Yo soy Iron Man.", 
     gif: "https://i.ibb.co/27K5dCBM/b751779a4a3bbc38f9268036cdb5af5a.gif"
   },
@@ -54,7 +54,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-blue-900/30 shadow-blue-500/20', border: 'border-blue-500/50', 
     accent: 'text-blue-400', barColor: 'bg-blue-500', iconKey: 'shield', 
-    password: 'rogers', members: ['Sara', 'Araceli', 'Nagore', 'Alex'], 
+    password: 'escudo_vibranium', members: ['Sara', 'Araceli', 'Nagore', 'Alex'], 
     quote: "Podría hacer esto todo el día.", 
     gif: "https://i.ibb.co/XqT34sz/189868-C0-D40619-AD55-4-B4-C-BE57-9005-D2506967-0-1643400842.gif"
   },
@@ -63,7 +63,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-yellow-900/30 shadow-yellow-500/20', border: 'border-yellow-500/50', 
     accent: 'text-yellow-400', barColor: 'bg-yellow-400', iconKey: 'zap', 
-    password: 'asgard', members: ['Javi', 'Guille', 'Yma', 'Iker'], 
+    password: 'stormbreaker_trueno', members: ['Javi', 'Guille', 'Yma', 'Iker'], 
     quote: "¡Por las barbas de Odín!", 
     gif: "https://i.ibb.co/PsFhhF1g/f604e46c6979b173d319fc064ed5c0dc.gif"
   },
@@ -72,7 +72,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-green-900/30 shadow-green-500/20', border: 'border-green-500/50', 
     accent: 'text-green-400', barColor: 'bg-green-500', iconKey: 'atom', 
-    password: 'banner', members: ['Oliver', 'Félix', 'Sofía'], 
+    password: 'gamma_smash_verde', members: ['Oliver', 'Félix', 'Sofía'], 
     quote: "¡HULK... APLASTA!", 
     gif: "https://i.ibb.co/BV1dZJCH/tumblr-nkx9ln-Ha8c1tiwiyxo1-640.gif"
   },
@@ -81,7 +81,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-gray-800/50 shadow-red-900/20', border: 'border-red-500/50', 
     accent: 'text-red-500', barColor: 'bg-red-600', iconKey: 'target', 
-    password: 'romanoff', members: ['Sara', 'Sebas', 'Héctor', 'Alejandro'], 
+    password: 'sala_roja_007', members: ['Sara', 'Sebas', 'Héctor', 'Alejandro'], 
     quote: "A estas alturas, nada dura para siempre.", 
     gif: "https://i.ibb.co/JjJQnWcH/0c2a5632830679-569563b0d45b2.gif"
   },
@@ -90,7 +90,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-purple-900/30 shadow-purple-500/20', border: 'border-purple-500/50', 
     accent: 'text-purple-400', barColor: 'bg-purple-500', iconKey: 'eye', 
-    password: 'agimoto', members: ['Derek', 'Liah', 'Dani', 'Cata'], 
+    password: 'sanctum_agomoto', members: ['Derek', 'Liah', 'Dani', 'Cata'], 
     quote: "Dormammu, he venido a negociar.", 
     gif: "https://i.ibb.co/M5VX25W0/tumblr-n11ui8-Bh-NU1r8bj4ko1-500.gif"
   },
@@ -166,7 +166,7 @@ const MULTIVERSE_EVENTS = [
 
 const DUEL_CHALLENGES = ["Piedra, Papel o Tijera", "Duelo de miradas", "Pregunta de Mates", "Deletreo rápido", "El que parpadee pierde", "Adivinanza"];
 
-// --- BANCO DE PREGUNTAS MASIVO ---
+// --- BANCO DE PREGUNTAS MASIVO (250+) ---
 const ACADEMIC_QUESTIONS = [
   // MATEMÁTICAS
   { q: "¿Cuánto es 8 x 8?", a: "64" }, { q: "¿La mitad de 500?", a: "250" }, { q: "¿Cuántos lados tiene un hexágono?", a: "6" },
@@ -507,6 +507,9 @@ function AvengersTracker() {
   const [starkSpinning, setStarkSpinning] = useState(false);
   const [starkPrize, setStarkPrize] = useState(null);
 
+  // GAUNTLET STATE
+  const [gauntletTargets, setGauntletTargets] = useState([]);
+
   const closeToast = useCallback(() => setToast(null), []);
 
   const closeAllModals = useCallback(() => {
@@ -517,6 +520,7 @@ function AvengersTracker() {
     setBossAttackState(prev => ({ ...prev, active: false }));
     setMemoryState(prev => ({ ...prev, active: false }));
     setStarkPrize(null);
+    setGauntletTargets([]);
   }, []);
 
   // Persistent Local Storage Effect for teams
@@ -939,47 +943,62 @@ function AvengersTracker() {
       } 
   };
   
-  const activateGauntlet = async (team) => {
-     if(!window.confirm("¿ACTIVAR EL GUANTELETE DEL INFINITO? ESTA ACCIÓN REINICIARÁ EL UNIVERSO.")) return;
+  // --- PROTOCOLO GUANTELETE (REVISADO MARK LVIII) ---
+  const openGauntletModal = () => {
+      const team = teams.find(t => t.id === loggedInId);
+      if (team && team.points >= 600) {
+          setGauntletTargets([]);
+          setModal('gauntlet');
+      } else {
+          showToast("Necesitas al menos 600 puntos para activar el Guantelete.", "error");
+      }
+  };
 
-     const customGif = window.prompt("¡Poder Absoluto! Introduce la URL de un GIF animado para tu equipo (déjalo en blanco para mantener el actual):");
-     
-     speak("Yo soy... inevitable.");
-     playSfx('alarm');
-     setShaking(true);
-     
-     const oneWeekLater = new Date();
-     oneWeekLater.setDate(oneWeekLater.getDate() + 7);
-     const doublePointsTimestamp = oneWeekLater.getTime();
+  const toggleGauntletTarget = (targetId) => {
+      setGauntletTargets(prev => {
+          if (prev.includes(targetId)) return prev.filter(id => id !== targetId); // Desmarcar
+          if (prev.length >= 3) {
+              showToast("Solo puedes apuntar a un máximo de 3 equipos.", "error");
+              return prev;
+          }
+          return [...prev, targetId]; // Marcar
+      });
+  };
 
-     for (const t of teams) {
-         if (t.id === team.id) {
-             const newBadges = [...(t.badges || []), { icon: <Crown size={14}/>, name: "TITÁN", color: "text-yellow-500" }];
-             let updates = { 
-                 points: 25, 
-                 dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0,
-                 shield: true, 
-                 badges: newBadges,
-                 doublePointsUntil: doublePointsTimestamp
-             };
-             
-             if (customGif && customGif.trim() !== "") {
-                 updates.gif = customGif.trim();
-             }
-             
-             await safeUpdate(t.id, updates);
-         } else {
-             await safeUpdate(t.id, { points: 0, dailyMath:0, dailyWord:0, dailyCombat:0, dailyMemory:0 });
-         }
-     }
-     
-     logAction(`${team.name} usó el GUANTELETE: Universo reiniciado. ${team.name} obtiene supremacía.`);
-     
-     setTimeout(() => {
-         setShaking(false);
-         speak("El universo ha sido reequilibrado.");
-         triggerSecretConfetti();
-     }, 3000);
+  const executeGauntletSnap = async () => {
+      if (gauntletTargets.length === 0) return;
+      
+      const attacker = teams.find(t => t.id === loggedInId);
+      const totalCost = gauntletTargets.length * 200;
+
+      if (!attacker || attacker.points < totalCost) {
+          showToast("Puntos insuficientes para este ataque.", "error");
+          return;
+      }
+
+      if (!window.confirm(`¿Ejecutar el Chasquido contra ${gauntletTargets.length} equipo(s)? Costará ${totalCost} puntos en total.`)) return;
+
+      playSfx('alarm');
+      setShaking(true);
+      speak("Yo soy... inevitable.");
+
+      // 1. Restar puntos al atacante
+      await safeUpdate(attacker.id, { points: attacker.points - totalCost });
+
+      // 2. Destruir equipos objetivo
+      for (const tid of gauntletTargets) {
+          await safeUpdate(tid, { points: 0, shield: false }); 
+      }
+
+      const targetNames = gauntletTargets.map(tid => teams.find(t => t.id === tid)?.name).join(", ");
+      logAction(`${attacker.name} usó el GUANTELETE contra: ${targetNames} (-${totalCost} pts).`);
+      
+      setTimeout(() => {
+          setShaking(false);
+          triggerSecretConfetti();
+      }, 3000);
+
+      closeAllModals();
   };
 
   const openLootBox = async (tid) => { if(handleBuy(tid, 15)) { speak("Abriendo..."); setTimeout(() => { const it = LOOT_ITEMS[Math.floor(Math.random()*LOOT_ITEMS.length)]; setLootResult(it); if(it.type === 'bad') safeUpdate(tid, { lastLoot: 'bad' }); else safeUpdate(tid, { lastLoot: 'good' }); setTimeout(() => safeUpdate(tid, { lastLoot: null }), 5000); if(it.val !== 0) handlePts(tid, it.val, null, true); logAction(`${teams.find(t=>t.id===tid).name} loot: ${it.text}`); if(it.type === 'good') playSfx('success'); else playSfx('error'); }, 1500); } };
@@ -992,7 +1011,7 @@ function AvengersTracker() {
       e.preventDefault(); 
       try {
           const p = pass.toLowerCase().trim(); 
-          if (p === 'director_fury_00' || p === 'avengers') { 
+          if (p === 'director_fury_00') { 
               setIsAdmin(true); 
               setLoggedInId(null); 
               closeAllModals(); 
@@ -1349,7 +1368,7 @@ function AvengersTracker() {
                           )}
                           {isAdmin && (
                               <button onClick={() => setEditMode({...editMode, [t.id]: true})} className="opacity-50 hover:opacity-100 text-slate-400 hover:text-white">
-                                  <Edit3 size={12}/>
+                                  <Settings size={12}/>
                               </button>
                           )}
                       </div>
@@ -1358,7 +1377,7 @@ function AvengersTracker() {
                     {/* GAUNTLET TRIGGER BUTTON */}
                     {t.points >= 600 && isMine && (
                        <button 
-                           onClick={() => activateGauntlet(t)}
+                           onClick={openGauntletModal}
                            className="absolute top-2 left-1/2 -translate-x-1/2 z-30 bg-yellow-500 hover:bg-yellow-400 text-black text-[10px] font-black px-3 py-1 rounded shadow-[0_0_15px_rgba(234,179,8,0.6)] animate-bounce flex items-center gap-1"
                        >
                            <Hand size={12} /> USAR GUANTELETE
@@ -1470,7 +1489,63 @@ function AvengersTracker() {
               </div>
           </div>
       )}
-      
+
+      {/* GUANTELETE MODAL */}
+      {modal === 'gauntlet' && loggedInTeam && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeAllModals}></div>
+          <div className="relative bg-slate-900 border-2 border-yellow-500 w-full max-w-2xl rounded-sm overflow-hidden shadow-[0_0_50px_rgba(250,204,21,0.3)] flex flex-col max-h-[90vh]">
+            <div className="bg-yellow-900/20 p-6 border-b border-yellow-500/20 flex justify-between items-center">
+              <h3 className="text-xl font-black text-yellow-500 uppercase tracking-widest flex items-center gap-2"><Hand size={24} /> El Guantelete del Infinito</h3>
+              <button onClick={closeAllModals} className="text-slate-400 hover:text-white transition-colors">✕</button>
+            </div>
+            <div className="p-6 overflow-y-auto">
+              <div className="mb-6 bg-red-900/10 border border-red-500/20 p-4 rounded-sm text-center">
+                <p className="text-sm font-bold text-red-400 uppercase tracking-widest mb-1">Poder Absoluto</p>
+                <p className="text-xs text-slate-300">Selecciona <span className="font-bold text-white">hasta 3 equipos rivales</span> para reducir sus puntos a CERO.</p>
+                <p className="text-xs text-slate-300 mt-1">Coste de energía: <span className="text-yellow-400 font-bold">200 PTS</span> por cada equipo seleccionado.</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                {teams.filter(t => t.id !== loggedInTeam.id).map(rival => {
+                   const isSelected = gauntletTargets.includes(rival.id);
+                   return (
+                      <button 
+                        key={rival.id} 
+                        onClick={() => toggleGauntletTarget(rival.id)}
+                        className={`flex items-center gap-4 p-4 border rounded-sm transition-all group text-left ${isSelected ? 'bg-red-900/40 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.4)]' : 'bg-black/50 border-white/10 hover:border-yellow-500/50 hover:bg-yellow-900/20'}`}
+                      >
+                        <div className={`w-12 h-12 rounded-full border border-white/20 bg-slate-900 overflow-hidden shrink-0 ${rival.accent}`}>
+                          <img src={rival.gif} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1">
+                          <p className={`font-bold uppercase tracking-wider ${isSelected ? 'text-red-400' : 'text-white'}`}>{rival.name}</p>
+                          <p className="text-xs text-slate-400 font-mono">Puntos Actuales: <span className={rival.points > 0 ? "text-cyan-400" : "text-red-400"}>{rival.points}</span></p>
+                          {isSelected && <p className="text-[10px] text-red-500 font-bold mt-1 animate-pulse">¡OBJETIVO FIJADO!</p>}
+                        </div>
+                        {isSelected && <Skull size={20} className="text-red-500" />}
+                      </button>
+                   );
+                })}
+              </div>
+              
+              <div className="flex gap-4 items-center">
+                 <div className="flex-1 bg-black/50 p-4 rounded border border-slate-700 text-center">
+                    <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-1">Coste de Energía</p>
+                    <p className="text-2xl font-mono font-bold text-yellow-400">-{gauntletTargets.length * 200}</p>
+                 </div>
+                 <button 
+                    onClick={executeGauntletSnap}
+                    disabled={gauntletTargets.length === 0}
+                    className={`flex-1 py-4 font-black uppercase tracking-widest rounded transition-all ${gauntletTargets.length > 0 ? 'bg-yellow-500 hover:bg-yellow-400 text-black shadow-[0_0_20px_rgba(250,204,21,0.5)]' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}`}
+                 >
+                    {gauntletTargets.length > 0 ? 'Ejecutar Chasquido' : 'Selecciona Objetivo'}
+                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ... OTROS MODALES DE JUEGO Y HERRAMIENTAS ... */}
       
       {modal === 'bossAttack' && bossAttackState.active && (
@@ -1697,7 +1772,6 @@ function AvengersTracker() {
           </div>
       )}
 
-      {/* MULTIVERSE EVENT MODAL */}
       {modal === 'multiverse' && multiverseEvent && (
          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
              <div className="text-center animate-in zoom-in max-w-lg w-full relative">
@@ -1713,7 +1787,6 @@ function AvengersTracker() {
          </div>
       )}
 
-      {/* DUEL MODAL */}
       {modal === 'duel' && duelData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
              <div className="text-center animate-in zoom-in max-w-lg w-full relative bg-slate-900 border-2 border-orange-500 p-8 rounded-lg">
@@ -1734,7 +1807,6 @@ function AvengersTracker() {
         </div>
       )}
 
-      {/* TIMER MODAL */}
       {modal === 'timerConfig' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
            <div className="bg-slate-900 border border-cyan-500/50 p-6 rounded-sm w-full max-w-sm shadow-2xl">
@@ -1751,7 +1823,6 @@ function AvengersTracker() {
         </div>
       )}
       
-      {/* FURY MESSAGE MODAL */}
       {modal === 'fury' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
            <div className="bg-slate-900 border border-slate-500 p-6 rounded-sm w-full max-w-md shadow-2xl">
@@ -1764,7 +1835,6 @@ function AvengersTracker() {
         </div>
       )}
 
-      {/* DAILY QUESTION MODAL */}
       {modal === 'dailyQ' && dailyQuestion && (
          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
              <div className="text-center animate-in zoom-in max-w-lg w-full relative">
@@ -1782,7 +1852,6 @@ function AvengersTracker() {
          </div>
       )}
 
-      {/* HISTORY MODAL */}
       {modal === 'history' && isAdmin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeAllModals}></div>
@@ -1795,7 +1864,6 @@ function AvengersTracker() {
         </div>
       )}
 
-      {/* LOGIN MODAL */}
       {modal === 'login' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeAllModals}></div>
@@ -1809,7 +1877,6 @@ function AvengersTracker() {
         </div>
       )}
 
-      {/* SHOP MODAL */}
       {modal === 'shop' && selTeam && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeAllModals}></div>
@@ -1827,7 +1894,6 @@ function AvengersTracker() {
         </div>
       )}
 
-      {/* PENALTY MODAL */}
       {modal === 'penalty' && selTeam && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeAllModals}></div>
@@ -1840,7 +1906,6 @@ function AvengersTracker() {
         </div>
       )}
 
-      {/* CATALOG MODAL */}
       {modal === 'catalog' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeAllModals}></div>
@@ -1855,7 +1920,6 @@ function AvengersTracker() {
         </div>
       )}
 
-      {/* MISSION MODAL */}
       {modal === 'mission' && isAdmin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeAllModals}></div>
@@ -1888,7 +1952,6 @@ function AvengersTracker() {
         </div>
       )}
 
-      {/* CEREBRO MODAL */}
       {cerebro.active && (
         <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4">
           <div className="absolute inset-0" onClick={()=>{if(!cerebro.searching)setCerebro({...cerebro, active:false})}}></div>
