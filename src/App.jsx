@@ -11,7 +11,7 @@ import {
   Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon, Settings, Save, Upload, Disc
 } from 'lucide-react';
 
-const APP_VERSION = "v6.2.0 (ECONOMY UPDATE)";
+const APP_VERSION = "v6.2.1 (ADMIN LOGIN FIX)";
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
 const firebaseConfig = typeof __firebase_config !== 'undefined' 
@@ -1368,7 +1368,7 @@ function AvengersTracker() {
                           )}
                           {isAdmin && (
                               <button onClick={() => setEditMode({...editMode, [t.id]: true})} className="opacity-50 hover:opacity-100 text-slate-400 hover:text-white">
-                                  <Edit3 size={12}/>
+                                  <Settings size={12}/>
                               </button>
                           )}
                       </div>
@@ -1545,8 +1545,6 @@ function AvengersTracker() {
           </div>
         </div>
       )}
-
-      {/* ... OTROS MODALES DE JUEGO Y HERRAMIENTAS ... */}
       
       {modal === 'bossAttack' && bossAttackState.active && (
          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
