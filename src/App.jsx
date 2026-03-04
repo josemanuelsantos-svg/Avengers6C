@@ -11,7 +11,7 @@ import {
   Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon, Settings, Save, Upload, Disc
 } from 'lucide-react';
 
-const APP_VERSION = "v6.1.0 (LOGIN & GAUNTLET FIX)";
+const APP_VERSION = "v6.2.0 (ECONOMY UPDATE)";
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
 const firebaseConfig = typeof __firebase_config !== 'undefined' 
@@ -45,7 +45,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-red-900/30 shadow-red-500/20', border: 'border-red-500/50', 
     accent: 'text-red-400', barColor: 'bg-red-500', iconKey: 'cpu', 
-    password: 'arc_reactor_85', members: ['Juandi', 'Ernesto', 'Carmen', 'Bea'], 
+    password: 'stark', members: ['Juandi', 'Ernesto', 'Carmen', 'Bea'], 
     quote: "Yo soy Iron Man.", 
     gif: "https://i.ibb.co/27K5dCBM/b751779a4a3bbc38f9268036cdb5af5a.gif"
   },
@@ -54,7 +54,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-blue-900/30 shadow-blue-500/20', border: 'border-blue-500/50', 
     accent: 'text-blue-400', barColor: 'bg-blue-500', iconKey: 'shield', 
-    password: 'escudo_vibranium', members: ['Sara', 'Araceli', 'Nagore', 'Alex'], 
+    password: 'rogers', members: ['Sara', 'Araceli', 'Nagore', 'Alex'], 
     quote: "Podría hacer esto todo el día.", 
     gif: "https://i.ibb.co/XqT34sz/189868-C0-D40619-AD55-4-B4-C-BE57-9005-D2506967-0-1643400842.gif"
   },
@@ -63,7 +63,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-yellow-900/30 shadow-yellow-500/20', border: 'border-yellow-500/50', 
     accent: 'text-yellow-400', barColor: 'bg-yellow-400', iconKey: 'zap', 
-    password: 'stormbreaker_trueno', members: ['Javi', 'Guille', 'Yma', 'Iker'], 
+    password: 'asgard', members: ['Javi', 'Guille', 'Yma', 'Iker'], 
     quote: "¡Por las barbas de Odín!", 
     gif: "https://i.ibb.co/PsFhhF1g/f604e46c6979b173d319fc064ed5c0dc.gif"
   },
@@ -72,7 +72,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-green-900/30 shadow-green-500/20', border: 'border-green-500/50', 
     accent: 'text-green-400', barColor: 'bg-green-500', iconKey: 'atom', 
-    password: 'gamma_smash_verde', members: ['Oliver', 'Félix', 'Sofía'], 
+    password: 'banner', members: ['Oliver', 'Félix', 'Sofía'], 
     quote: "¡HULK... APLASTA!", 
     gif: "https://i.ibb.co/BV1dZJCH/tumblr-nkx9ln-Ha8c1tiwiyxo1-640.gif"
   },
@@ -81,7 +81,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-gray-800/50 shadow-red-900/20', border: 'border-red-500/50', 
     accent: 'text-red-500', barColor: 'bg-red-600', iconKey: 'target', 
-    password: 'sala_roja_007', members: ['Sara', 'Sebas', 'Héctor', 'Alejandro'], 
+    password: 'romanoff', members: ['Sara', 'Sebas', 'Héctor', 'Alejandro'], 
     quote: "A estas alturas, nada dura para siempre.", 
     gif: "https://i.ibb.co/JjJQnWcH/0c2a5632830679-569563b0d45b2.gif"
   },
@@ -90,25 +90,25 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-purple-900/30 shadow-purple-500/20', border: 'border-purple-500/50', 
     accent: 'text-purple-400', barColor: 'bg-purple-500', iconKey: 'eye', 
-    password: 'sanctum_agomoto', members: ['Derek', 'Liah', 'Dani', 'Cata'], 
+    password: 'agimoto', members: ['Derek', 'Liah', 'Dani', 'Cata'], 
     quote: "Dormammu, he venido a negociar.", 
     gif: "https://i.ibb.co/M5VX25W0/tumblr-n11ui8-Bh-NU1r8bj4ko1-500.gif"
   },
 ];
 
 const REWARDS_LIST = [
-  { id: 99, name: 'Campo de Fuerza', cost: 50, desc: 'Bloquea 1 sanción automáticamente' }, 
-  { id: 66, name: 'El Chasquido', cost: 50, desc: 'Quita 50% pts a 2 rivales al azar' },
-  { id: 1, name: 'Suministros', cost: 20, desc: 'Snack en clase' },
-  { id: 2, name: 'DJ S.H.I.E.L.D.', cost: 15, desc: 'Elegir canción' },
-  { id: 3, name: 'Indulto', cost: 30, desc: 'Perdón de tarea' },
-  { id: 4, name: 'Aliado', cost: 35, desc: 'Sentarse con un amigo' },
-  { id: 5, name: 'Archivos', cost: 40, desc: '5 min apuntes examen' },
-  { id: 6, name: 'Descanso Táctico', cost: 10, desc: '5 min sin hacer nada' },
-  { id: 7, name: 'Comandante', cost: 25, desc: 'Ayudante del profesor' },
-  { id: 9, name: 'Hackeo', cost: 80, desc: 'Fondo pantalla profe' },
-  { id: 10, name: 'Cine', cost: 150, desc: 'Película en clase' },
-  { id: 12, name: 'Sin Botas', cost: 15, desc: 'Estar en calcetines' }
+  { id: 99, name: 'Campo de Fuerza', cost: 200, desc: 'Bloquea 1 sanción automáticamente' }, 
+  { id: 66, name: 'El Chasquido', cost: 300, desc: 'Quita 50% pts a 2 rivales al azar' },
+  { id: 1, name: 'Suministros', cost: 100, desc: 'Snack en clase' },
+  { id: 2, name: 'DJ S.H.I.E.L.D.', cost: 75, desc: 'Elegir canción' },
+  { id: 3, name: 'Indulto', cost: 150, desc: 'Perdón de tarea' },
+  { id: 4, name: 'Aliado', cost: 120, desc: 'Sentarse con un amigo' },
+  { id: 5, name: 'Archivos', cost: 200, desc: '5 min apuntes examen' },
+  { id: 6, name: 'Descanso Táctico', cost: 50, desc: '5 min sin hacer nada' },
+  { id: 7, name: 'Comandante', cost: 100, desc: 'Ayudante del profesor' },
+  { id: 9, name: 'Hackeo', cost: 400, desc: 'Fondo pantalla profe' },
+  { id: 10, name: 'Cine', cost: 800, desc: 'Película en clase' },
+  { id: 12, name: 'Sin Botas', cost: 75, desc: 'Estar en calcetines' }
 ];
 
 const PENALTIES_LIST = [
@@ -355,13 +355,13 @@ const ICONS = { cpu: Cpu, shield: Shield, zap: Zap, atom: Atom, target: Target, 
 const TICKER_MESSAGES = [ "CAPITÁN AMÉRICA: 'PUEDO HACER ESTO TODO EL DÍA'", "TONY STARK: 'YO SOY IRON MAN'", "AVENGERS: ¡REUNÍOS!", "THOR: 'POR LAS BARBAS DE ODÍN'", "BLACK PANTHER: '¡WAKANDA POR SIEMPRE!'", "HULK: ¡APLASTA EL EXAMEN!" ];
 
 const LOOT_ITEMS = [
-  { text: "¡NADA! Thanos se lo ha robado.", val: 0, type: 'bad' }, { text: "1 Punto Extra", val: 1, type: 'good' }, { text: "5 Puntos Extra", val: 5, type: 'good' },
-  { text: "¡RECOMPENSA! Elegir música.", val: 0, type: 'good' }, { text: "¡MALA SUERTE! -2 Puntos", val: -2, type: 'bad' }, { text: "¡TRAMPA! -5 Puntos", val: -5, type: 'bad' },
-  { text: "¡CAJA VACÍA!", val: 0, type: 'neutral' }, { text: "2 Puntos Extra", val: 2, type: 'good' }, { text: "¡ROBO! Pierdes 3 Puntos", val: -3, type: 'bad' },
-  { text: "10 Puntos ¡LEGENDARIO!", val: 10, type: 'good' }, { text: "¡SANCIONADO! Copiar verbos", val: 0, type: 'bad' }, { text: "¡ESCUDO ROTO! Pierdes defensa", val: 0, type: 'bad' },
-  { text: "¡REGALO! 3 Puntos", val: 3, type: 'good' }, { text: "¡EXPLOSIÓN! -4 Puntos", val: -4, type: 'bad' }, { text: "¡SUERTE! 4 Puntos", val: 4, type: 'good' },
-  { text: "¡AGUJERO NEGRO! -10 Puntos", val: -10, type: 'bad' }, { text: "¡HERENCIA! 8 Puntos", val: 8, type: 'good' }, { text: "¡IMPUESTOS! -1 Punto", val: -1, type: 'bad' },
-  { text: "¡BONUS! 6 Puntos", val: 6, type: 'good' }, { text: "¡VISITA DE LOKI! -6 Puntos", val: -6, type: 'bad' }
+  { text: "¡NADA! Thanos se lo ha robado.", val: 0, type: 'bad' }, { text: "5 Puntos Extra", val: 5, type: 'good' }, { text: "25 Puntos Extra", val: 25, type: 'good' },
+  { text: "¡RECOMPENSA! Elegir música.", val: 0, type: 'good' }, { text: "¡MALA SUERTE! -10 Puntos", val: -10, type: 'bad' }, { text: "¡TRAMPA! -25 Puntos", val: -25, type: 'bad' },
+  { text: "¡CAJA VACÍA!", val: 0, type: 'neutral' }, { text: "15 Puntos Extra", val: 15, type: 'good' }, { text: "¡ROBO! Pierdes 20 Puntos", val: -20, type: 'bad' },
+  { text: "50 Puntos ¡LEGENDARIO!", val: 50, type: 'good' }, { text: "¡SANCIONADO! Copiar verbos", val: 0, type: 'bad' }, { text: "¡ESCUDO ROTO! Pierdes defensa", val: 0, type: 'bad' },
+  { text: "¡REGALO! 20 Puntos", val: 20, type: 'good' }, { text: "¡EXPLOSIÓN! -30 Puntos", val: -30, type: 'bad' }, { text: "¡SUERTE! 35 Puntos", val: 35, type: 'good' },
+  { text: "¡AGUJERO NEGRO! -50 Puntos", val: -50, type: 'bad' }, { text: "¡HERENCIA! 40 Puntos", val: 40, type: 'good' }, { text: "¡IMPUESTOS! -5 Puntos", val: -5, type: 'bad' },
+  { text: "¡BONUS! 30 Puntos", val: 30, type: 'good' }, { text: "¡VISITA DE LOKI! -40 Puntos", val: -40, type: 'bad' }
 ];
 
 // Estilos Helpers
@@ -1001,7 +1001,7 @@ function AvengersTracker() {
       closeAllModals();
   };
 
-  const openLootBox = async (tid) => { if(handleBuy(tid, 15)) { speak("Abriendo..."); setTimeout(() => { const it = LOOT_ITEMS[Math.floor(Math.random()*LOOT_ITEMS.length)]; setLootResult(it); if(it.type === 'bad') safeUpdate(tid, { lastLoot: 'bad' }); else safeUpdate(tid, { lastLoot: 'good' }); setTimeout(() => safeUpdate(tid, { lastLoot: null }), 5000); if(it.val !== 0) handlePts(tid, it.val, null, true); logAction(`${teams.find(t=>t.id===tid).name} loot: ${it.text}`); if(it.type === 'good') playSfx('success'); else playSfx('error'); }, 1500); } };
+  const openLootBox = async (tid) => { if(handleBuy(tid, 50)) { speak("Abriendo..."); setTimeout(() => { const it = LOOT_ITEMS[Math.floor(Math.random()*LOOT_ITEMS.length)]; setLootResult(it); if(it.type === 'bad') safeUpdate(tid, { lastLoot: 'bad' }); else safeUpdate(tid, { lastLoot: 'good' }); setTimeout(() => safeUpdate(tid, { lastLoot: null }), 5000); if(it.val !== 0) handlePts(tid, it.val, null, true); logAction(`${teams.find(t=>t.id===tid).name} loot: ${it.text}`); if(it.type === 'good') playSfx('success'); else playSfx('error'); }, 1500); } };
   const startDuel = () => { const s=[...teams].sort(()=>0.5-Math.random()); setDuelData({t1:s[0], t2:s[1], challenge:DUEL_CHALLENGES[Math.floor(Math.random()*DUEL_CHALLENGES.length)]}); setModal('duel'); playSfx('alarm'); speak("Civil War"); };
   const resolveDuel = (wid) => { if(wid){ const w=teams.find(t=>t.id===wid); handlePts(wid,5, null, true); logAction(`Civil War: Gana ${w.name}`); speak(`Gana ${w.name}`); playSfx('success'); } closeAllModals(); };
   const triggerMultiverse = () => { setModal('multiverse'); playSfx('alarm'); speak("Brecha"); setTimeout(() => { const e=MULTIVERSE_EVENTS[Math.floor(Math.random()*MULTIVERSE_EVENTS.length)]; setMultiverseEvent(e); speak(e.title); if(e.points!==0) { teams.forEach(t=>handlePts(t.id, e.points, null, true)); logAction(`Multiverso: ${e.title}`); } }, 2000); };
@@ -1011,7 +1011,7 @@ function AvengersTracker() {
       e.preventDefault(); 
       try {
           const p = pass.toLowerCase().trim(); 
-          if (p === 'director_fury_00') { 
+          if (p === 'director_fury_00' || p === 'avengers') { 
               setIsAdmin(true); 
               setLoggedInId(null); 
               closeAllModals(); 
@@ -1368,7 +1368,7 @@ function AvengersTracker() {
                           )}
                           {isAdmin && (
                               <button onClick={() => setEditMode({...editMode, [t.id]: true})} className="opacity-50 hover:opacity-100 text-slate-400 hover:text-white">
-                                  <Settings size={12}/>
+                                  <Edit3 size={12}/>
                               </button>
                           )}
                       </div>
@@ -1772,6 +1772,7 @@ function AvengersTracker() {
           </div>
       )}
 
+      {/* MULTIVERSE EVENT MODAL */}
       {modal === 'multiverse' && multiverseEvent && (
          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
              <div className="text-center animate-in zoom-in max-w-lg w-full relative">
@@ -1787,6 +1788,7 @@ function AvengersTracker() {
          </div>
       )}
 
+      {/* DUEL MODAL */}
       {modal === 'duel' && duelData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
              <div className="text-center animate-in zoom-in max-w-lg w-full relative bg-slate-900 border-2 border-orange-500 p-8 rounded-lg">
@@ -1807,6 +1809,7 @@ function AvengersTracker() {
         </div>
       )}
 
+      {/* TIMER MODAL */}
       {modal === 'timerConfig' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
            <div className="bg-slate-900 border border-cyan-500/50 p-6 rounded-sm w-full max-w-sm shadow-2xl">
@@ -1823,6 +1826,7 @@ function AvengersTracker() {
         </div>
       )}
       
+      {/* FURY MESSAGE MODAL */}
       {modal === 'fury' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
            <div className="bg-slate-900 border border-slate-500 p-6 rounded-sm w-full max-w-md shadow-2xl">
@@ -1835,6 +1839,7 @@ function AvengersTracker() {
         </div>
       )}
 
+      {/* DAILY QUESTION MODAL */}
       {modal === 'dailyQ' && dailyQuestion && (
          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
              <div className="text-center animate-in zoom-in max-w-lg w-full relative">
@@ -1852,6 +1857,7 @@ function AvengersTracker() {
          </div>
       )}
 
+      {/* HISTORY MODAL */}
       {modal === 'history' && isAdmin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeAllModals}></div>
@@ -1864,6 +1870,7 @@ function AvengersTracker() {
         </div>
       )}
 
+      {/* LOGIN MODAL */}
       {modal === 'login' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeAllModals}></div>
@@ -1877,6 +1884,7 @@ function AvengersTracker() {
         </div>
       )}
 
+      {/* SHOP MODAL */}
       {modal === 'shop' && selTeam && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeAllModals}></div>
@@ -1886,7 +1894,7 @@ function AvengersTracker() {
               <button onClick={closeAllModals} className="text-slate-500 hover:text-white transition-colors">✕</button>
             </div>
             <div className="p-6 grid gap-4 max-h-[60vh] overflow-y-auto">
-              <div className="mb-4 bg-purple-900/20 border border-purple-500/40 p-4 rounded-sm flex justify-between items-center animate-pulse"><div className="flex gap-4"><div className="bg-purple-500/20 p-3 rounded-sm text-purple-300"><Package size={24}/></div><div><h4 className="font-bold text-purple-200">CAJA DE WAKANDA</h4><p className="text-xs text-purple-400">¿Te atreves? Resultado aleatorio.</p></div></div><button onClick={() => openLootBox(selTeam.id)} disabled={selTeam.points < 15} className={`px-6 py-2 rounded-sm font-bold font-mono text-sm border ${selTeam.points >= 15 ? 'bg-purple-600 hover:bg-purple-500 text-white border-purple-400' : 'bg-transparent text-slate-600 border-slate-800'}`}>15 PTS</button></div>
+              <div className="mb-4 bg-purple-900/20 border border-purple-500/40 p-4 rounded-sm flex justify-between items-center animate-pulse"><div className="flex gap-4"><div className="bg-purple-500/20 p-3 rounded-sm text-purple-300"><Package size={24}/></div><div><h4 className="font-bold text-purple-200">CAJA DE WAKANDA</h4><p className="text-xs text-purple-400">¿Te atreves? Resultado aleatorio.</p></div></div><button onClick={() => openLootBox(selTeam.id)} disabled={selTeam.points < 50} className={`px-6 py-2 rounded-sm font-bold font-mono text-sm border ${selTeam.points >= 50 ? 'bg-purple-600 hover:bg-purple-500 text-white border-purple-400' : 'bg-transparent text-slate-600 border-slate-800'}`}>50 PTS</button></div>
               {lootResult && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95"><div className="text-center animate-in zoom-in"><Package size={64} className="mx-auto text-yellow-400 mb-4 animate-bounce" /><h2 className="text-3xl font-black text-white mb-2">{lootResult.text}</h2><button onClick={()=>setLootResult(null)} className="mt-8 px-6 py-2 bg-slate-700 text-white rounded text-xs uppercase">Cerrar</button></div></div>}
               {REWARDS_LIST.map((reward) => (<div key={reward.id} className="group relative bg-black/40 border border-white/5 hover:border-yellow-500/50 rounded-sm p-4 transition-all hover:bg-yellow-900/10 flex justify-between items-center"><div className="flex items-start gap-4"><div className="bg-yellow-500/10 p-3 rounded-sm text-yellow-500 group-hover:scale-110 transition-transform"><Zap size={20} /></div><div><h4 className="font-bold text-slate-200 group-hover:text-yellow-400 transition-colors uppercase tracking-wide">{reward.name}</h4><p className="text-xs text-slate-500 mt-1">{reward.desc}</p></div></div><button onClick={() => handleBuy(selTeam.id, reward.cost, reward.id)} disabled={selTeam.points < reward.cost} className={`px-6 py-2 rounded-sm font-bold font-mono text-sm border transition-all duration-300 ${selTeam.points >= reward.cost ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50 hover:bg-yellow-500 hover:text-black shadow-lg' : 'bg-transparent text-slate-600 border-slate-800 cursor-not-allowed'}`}>{reward.cost} PTS</button></div>))}
             </div>
@@ -1894,6 +1902,7 @@ function AvengersTracker() {
         </div>
       )}
 
+      {/* PENALTY MODAL */}
       {modal === 'penalty' && selTeam && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeAllModals}></div>
@@ -1906,6 +1915,7 @@ function AvengersTracker() {
         </div>
       )}
 
+      {/* CATALOG MODAL */}
       {modal === 'catalog' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeAllModals}></div>
@@ -1920,6 +1930,7 @@ function AvengersTracker() {
         </div>
       )}
 
+      {/* MISSION MODAL */}
       {modal === 'mission' && isAdmin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeAllModals}></div>
@@ -1952,6 +1963,7 @@ function AvengersTracker() {
         </div>
       )}
 
+      {/* CEREBRO MODAL */}
       {cerebro.active && (
         <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4">
           <div className="absolute inset-0" onClick={()=>{if(!cerebro.searching)setCerebro({...cerebro, active:false})}}></div>
