@@ -45,7 +45,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-red-900/30 shadow-red-500/20', border: 'border-red-500/50', 
     accent: 'text-red-400', barColor: 'bg-red-500', iconKey: 'cpu', 
-    password: 'stark', members: ['Juandi', 'Ernesto', 'Carmen', 'Bea'], 
+    password: 'arc_reactor_85', members: ['Juandi', 'Ernesto', 'Carmen', 'Bea'], 
     quote: "Yo soy Iron Man.", 
     gif: "https://i.ibb.co/27K5dCBM/b751779a4a3bbc38f9268036cdb5af5a.gif"
   },
@@ -54,7 +54,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-blue-900/30 shadow-blue-500/20', border: 'border-blue-500/50', 
     accent: 'text-blue-400', barColor: 'bg-blue-500', iconKey: 'shield', 
-    password: 'rogers', members: ['Sara', 'Araceli', 'Nagore', 'Alex'], 
+    password: 'escudo_vibranium', members: ['Sara', 'Araceli', 'Nagore', 'Alex'], 
     quote: "Podría hacer esto todo el día.", 
     gif: "https://i.ibb.co/XqT34sz/189868-C0-D40619-AD55-4-B4-C-BE57-9005-D2506967-0-1643400842.gif"
   },
@@ -63,7 +63,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-yellow-900/30 shadow-yellow-500/20', border: 'border-yellow-500/50', 
     accent: 'text-yellow-400', barColor: 'bg-yellow-400', iconKey: 'zap', 
-    password: 'asgard', members: ['Javi', 'Guille', 'Yma', 'Iker'], 
+    password: 'stormbreaker_trueno', members: ['Javi', 'Guille', 'Yma', 'Iker'], 
     quote: "¡Por las barbas de Odín!", 
     gif: "https://i.ibb.co/PsFhhF1g/f604e46c6979b173d319fc064ed5c0dc.gif"
   },
@@ -72,7 +72,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-green-900/30 shadow-green-500/20', border: 'border-green-500/50', 
     accent: 'text-green-400', barColor: 'bg-green-500', iconKey: 'atom', 
-    password: 'banner', members: ['Oliver', 'Félix', 'Sofía'], 
+    password: 'gamma_smash_verde', members: ['Oliver', 'Félix', 'Sofía'], 
     quote: "¡HULK... APLASTA!", 
     gif: "https://i.ibb.co/BV1dZJCH/tumblr-nkx9ln-Ha8c1tiwiyxo1-640.gif"
   },
@@ -81,7 +81,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-gray-800/50 shadow-red-900/20', border: 'border-red-500/50', 
     accent: 'text-red-500', barColor: 'bg-red-600', iconKey: 'target', 
-    password: 'romanoff', members: ['Sara', 'Sebas', 'Héctor', 'Alejandro'], 
+    password: 'sala_roja_007', members: ['Sara', 'Sebas', 'Héctor', 'Alejandro'], 
     quote: "A estas alturas, nada dura para siempre.", 
     gif: "https://i.ibb.co/JjJQnWcH/0c2a5632830679-569563b0d45b2.gif"
   },
@@ -90,7 +90,7 @@ const INITIAL_TEAMS = [
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-purple-900/30 shadow-purple-500/20', border: 'border-purple-500/50', 
     accent: 'text-purple-400', barColor: 'bg-purple-500', iconKey: 'eye', 
-    password: 'agimoto', members: ['Derek', 'Liah', 'Dani', 'Cata'], 
+    password: 'sanctum_agomoto', members: ['Derek', 'Liah', 'Dani', 'Cata'], 
     quote: "Dormammu, he venido a negociar.", 
     gif: "https://i.ibb.co/M5VX25W0/tumblr-n11ui8-Bh-NU1r8bj4ko1-500.gif"
   },
@@ -1010,8 +1010,10 @@ function AvengersTracker() {
   const checkPass = (e) => { 
       e.preventDefault(); 
       try {
-          const p = pass.toLowerCase().trim(); 
-          if (p === 'director_fury_00' || p === 'avengers') { 
+          const pExact = pass.trim(); 
+          const pLower = pExact.toLowerCase(); 
+          
+          if (pExact === 'Itinerarium@1274') { 
               setIsAdmin(true); 
               setLoggedInId(null); 
               closeAllModals(); 
@@ -1019,7 +1021,7 @@ function AvengersTracker() {
               try{playSfx('success'); speak("Hola Director");}catch(err){} 
               return; 
           } 
-          const t = INITIAL_TEAMS.find(tm => tm.password === p); 
+          const t = INITIAL_TEAMS.find(tm => tm.password === pLower); 
           if (t) { 
               setLoggedInId(t.id); 
               setIsAdmin(false); 
