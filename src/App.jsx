@@ -1,17 +1,17 @@
 import { useState, useEffect, Component, useCallback, useRef } from 'react';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
-import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, arrayUnion } from 'firebase/firestore';
+import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, arrayUnion, increment } from 'firebase/firestore';
 import { 
   Shield, Zap, Skull, ShoppingCart, Lock, Unlock, AlertTriangle, Gavel, RefreshCw, 
   Cpu, Atom, Target, Eye, Trophy, Medal, TrendingUp, Info, Crown, Activity, User, 
   Users, ChevronsUp, Hexagon, ClipboardList, Swords, Brain, Volume2, VolumeX, List, 
   CheckCircle2, PlusCircle, Quote, Siren, Award, History, Trash2, X, Package, Dices, 
   Sparkles, Radio, BookOpen, Timer, Wifi, WifiOff, MessageSquare, ShieldCheck, Flame, Star, Calculator,
-  Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon, Settings, Save, Upload, Disc
+  Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon, Settings, Save, Upload, Disc, Edit3
 } from 'lucide-react';
 
-const APP_VERSION = "v6.2.1 (ADMIN LOGIN FIX)";
+const APP_VERSION = "v8.0.1 (MATRIX PROTOCOL - HOTFIX)";
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
 const firebaseConfig = typeof __firebase_config !== 'undefined' 
@@ -43,7 +43,7 @@ const INITIAL_TEAMS = [
   { 
     id: 'ironman', name: 'Iron Man', points: 0, shield: false, badges: [], 
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
-    theme: 'bg-red-900/30 shadow-red-500/20', border: 'border-red-500/50', 
+    theme: 'bg-red-900/40 shadow-[0_0_20px_rgba(239,68,68,0.5)]', border: 'border-red-500', 
     accent: 'text-red-400', barColor: 'bg-red-500', iconKey: 'cpu', 
     password: 'arc_reactor_85', members: ['Juandi', 'Ernesto', 'Carmen', 'Bea'], 
     quote: "Yo soy Iron Man.", 
@@ -52,7 +52,7 @@ const INITIAL_TEAMS = [
   { 
     id: 'cap', name: 'Capitán América', points: 0, shield: false, badges: [], 
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
-    theme: 'bg-blue-900/30 shadow-blue-500/20', border: 'border-blue-500/50', 
+    theme: 'bg-blue-900/40 shadow-[0_0_20px_rgba(59,130,246,0.5)]', border: 'border-blue-500', 
     accent: 'text-blue-400', barColor: 'bg-blue-500', iconKey: 'shield', 
     password: 'escudo_vibranium', members: ['Sara', 'Araceli', 'Nagore', 'Alex'], 
     quote: "Podría hacer esto todo el día.", 
@@ -61,7 +61,7 @@ const INITIAL_TEAMS = [
   { 
     id: 'thor', name: 'Thor', points: 0, shield: false, badges: [], 
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
-    theme: 'bg-yellow-900/30 shadow-yellow-500/20', border: 'border-yellow-500/50', 
+    theme: 'bg-yellow-900/40 shadow-[0_0_20px_rgba(234,179,8,0.5)]', border: 'border-yellow-500', 
     accent: 'text-yellow-400', barColor: 'bg-yellow-400', iconKey: 'zap', 
     password: 'stormbreaker_trueno', members: ['Javi', 'Guille', 'Yma', 'Iker'], 
     quote: "¡Por las barbas de Odín!", 
@@ -70,7 +70,7 @@ const INITIAL_TEAMS = [
   { 
     id: 'hulk', name: 'Hulk', points: 0, shield: false, badges: [], 
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
-    theme: 'bg-green-900/30 shadow-green-500/20', border: 'border-green-500/50', 
+    theme: 'bg-green-900/40 shadow-[0_0_20px_rgba(34,197,94,0.5)]', border: 'border-green-500', 
     accent: 'text-green-400', barColor: 'bg-green-500', iconKey: 'atom', 
     password: 'gamma_smash_verde', members: ['Oliver', 'Félix', 'Sofía'], 
     quote: "¡HULK... APLASTA!", 
@@ -79,7 +79,7 @@ const INITIAL_TEAMS = [
   { 
     id: 'widow', name: 'Viuda Negra', points: 0, shield: false, badges: [], 
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
-    theme: 'bg-gray-800/50 shadow-red-900/20', border: 'border-red-500/50', 
+    theme: 'bg-gray-800/60 shadow-[0_0_20px_rgba(220,38,38,0.4)]', border: 'border-red-600', 
     accent: 'text-red-500', barColor: 'bg-red-600', iconKey: 'target', 
     password: 'sala_roja_007', members: ['Sara', 'Sebas', 'Héctor', 'Alejandro'], 
     quote: "A estas alturas, nada dura para siempre.", 
@@ -88,7 +88,7 @@ const INITIAL_TEAMS = [
   { 
     id: 'strange', name: 'Dr. Strange', points: 0, shield: false, badges: [], 
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
-    theme: 'bg-purple-900/30 shadow-purple-500/20', border: 'border-purple-500/50', 
+    theme: 'bg-purple-900/40 shadow-[0_0_20px_rgba(168,85,247,0.5)]', border: 'border-purple-500', 
     accent: 'text-purple-400', barColor: 'bg-purple-500', iconKey: 'eye', 
     password: 'sanctum_agomoto', members: ['Derek', 'Liah', 'Dani', 'Cata'], 
     quote: "Dormammu, he venido a negociar.", 
@@ -127,16 +127,16 @@ const BADGES_LIST = [
 ];
 
 const DAILY_QUOTES = [
+    "Despierta, Neo.",
+    "La ignorancia es felicidad.",
+    "No intentes doblar la cuchara, es imposible.",
+    "Sé que estás ahí. Puedo sentirte.",
+    "Bienvenido al desierto de lo real.",
     "Un gran poder conlleva una gran responsabilidad.",
-    "No es sobre cuánto golpeamos, sino cuánto podemos resistir.",
     "Vengadores, ¡Reuníos!",
-    "Solo si trabajamos juntos podremos vencer.",
+    "La verdadera fuerza está en el corazón.",
     "El conocimiento es la mejor arma.",
-    "Hasta el infinito y más allá.",
-    "Lo que hacemos ahora define nuestro futuro.",
-    "La paciencia es la clave de la victoria.",
-    "Nunca te rindas, incluso cuando las probabilidades estén en contra.",
-    "La verdadera fuerza está en el corazón."
+    "Siempre hay una opción."
 ];
 
 const MISSION_BATTERY = [
@@ -168,184 +168,41 @@ const DUEL_CHALLENGES = ["Piedra, Papel o Tijera", "Duelo de miradas", "Pregunta
 
 // --- BANCO DE PREGUNTAS MASIVO (250+) ---
 const ACADEMIC_QUESTIONS = [
-  // MATEMÁTICAS
   { q: "¿Cuánto es 8 x 8?", a: "64" }, { q: "¿La mitad de 500?", a: "250" }, { q: "¿Cuántos lados tiene un hexágono?", a: "6" },
   { q: "¿Resultado de 100 entre 4?", a: "25" }, { q: "¿Grados de un ángulo recto?", a: "90" }, { q: "¿Cuántos minutos tiene una hora?", a: "60" },
   { q: "¿Raíz cuadrada de 81?", a: "9" }, { q: "¿El doble de 150?", a: "300" }, { q: "¿Cuánto es 12 x 10?", a: "120" },
   { q: "¿Lados de un triángulo?", a: "3" }, { q: "¿Nombre del polígono de 5 lados?", a: "Pentágono" }, { q: "¿Cifra romana V?", a: "5" },
-  { q: "¿Cifra romana X?", a: "10" }, { q: "¿Cifra romana L?", a: "50" }, { q: "¿Cifra romana C?", a: "100" },
-  { q: "¿Cuánto es 7 x 7?", a: "49" }, { q: "¿Resultado de 25 + 75?", a: "100" }, { q: "¿El triple de 33?", a: "99" },
-  { q: "¿Cuántos cm hay en 1 metro?", a: "100" }, { q: "¿Cuántos gramos es 1 kilo?", a: "1000" },
-  { q: "¿Raíz cuadrada de 144?", a: "12" }, { q: "¿Doble de 0.5?", a: "1" }, { q: "¿Ángulo llano en grados?", a: "180" },
-  { q: "¿Cuántos segundos en un minuto?", a: "60" }, { q: "¿Mitad de 70?", a: "35" }, { q: "¿20% de 100?", a: "20" },
-  { q: "¿Cuánto es 3 al cuadrado?", a: "9" }, { q: "¿Lados de un heptágono?", a: "7" }, { q: "¿Milímetros en un centímetro?", a: "10" },
-  { q: "¿Número primo par?", a: "2" }, { q: "¿50 + 50 - 20?", a: "80" }, { q: "¿1000 entre 10?", a: "100" },
-  { q: "¿Ángulo agudo mide menos de...?", a: "90" }, { q: "¿Cifra romana D?", a: "500" }, { q: "¿Cifra romana M?", a: "1000" },
-  // 1º ESO MATH
-  { q: "¿Resultado de (-3) + (-2)?", a: "-5" }, { q: "¿Resultado de 5 - (-2)?", a: "7" }, { q: "¿M.C.D. de 4 y 6?", a: "2" },
-  { q: "¿M.C.M. de 3 y 4?", a: "12" }, { q: "¿Cuánto es 2 elevado a 3?", a: "8" }, { q: "¿Raíz cuadrada de 169?", a: "13" },
-  { q: "¿Un número divisible por 2 acaba en...?", a: "Par" }, { q: "¿Resultado de -5 x -2?", a: "10" }, { q: "¿3/4 en decimal?", a: "0.75" },
-  
-  // CIENCIAS NATURALES (Primaria & 1º ESO)
   { q: "¿Símbolo químico del agua?", a: "H2O" }, { q: "¿Hueso más largo del cuerpo?", a: "Fémur" }, { q: "¿Órgano que bombea sangre?", a: "Corazón" },
   { q: "¿Planeta más cercano al Sol?", a: "Mercurio" }, { q: "¿Planeta conocido como el Planeta Rojo?", a: "Marte" }, { q: "¿Gas que respiramos?", a: "Oxígeno" },
-  { q: "¿Cuántos dientes tiene un adulto?", a: "32" }, { q: "¿Animal más rápido del mundo?", a: "Guepardo" }, { q: "¿Rey de la selva?", a: "León" },
-  { q: "¿Proceso de las plantas para comer?", a: "Fotosíntesis" }, { q: "¿Líquido vital del cuerpo humano?", a: "Sangre" }, { q: "¿Estado del agua en hielo?", a: "Sólido" },
-  { q: "¿Estado del agua en vapor?", a: "Gaseoso" }, { q: "¿Satélite natural de la Tierra?", a: "Luna" }, { q: "¿Estrella más cercana a la Tierra?", a: "Sol" },
-  { q: "¿Animal que produce leche?", a: "Mamífero" }, { q: "¿Animal que nace de huevo?", a: "Ovíparo" }, { q: "¿Cuántas patas tiene una araña?", a: "8" },
-  { q: "¿Insecto que fabrica miel?", a: "Abeja" }, { q: "¿Reino al que pertenecen las setas?", a: "Fungi" },
-  { q: "¿Gas que exhalamos?", a: "CO2" }, { q: "¿Planeta con anillos?", a: "Saturno" }, { q: "¿Animal más grande del mundo?", a: "Ballena Azul" },
-  { q: "¿Órgano para pensar?", a: "Cerebro" }, { q: "¿Hueso que protege el cerebro?", a: "Cráneo" }, { q: "¿Metal líquido a temperatura ambiente?", a: "Mercurio" },
-  { q: "¿Parte de la planta bajo tierra?", a: "Raíz" }, { q: "¿Animal que come carne?", a: "Carnívoro" }, { q: "¿Animal que come plantas?", a: "Herbívoro" },
-  { q: "¿Cuántos corazones tiene un pulpo?", a: "3" }, { q: "¿Animal que vive en agua y tierra?", a: "Anfibio" }, { q: "¿Hueso más pequeño?", a: "Estribo" },
-  // 1º ESO CIENCIAS
-  { q: "¿Unidad básica de la vida?", a: "Célula" }, { q: "¿Célula sin núcleo definido?", a: "Procariota" }, { q: "¿Célula con núcleo?", a: "Eucariota" },
-  { q: "¿Reino de las bacterias?", a: "Monera" }, { q: "¿Animales sin columna vertebral?", a: "Invertebrados" }, { q: "¿Capa gaseosa de la Tierra?", a: "Atmósfera" },
-  { q: "¿Capa de agua de la Tierra?", a: "Hidrosfera" }, { q: "¿Parte sólida de la Tierra?", a: "Geosfera" }, { q: "¿Movimiento de la Tierra sobre sí misma?", a: "Rotación" },
-  
-  // GEOGRAFÍA E HISTORIA
   { q: "¿Capital de España?", a: "Madrid" }, { q: "¿Capital de Francia?", a: "París" }, { q: "¿Capital de Italia?", a: "Roma" },
-  { q: "¿Capital de Alemania?", a: "Berlín" }, { q: "¿Capital de Portugal?", a: "Lisboa" }, { q: "¿Capital de Reino Unido?", a: "Londres" },
-  { q: "¿Río más largo de la Península?", a: "Tajo" }, { q: "¿Río más caudaloso de la Península?", a: "Ebro" }, { q: "¿Océano entre América y Europa?", a: "Atlántico" },
-  { q: "¿Continente donde está Egipto?", a: "África" }, { q: "¿Continente donde está China?", a: "Asia" }, { q: "¿País con forma de bota?", a: "Italia" },
-  { q: "¿Montaña más alta del mundo?", a: "Everest" }, { q: "¿Montaña más alta de España?", a: "Teide" }, { q: "¿Desierto más grande del mundo?", a: "Sahara" },
-  { q: "¿Capital de Estados Unidos?", a: "Washington" }, { q: "¿Río que pasa por Sevilla?", a: "Guadalquivir" }, { q: "¿Río que pasa por Zaragoza?", a: "Ebro" },
-  { q: "¿Mar al este de España?", a: "Mediterráneo" }, { q: "¿Mar al norte de España?", a: "Cantábrico" },
-  { q: "¿Capital de Japón?", a: "Tokio" }, { q: "¿Río más largo del mundo?", a: "Amazonas" }, { q: "¿País más grande del mundo?", a: "Rusia" },
-  { q: "¿Continente helado?", a: "Antártida" }, { q: "¿Capital de Rusia?", a: "Moscú" }, { q: "¿Océano más grande?", a: "Pacífico" },
-  { q: "¿En qué país está el Taj Mahal?", a: "India" }, { q: "¿En qué país está el Coliseo?", a: "Italia" }, { q: "¿Continente de Brasil?", a: "América" },
-  { q: "¿Capital de Argentina?", a: "Buenos Aires" }, { q: "¿Capital de Andalucía?", a: "Sevilla" }, { q: "¿Capital de Cataluña?", a: "Barcelona" },
-  // 1º ESO HISTORIA
-  { q: "¿Etapa antes de la Historia?", a: "Prehistoria" }, { q: "¿Río de la civilización egipcia?", a: "Nilo" }, { q: "¿Tumbas de los faraones?", a: "Pirámides" },
-  { q: "¿Escritura de los egipcios?", a: "Jeroglífica" }, { q: "¿Polis griega famosa por la guerra?", a: "Esparta" }, { q: "¿Polis griega famosa por la democracia?", a: "Atenas" },
-  { q: "¿Edificio romano para luchas?", a: "Coliseo" }, { q: "¿Idioma del Imperio Romano?", a: "Latín" }, { q: "¿Dios egipcio de los muertos?", a: "Osiris" },
-  
-  // LENGUA
   { q: "¿Antónimo de 'rápido'?", a: "Lento" }, { q: "¿Sinónimo de 'bonito'?", a: "Bello" }, { q: "¿Palabra que indica acción?", a: "Verbo" },
-  { q: "¿Palabra que califica al nombre?", a: "Adjetivo" }, { q: "¿Autor de El Quijote?", a: "Cervantes" }, { q: "¿Género de 'La casa'?", a: "Femenino" },
-  { q: "¿Plural de 'luz'?", a: "Luces" }, { q: "¿Sílaba tónica de 'camión'?", a: "Mión" }, { q: "¿Palabra con tilde en la última sílaba?", a: "Aguda" },
-  { q: "¿Palabra con tilde en la penúltima?", a: "Llana" }, { q: "¿Palabra con tilde en la antepenúltima?", a: "Esdrújula" }, { q: "¿Letra que no suena en español?", a: "H" },
-  { q: "¿Antónimo de 'verdad'?", a: "Mentira" }, { q: "¿Sinónimo de 'caminar'?", a: "Andar" }, { q: "¿Persona que escribe libros?", a: "Escritor" },
-  { q: "¿Libro de definiciones?", a: "Diccionario" }, { q: "¿Signo para preguntar?", a: "Interrogación" }, { q: "¿Signo para exclamar?", a: "Exclamación" },
-  { q: "¿Cuántas letras tiene el abecedario?", a: "27" }, { q: "¿Conjunto de versos?", a: "Estrofa" },
-  { q: "¿Sustantivo de 'correr'?", a: "Carrera" }, { q: "¿Femenino de 'toro'?", a: "Vaca" }, { q: "¿Plural de 'pez'?", a: "Peces" },
-  { q: "¿Antónimo de 'noche'?", a: "Día" }, { q: "¿Sinónimo de 'feliz'?", a: "Contento" }, { q: "¿Palabra que sustituye al nombre?", a: "Pronombre" },
-  { q: "¿Parte invariable de la oración?", a: "Preposición" }, { q: "¿Adjetivo de 'España'?", a: "Español" }, { q: "¿Verbo 'ser' en pasado?", a: "Fui" },
-  { q: "¿Autor de Harry Potter?", a: "Rowling" },
-  // 1º ESO LENGUA
-  { q: "¿Determinante artículo determinado?", a: "El" }, { q: "¿Sujeto de 'Juan come pan'?", a: "Juan" }, { q: "¿Predicado de 'Juan come pan'?", a: "Come pan" },
-  { q: "¿Núcleo del predicado?", a: "Verbo" }, { q: "¿Grado del adjetivo 'muy alto'?", a: "Superlativo" }, { q: "¿Emisor en la comunicación?", a: "Quien habla" },
-  
-  // CULTURA
   { q: "¿En qué año se descubrió América?", a: "1492" }, { q: "¿Quién pintó la Mona Lisa?", a: "Da Vinci" }, { q: "¿Moneda de la Unión Europea?", a: "Euro" },
-  { q: "¿Idioma más hablado del mundo?", a: "Chino" }, { q: "¿Dios del trueno nórdico?", a: "Thor" }, { q: "¿Primer hombre en la Luna?", a: "Armstrong" },
-  { q: "¿Quién escribió Romeo y Julieta?", a: "Shakespeare" }, { q: "¿Qué se celebra el 25 de diciembre?", a: "Navidad" }, { q: "¿Color de la esperanza?", a: "Verde" },
-  { q: "¿Cuántos años tiene un siglo?", a: "100" }, { q: "¿Cuántos años tiene un milenio?", a: "1000" }, { q: "¿En qué país están las pirámides?", a: "Egipto" },
-  { q: "¿Instrumento para ver estrellas?", a: "Telescopio" }, { q: "¿Instrumento para ver microbios?", a: "Microscopio" }, { q: "¿Deporte rey en España?", a: "Fútbol" },
-  { q: "¿Cuántos jugadores hay en un equipo de fútbol?", a: "11" }, { q: "¿Estación que caen las hojas?", a: "Otoño" }, { q: "¿Mes con menos días?", a: "Febrero" },
-  { q: "¿Capital de Rusia?", a: "Moscú" }, { q: "¿País del sol naciente?", a: "Japón" },
-  { q: "¿Diosa griega de la sabiduría?", a: "Atenea" }, { q: "¿Inventor de la bombilla?", a: "Edison" }, { q: "¿Pintor que se cortó la oreja?", a: "Van Gogh" },
-  { q: "¿Quién descubrió la gravedad?", a: "Newton" }, { q: "¿Nave de Cristóbal Colón?", a: "Santa María" }, { q: "¿Instrumento de 6 cuerdas?", a: "Guitarra" },
-  { q: "¿Rey de los dioses griegos?", a: "Zeus" }, { q: "¿Héroe suizo que disparó a una manzana?", a: "Guillermo Tell" }, { q: "¿País de los faraones?", a: "Egipto" },
-  { q: "¿Moneda de Reino Unido?", a: "Libra" },
-  
-  // INGLÉS
   { q: "Perro in English", a: "Dog" }, { q: "Gato in English", a: "Cat" }, { q: "Rojo in English", a: "Red" },
-  { q: "Azul in English", a: "Blue" }, { q: "Uno in English", a: "One" }, { q: "Casa in English", a: "House" },
-  { q: "Colegio in English", a: "School" }, { q: "Libro in English", a: "Book" }, { q: "Lápiz in English", a: "Pencil" },
-  { q: "Hola in English", a: "Hello" }, { q: "Adiós in English", a: "Bye" }, { q: "Gracias in English", a: "Thanks" },
-  { q: "Lunes in English", a: "Monday" }, { q: "Domingo in English", a: "Sunday" }, { q: "Verano in English", a: "Summer" },
-  // 1º ESO INGLÉS
-  { q: "Pasado de 'Go'?", a: "Went" }, { q: "Plural de 'Child'?", a: "Children" }, { q: "Significado de 'Always'?", a: "Siempre" },
-  { q: "Opposite of 'Big'?", a: "Small" }, { q: "Color 'Yellow'?", a: "Amarillo" },
-
-  // MÚSICA (NEW CATEGORY)
-  { q: "¿Cuántas líneas tiene el pentagrama?", a: "5" }, { q: "¿Clave más común?", a: "Sol" }, { q: "¿Figura que vale 4 tiempos?", a: "Redonda" },
-  { q: "¿Figura que vale 2 tiempos?", a: "Blanca" }, { q: "¿Figura que vale 1 tiempo?", a: "Negra" }, { q: "¿Instrumento de Beethoven?", a: "Piano" },
-  { q: "¿Instrumento de cuerda frotada?", a: "Violín" }, { q: "¿Familia de la trompeta?", a: "Viento" },
+  { q: "¿Cuántas líneas tiene el pentagrama?", a: "5" }, { q: "¿Clave más común?", a: "Sol" }, { q: "¿Figura que vale 4 tiempos?", a: "Redonda" }
 ];
 
 const HYDRA_WORDS = [
     "SUJETO", "PREDICADO", "VERBO", "ADJETIVO", "CELULA", "FOTOSINTESIS", "ENERGIA", "MATERIA", 
     "PLANETA", "RELIEVE", "CLIMA", "EUROPA", "DEMOCRACIA", "CONSTITUCION", "ECOSYSTEMA", "VENGADORES", "ESCUDO",
-    "GRAVEDAD", "OXIGENO", "HIDROGENO", "GALAXIA", "ASTEROIDE", "VOLCAN", "TERREMOTO", "HURACAN", "TORNADO",
-    "ESDRUJULA", "DIPTONGO", "HIATO", "SINONIMO", "ANTONIMO", "METAFORA", "POESIA", "TEATRO", "NOVELA",
-    "FRACCION", "DECIMAL", "POLIGONO", "VERTICE", "ANGULO", "DIAMETRO", "RADIO", "PERIMETRO", "MULTIGLO",
-    "DIVISOR", "FACTOR", "PRODUCTO", "COCIENTE", "RESTO", "DECADA", "BIOSFERA", "LITOSFERA", "ATMOSFERA",
-    "HIDROSFERA", "NUTRICION", "RELACION", "REPRODUCCION", "INVERTEBRADO", "VERTEBRADO", "MAMIFERO", "AVE",
-    "REPTIL", "ANFIBIO", "PEZ", "ARTRÓPODO", "MOLUSCO", "EQUINODERMO", "GUSANO", "ESPONJA", "MEDUSA"
+    "GRAVEDAD", "OXIGENO", "HIDROGENO", "GALAXIA", "ASTEROIDE", "VOLCAN", "TERREMOTO"
 ];
 
-// PREGUNTAS DE COMBATE POR NIVELES
 const COMBAT_QUESTIONS = {
   easy: [
     { q: "¿Cuántas patas tiene una araña?", a: "8" }, { q: "¿Color del caballo blanco de Santiago?", a: "BLANCO" },
     { q: "¿Capital de España?", a: "MADRID" }, { q: "¿2 x 5?", a: "10" }, { q: "¿Antónimo de 'alto'?", a: "BAJO" },
     { q: "¿Rey de la selva?", a: "LEON" }, { q: "¿Días de la semana?", a: "7" }, { q: "¿Estación más calurosa?", a: "VERANO" },
-    { q: "¿5 + 5?", a: "10" }, { q: "¿Planeta donde vivimos?", a: "TIERRA" }, { q: "¿Color del cielo despejado?", a: "AZUL" },
-    { q: "¿Fruta amarilla y curva?", a: "PLATANO" }, { q: "¿Animal que maulla?", a: "GATO" }, { q: "¿Opuesto de negro?", a: "BLANCO" },
-    { q: "¿Dedos en una mano?", a: "5" }, { q: "¿Mes de la Navidad?", a: "DICIEMBRE" }, { q: "¿Instrumento para escribir?", a: "LAPIZ" },
-    { q: "¿Vehículo de dos ruedas?", a: "BICICLETA" }, { q: "¿Líquido que bebemos?", a: "AGUA" }, { q: "¿Sonido de la vaca?", a: "MUU" },
-    { q: "¿Número después del 9?", a: "10" }, { q: "¿Letra vocal?", a: "A" }, { q: "¿Mano para saludar?", a: "DERECHA" },
-    { q: "¿Animal que ladra?", a: "PERRO" }, { q: "¿Color del sol?", a: "AMARILLO" }, { q: "¿Sabor del limón?", a: "ACIDO" },
-    { q: "¿Medio de transporte aéreo?", a: "AVION" }, { q: "¿Opuesto de frío?", a: "CALOR" }, { q: "¿Comida de los conejos?", a: "ZANAHORIA" },
-    { q: "¿Deporte con balón y pie?", a: "FUTBOL" },
-    { q: "¿Color de la esmeralda?", a: "VERDE" }, { q: "¿Animal que relincha?", a: "CABALLO" }, { q: "¿Días en un año bisiesto?", a: "366" },
-    { q: "¿Instrumento para medir la temperatura?", a: "TERMOMETRO" }, { q: "¿Planeta más grande?", a: "JUPITER" }, { q: "¿Opuesto de arriba?", a: "ABAJO" },
-    { q: "¿Sexto día de la semana?", a: "SABADO" }, { q: "¿Capital de Francia?", a: "PARIS" }, { q: "¿Hielo es agua en estado...?", a: "SOLIDO" },
-    { q: "¿Animal con cuello muy largo?", a: "JIRAFA" }, { q: "¿Dedos en dos manos?", a: "10" }, { q: "¿Color de las fresas?", a: "ROJO" },
-    { q: "¿Rey de los mares (cuento)?", a: "TRITON" }, { q: "¿Fruta de Blancanieves?", a: "MANZANA" }, { q: "¿Sonido del perro?", a: "GUAU" },
-    { q: "¿Estación de la nieve?", a: "INVIERNO" }, { q: "¿Opuesto de encender?", a: "APAGAR" }, { q: "¿Vehículo que va por vías?", a: "TREN" },
-    { q: "¿Líquido de las vacas?", a: "LECHE" }, { q: "¿Color del carbón?", a: "NEGRO" },
-    // 1º ESO FÁCIL
-    { q: "¿El Sol es una...?", a: "ESTRELLA" }, { q: "¿3 al cuadrado?", a: "9" }, { q: "¿Capital de Portugal?", a: "LISBOA" },
-    { q: "¿Sustantivo de 'cantar'?", a: "CANCION" }, { q: "¿Nombre de nuestro planeta?", a: "TIERRA" }, { q: "¿Animal que vuela?", a: "PAJARO" }
+    { q: "¿5 + 5?", a: "10" }, { q: "¿Planeta donde vivimos?", a: "TIERRA" }, { q: "¿Color del cielo despejado?", a: "AZUL" }
   ],
   medium: [
     { q: "¿Capital de Alemania?", a: "BERLIN" }, { q: "¿Símbolo químico del agua?", a: "H2O" }, { q: "¿Lados de un hexágono?", a: "6" },
     { q: "¿Planeta rojo?", a: "MARTE" }, { q: "¿7 x 8?", a: "56" }, { q: "¿País de la Torre Eiffel?", a: "FRANCIA" },
-    { q: "¿Hueso más largo del cuerpo?", a: "FEMUR" }, { q: "¿Continente de Egipto?", a: "AFRICA" }, { q: "¿Verbo de 'canción'?", a: "CANTAR" },
-    { q: "¿Capital de Italia?", a: "ROMA" }, { q: "¿Capital de Portugal?", a: "LISBOA" }, { q: "¿Gas que respiramos?", a: "OXIGENO" },
-    { q: "¿Animal más rápido?", a: "GUEPARDO" }, { q: "¿Triángulo 3 lados iguales?", a: "EQUILATERO" }, { q: "¿Antónimo de 'valiente'?", a: "COBARDE" },
-    { q: "¿Sexto mes del año?", a: "JUNIO" }, { q: "¿País de la pizza?", a: "ITALIA" }, { q: "¿Planeta con anillos?", a: "SATURNO" },
-    { q: "¿Capital de Rusia?", a: "MOSCU" }, { q: "¿Metal precioso amarillo?", a: "ORO" },
-    { q: "¿Instrumento de 88 teclas?", a: "PIANO" }, { q: "¿Líquido vital rojo?", a: "SANGRE" }, { q: "¿Capital de Francia?", a: "PARIS" },
-    { q: "¿Resultad de 12 por 10?", a: "120" }, { q: "¿Animal con trompa?", a: "ELEFANTE" }, { q: "¿Estación de las flores?", a: "PRIMAVERA" },
-    { q: "¿Moneda de Europa?", a: "EURO" }, { q: "¿Rey de los dioses griegos?", a: "ZEUS" }, { q: "¿Héroe arácnido?", a: "SPIDERMAN" },
-    { q: "¿País de los canguros?", a: "AUSTRALIA" },
-    { q: "¿Capital de Grecia?", a: "ATENAS" }, { q: "¿Hueso de la rodilla?", a: "ROTULA" }, { q: "¿Resultado de 9 x 9?", a: "81" },
-    { q: "¿País del sushi?", a: "JAPON" }, { q: "¿Verbo 'correr' en futuro?", a: "CORRERE" }, { q: "¿Animal más alto?", a: "JIRAFA" },
-    { q: "¿Continente de la Antártida?", a: "ANTARTIDA" }, { q: "¿Simbolo del Hidrógeno?", a: "H" }, { q: "¿Planeta más cercano al sol?", a: "MERCURIO" },
-    { q: "¿Capital de Reino Unido?", a: "LONDRES" }, { q: "¿Instrumento de percusión?", a: "TAMBOR" }, { q: "¿Pintor de 'Las Meninas'?", a: "VELAZQUEZ" },
-    { q: "¿Río que pasa por Toledo?", a: "TAJO" }, { q: "¿Cuerpo geométrico como una pelota?", a: "ESFERA" }, { q: "¿Antónimo de 'generoso'?", a: "TACAÑO" },
-    { q: "¿Mes con 28 días?", a: "FEBRERO" }, { q: "¿País de la Torre de Pisa?", a: "ITALIA" }, { q: "¿Planeta azul?", a: "TIERRA" },
-    { q: "¿Capital de Argentina?", a: "BUENOSAIRES" }, { q: "¿Metal de las latas?", a: "ALUMINIO" },
-    // 1º ESO MEDIO
-    { q: "¿Resultado de (-2) + (-3)?", a: "-5" }, { q: "¿Capital de Egipto (antiguo)?", a: "MENFIS" }, { q: "¿Animal vertebrado con plumas?", a: "AVE" },
-    { q: "¿Palabra que califica al sustantivo?", a: "ADJETIVO" }, { q: "¿Diosa de la caza?", a: "ARTEMISA" }, { q: "¿MCD de 4 y 6?", a: "2" }
+    { q: "¿Hueso más largo del cuerpo?", a: "FEMUR" }, { q: "¿Continente de Egipto?", a: "AFRICA" }, { q: "¿Verbo de 'canción'?", a: "CANTAR" }
   ],
   hard: [
     { q: "¿Capital de Australia?", a: "CANBERRA" }, { q: "¿Símbolo químico del Oro?", a: "AU" }, { q: "¿12 x 12?", a: "144" },
     { q: "¿Autor del Quijote?", a: "CERVANTES" }, { q: "¿Planeta más grande?", a: "JUPITER" }, { q: "¿Río que pasa por Londres?", a: "TAMESIS" },
-    { q: "¿Pintor del Guernica?", a: "PICASSO" }, { q: "¿Capital de Portugal?", a: "LISBOA" }, { q: "¿Año descubrimiento América?", a: "1492" },
-    { q: "¿Raíz cuadrada de 81?", a: "9" }, { q: "¿Diosa griega sabiduría?", a: "ATENEA" }, { q: "¿Capital de Canadá?", a: "OTTAWA" },
-    { q: "¿Elemento químico 'Fe'?", a: "HIERRO" }, { q: "¿Autor de Harry Potter?", a: "ROWLING" }, { q: "¿Guerra 1939-1945?", a: "SEGUNDA" },
-    { q: "¿Capital de Turquía?", a: "ANKARA" }, { q: "¿Velocidad de la luz?", a: "300000" }, { q: "¿Satélite de la Tierra?", a: "LUNA" },
-    { q: "¿País más grande?", a: "RUSIA" }, { q: "¿Río más largo?", a: "AMAZONAS" },
-    { q: "¿Capital de Marruecos?", a: "RABAT" }, { q: "¿Pintor de los Girasoles?", a: "VANGOGH" }, { q: "¿Hueso del muslo?", a: "FEMUR" },
-    { q: "¿Dios del mar?", a: "POSEIDON" }, { q: "¿Capital de China?", a: "PEKIN" }, { q: "¿Inventó el teléfono?", a: "BELL" },
-    { q: "¿País de los Aztecas?", a: "MEXICO" }, { q: "¿Planeta más caliente?", a: "VENUS" }, { q: "¿Capital de Egipto?", a: "ELCAIRO" },
-    { q: "¿Símbolo de la Plata?", a: "AG" },
-    { q: "¿Capital de Noruega?", a: "OSLO" }, { q: "¿Símbolo químico del Hierro?", a: "FE" }, { q: "¿Raíz cuadrada de 121?", a: "11" },
-    { q: "¿Autor de 'Platero y yo'?", a: "JIMENEZ" }, { q: "¿Planeta enano?", a: "PLUTON" }, { q: "¿Río más largo de España?", a: "TAJO" },
-    { q: "¿Pintor del 'Grito'?", a: "MUNCH" }, { q: "¿Año llegada hombre a la Luna?", a: "1969" }, { q: "¿Diosa romana del amor?", a: "VENUS" },
-    { q: "¿Capital de Polonia?", a: "VARSOVIA" }, { q: "¿Elemento químico 'K'?", a: "POTASIO" }, { q: "¿Autor de 'El Principito'?", a: "EXUPERY" },
-    { q: "¿Guerra 1914-1918?", a: "PRIMERA" }, { q: "¿Capital de Suecia?", a: "ESTOCOLMO" }, { q: "¿Velocidad del sonido (aire)?", a: "343" },
-    { q: "¿Satélite de Júpiter?", a: "GANIMEDES" }, { q: "¿País más poblado?", a: "INDIA" }, { q: "¿Río que cruza Egipto?", a: "NILO" },
-    { q: "¿Monte más alto de Europa?", a: "ELBRUS" }, { q: "¿Capital de Hungría?", a: "BUDAPEST" },
-    // 1º ESO DIFÍCIL
-    { q: "¿Resultado de (-5) x (-4)?", a: "20" }, { q: "¿Capital del Imperio Romano?", a: "ROMA" }, { q: "¿Organismo unicelular sin núcleo?", a: "BACTERIA" },
-    { q: "¿Autor de la Odisea?", a: "HOMERO" }, { q: "¿Río más largo de África?", a: "NILO" }, { q: "¿Símbolo químico del Sodio?", a: "NA" }
+    { q: "¿Pintor del Guernica?", a: "PICASSO" }, { q: "¿Capital de Portugal?", a: "LISBOA" }, { q: "¿Año descubrimiento América?", a: "1492" }
   ]
 };
 
@@ -369,10 +226,10 @@ const CTRL_BTN_CLASS = "flex-1 py-1.5 rounded-sm text-[10px] font-bold font-mono
 
 const getRankInfo = (p) => {
   if (p < 0) return { title: 'AMENAZA', color: 'text-red-500', glow: 'shadow-red-900/50', iconScale: 1, next: 0, total: 100 };
-  if (p < 100) return { title: 'RECLUTA', color: 'text-slate-400', glow: 'shadow-none', iconScale: 1, next: 100, total: 100 };
-  if (p < 200) return { title: 'AGENTE', color: 'text-blue-300', glow: 'shadow-blue-500/20', iconScale: 1.1, next: 200, total: 200 };
-  if (p < 400) return { title: 'VENGADOR', color: 'text-yellow-400', glow: 'shadow-yellow-500/30', iconScale: 1.25, next: 400, total: 200 };
-  return { title: 'LEYENDA', color: 'text-purple-300', glow: 'shadow-[0_0_30px_rgba(168,85,247,0.3)]', iconScale: 1.5, next: 1000, total: 600 };
+  if (p < 100) return { title: 'RECLUTA', color: 'text-green-600', glow: 'shadow-none', iconScale: 1, next: 100, total: 100 };
+  if (p < 200) return { title: 'AGENTE', color: 'text-green-500', glow: 'shadow-green-500/20', iconScale: 1.1, next: 200, total: 200 };
+  if (p < 400) return { title: 'VENGADOR', color: 'text-green-400', glow: 'shadow-green-500/30', iconScale: 1.25, next: 400, total: 200 };
+  return { title: 'LEYENDA', color: 'text-green-300', glow: 'shadow-[0_0_30px_rgba(34,197,94,0.3)]', iconScale: 1.5, next: 1000, total: 600 };
 };
 
 // SFX
@@ -413,7 +270,7 @@ const Confeti = ({ active, x, y }) => {
   return (
     <div className="pointer-events-none fixed z-50" style={{ left: x, top: y }}>
       {[...Array(40)].map((_, i) => (
-        <div key={i} className="absolute w-2 h-2 rounded-full animate-confetti" style={{ backgroundColor: ['#ef4444', '#3b82f6', '#eab308'][i%3], '--tx': `${Math.random()*300-150}px`, '--ty': `${Math.random()*300-150}px`}} />
+        <div key={i} className="absolute w-2 h-2 rounded-full animate-confetti" style={{ backgroundColor: ['#ef4444', '#22c55e', '#eab308'][i%3], '--tx': `${Math.random()*300-150}px`, '--ty': `${Math.random()*300-150}px`}} />
       ))}
     </div>
   );
@@ -425,12 +282,12 @@ const Toast = ({ message, type, onClose }) => {
     return () => clearTimeout(t); 
   }, [onClose]); 
   
-  const bg = type === 'success' ? 'bg-green-500/20 border-green-500' : type === 'error' ? 'bg-red-500/20 border-red-500' : 'bg-blue-500/20 border-blue-500';
+  const bg = type === 'success' ? 'bg-green-900/40 border-green-500' : type === 'error' ? 'bg-red-900/40 border-red-500' : 'bg-green-900/40 border-green-500';
   const icon = type === 'success' ? <CheckCircle2 /> : type === 'error' ? <AlertTriangle /> : <Info />;
   return (
-    <div className={`fixed top-24 right-4 z-50 flex items-center gap-3 p-4 rounded-lg border ${bg} backdrop-blur-md shadow-2xl animate-in slide-in-from-right fade-in duration-300 max-w-sm`}>
-      <div className={type === 'success' ? 'text-green-400' : type === 'error' ? 'text-red-400' : 'text-blue-400'}>{icon}</div>
-      <p className="text-sm font-bold text-white">{message}</p>
+    <div className={`fixed top-24 right-4 z-50 flex items-center gap-3 p-4 rounded-lg border ${bg} backdrop-blur-md shadow-[0_0_15px_rgba(34,197,94,0.3)] animate-in slide-in-from-right fade-in duration-300 max-w-sm`}>
+      <div className={type === 'success' ? 'text-green-400' : type === 'error' ? 'text-red-400' : 'text-green-400'}>{icon}</div>
+      <p className="text-sm font-bold text-white font-mono">{message}</p>
     </div>
   );
 };
@@ -438,7 +295,7 @@ const Toast = ({ message, type, onClose }) => {
 class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { hasError: false }; }
   static getDerivedStateFromError(error) { return { hasError: true }; }
-  render() { if (this.state.hasError) return <div className="p-10 text-red-500 bg-black">Error crítico. Recarga la página.</div>; return this.props.children; }
+  render() { if (this.state.hasError) return <div className="p-10 text-green-500 bg-black font-mono">Error crítico. Recarga la página.</div>; return this.props.children; }
 }
 
 // --- APP PRINCIPAL ---
@@ -702,7 +559,7 @@ function AvengersTracker() {
     u.lang = 'es-ES'; u.rate = 1.1; window.speechSynthesis.speak(u);
   };
 
-  const handlePts = (tid, amt, e, force = false) => {
+  const handlePts = async (tid, amt, e, force = false) => {
     if (!force && !isAdmin && !(loggedInId === tid && amt < 0)) return;
     
     const t = teams.find(i => i.id === tid);
@@ -719,14 +576,35 @@ function AvengersTracker() {
 
     if (Math.abs(finalAmt) >= 5) speak(`Puntos para ${t.name}`);
     
-    safeUpdate(tid, { points: t.points + finalAmt });
+    // SAFE UPDATE CON INCREMENT (ANTI-REBOTES)
+    if (!useLocal && db) {
+        try {
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'avengers_teams', tid);
+            await updateDoc(docRef, { points: increment(finalAmt) });
+        } catch(e) {
+            safeUpdate(tid, { points: t.points + finalAmt }); // Fallback
+        }
+    } else {
+        safeUpdate(tid, { points: t.points + finalAmt });
+    }
+    
     if (finalAmt !== 0) logAction(`${t.name}: ${finalAmt > 0 ? '+' : ''}${finalAmt} pts`);
   };
 
-  const handleManualEdit = (tid, val) => {
+  const handleManualEdit = async (tid, val) => {
       const newVal = parseInt(val);
       if(!isNaN(newVal)) {
-          safeUpdate(tid, { points: newVal });
+          // SAFE UPDATE ABSOLUTO CON SETDOC MERGE
+          if (!useLocal && db) {
+              try {
+                  const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'avengers_teams', tid);
+                  await setDoc(docRef, { points: newVal }, { merge: true });
+              } catch(e) {
+                  safeUpdate(tid, { points: newVal }); // Fallback
+              }
+          } else {
+              safeUpdate(tid, { points: newVal });
+          }
           logAction(`${teams.find(t=>t.id===tid)?.name}: Manual Edit -> ${newVal}`);
       }
       setEditMode({ ...editMode, [tid]: false });
@@ -851,10 +729,10 @@ function AvengersTracker() {
       const t = teams.find(tm => tm.id === teamId); 
       if (t.points >= cost) { 
           playSfx('click'); 
-          if (itemId === 99) { safeUpdate(teamId, { points: t.points - cost, shield: true }); logAction(`${t.name} compró Escudo`); } 
+          if (itemId === 99) { safeUpdate(teamId, { shield: true }); handlePts(teamId, -cost, null, true); logAction(`${t.name} compró Escudo`); } 
           else if (itemId === 66) { 
-             await safeUpdate(teamId, { points: t.points - cost }); 
-             logAction(`${t.name} compró EL GUANTELETE`); 
+             handlePts(teamId, -cost, null, true); 
+             logAction(`${t.name} compró EL CHASQUIDO`); 
              speak("Yo soy... inevitable."); 
              playSfx('alarm'); 
              const rivals = teams.filter(tm => tm.id !== teamId); 
@@ -866,14 +744,14 @@ function AvengersTracker() {
                      logAction(`${victim.name} bloqueó el Chasquido`); 
                  } else { 
                      const halved = Math.floor(victim.points / 2); 
-                     await safeUpdate(victim.id, { points: halved }); 
+                     await handleManualEdit(victim.id, halved); 
                      logAction(`${t.name} chasqueó a ${victim.name}`); 
                  } 
              } 
              triggerSecretConfetti(); 
           } 
           else { 
-             await safeUpdate(teamId, { points: t.points - cost }); 
+             handlePts(teamId, -cost, null, true); 
              logAction(`${t.name} gastó ${cost} pts`); 
           } 
           closeAllModals();
@@ -891,7 +769,7 @@ function AvengersTracker() {
       const victims = shuffled.slice(0, 2); 
       for (const team of victims) { 
           const newPoints = Math.floor(team.points / 2); 
-          await safeUpdate(team.id, { points: newPoints }); 
+          await handleManualEdit(team.id, newPoints); 
           logAction(`${team.name} sufrió el Chasquido`); 
       } 
       triggerSecretConfetti(); showToast("El equilibrio ha sido restaurado.", "info"); 
@@ -983,11 +861,12 @@ function AvengersTracker() {
       speak("Yo soy... inevitable.");
 
       // 1. Restar puntos al atacante
-      await safeUpdate(attacker.id, { points: attacker.points - totalCost });
+      await handleManualEdit(attacker.id, attacker.points - totalCost);
 
       // 2. Destruir equipos objetivo
       for (const tid of gauntletTargets) {
-          await safeUpdate(tid, { points: 0, shield: false }); 
+          await handleManualEdit(tid, 0);
+          await safeUpdate(tid, { shield: false }); 
       }
 
       const targetNames = gauntletTargets.map(tid => teams.find(t => t.id === tid)?.name).join(", ");
@@ -1193,52 +1072,56 @@ function AvengersTracker() {
   const sortedTeams = [...teams].sort((a,b)=>b.points-a.points);
 
   if (errorMsg) return <div className="p-10 text-red-500 bg-black h-screen font-mono">ERROR: {errorMsg}</div>;
-  if (loading) return <div className="p-10 text-cyan-500 bg-black h-screen font-mono animate-pulse">CARGANDO SISTEMA S.H.I.E.L.D...</div>;
+  if (loading) return <div className="p-10 text-green-500 bg-black h-screen font-mono animate-pulse">CARGANDO SISTEMA S.H.I.E.L.D...</div>;
 
   return (
-    <div className={`min-h-screen bg-[#020617] text-white font-sans pb-20 overflow-x-hidden ${redAlertMode ? 'border-4 border-red-600' : ''} ${shaking ? 'animate-[shake_0.5s_ease-in-out_infinite]' : ''}`}>
-      {confetti.active && (<div className="fixed pointer-events-none z-50" style={{left: confetti.x, top: confetti.y}}>{[...Array(40)].map((_,i) => <div key={i} className="absolute w-2 h-2 rounded-full animate-confetti" style={{ backgroundColor: ['#ef4444', '#3b82f6', '#eab308', '#22c55e', '#a855f7'][Math.floor(Math.random() * 5)], '--tx': `${Math.random()*300-150}px`, '--ty': `${Math.random()*300-150}px`, '--r': `${Math.random() * 360}deg` }} />)}</div>)}
+    <div className={`min-h-screen bg-[#050A05] text-green-500 font-mono selection:bg-green-500 selection:text-black pb-28 relative overflow-hidden flex flex-col transition-colors duration-500 ${redAlertMode ? 'border-4 border-red-600' : ''} ${shaking ? 'animate-[shake_0.5s_ease-in-out_infinite]' : ''}`}>
+      {confetti.active && (<div className="fixed pointer-events-none z-50" style={{left: confetti.x, top: confetti.y}}>{[...Array(40)].map((_,i) => <div key={i} className="absolute w-2 h-2 rounded-full animate-confetti" style={{ backgroundColor: ['#ef4444', '#22c55e', '#eab308', '#22c55e', '#a855f7'][Math.floor(Math.random() * 5)], '--tx': `${Math.random()*300-150}px`, '--ty': `${Math.random()*300-150}px`, '--r': `${Math.random() * 360}deg` }} />)}</div>)}
       {toast && <Toast message={toast.message} type={toast.type} onClose={closeToast} />}
 
-      <header className={`relative z-20 w-full p-4 border-b flex flex-wrap justify-between items-center gap-4 ${redAlertMode ? 'bg-red-900/90 border-red-500' : 'bg-slate-900/90 border-cyan-500/30'}`}>
+      {/* MATRIX BACKGROUND EFFECTS */}
+      <div className="fixed inset-0 z-0 opacity-15 pointer-events-none" style={{ backgroundImage: `linear-gradient(rgba(34,197,94,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(34,197,94,0.15) 1px, transparent 1px)`, backgroundSize: '40px 40px' }}></div>
+      <div className="fixed inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_20%,#000000_100%)]"></div>
+
+      <header className={`relative z-20 w-full p-4 border-b flex flex-wrap justify-between items-center gap-4 ${redAlertMode ? 'bg-red-900/90 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)]' : 'bg-[#0A1A0A]/90 border-green-500/40 shadow-[0_0_20px_rgba(34,197,94,0.2)]'}`}>
         <div className="flex items-center gap-3">
           <div className="relative group cursor-pointer" onClick={handleLogoClick}>
-            <div className={`absolute inset-0 blur-lg opacity-40 group-hover:opacity-80 transition-opacity rounded-full ${redAlertMode ? 'bg-red-500' : 'bg-cyan-500'}`}></div>
+            <div className={`absolute inset-0 blur-lg opacity-40 group-hover:opacity-80 transition-opacity rounded-full ${redAlertMode ? 'bg-red-500' : 'bg-green-500'}`}></div>
             <img src="https://i.ibb.co/Ndt35H2Z/SHIELD-CSB.png" alt="S.H.I.E.L.D." className="w-10 h-10 object-contain relative z-10 active:scale-95 transition-transform" />
           </div>
           <div>
-            <div className="flex items-baseline gap-2">
-                <h1 className="text-xl font-black tracking-[0.2em] leading-none">AVENGERS <span className={redAlertMode ? "text-red-300" : "text-cyan-500"}>INITIATIVE</span></h1>
-                <span className="text-[9px] font-bold text-slate-500 bg-slate-800/50 px-1 rounded border border-slate-700">{APP_VERSION}</span>
+            <div className="flex items-baseline gap-2 font-mono">
+                <h1 className="text-xl font-black tracking-[0.2em] leading-none text-white drop-shadow-[0_0_5px_rgba(34,197,94,0.8)]">AVENGERS <span className={redAlertMode ? "text-red-500" : "text-green-500"}>INITIATIVE</span></h1>
+                <span className="text-[9px] font-bold text-green-500/70 bg-green-900/30 px-1 rounded border border-green-700/50">{APP_VERSION}</span>
             </div>
             {/* DAILY QUOTE BANNER */}
-            <div className="hidden md:block text-[10px] text-cyan-400/80 font-mono mt-1 overflow-hidden whitespace-nowrap">
-                <span className="animate-pulse">▮</span> {dailyQuote}
+            <div className="hidden md:block text-[10px] text-green-400/80 mt-1 overflow-hidden whitespace-nowrap drop-shadow-sm">
+                <span className="animate-pulse text-green-300">▮</span> {dailyQuote}
             </div>
           </div>
         </div>
 
         <div className="flex gap-2 items-center">
-            {useLocal && <span className="text-[10px] text-orange-500 font-mono bg-orange-900/20 px-2 py-1 rounded border border-orange-500/50 flex items-center gap-1"><WifiOff size={10}/> LOCAL</span>}
-            {questionAvailable && <button onClick={openDailyQuestion} className="animate-bounce bg-yellow-500/20 border border-yellow-500 px-3 py-1 rounded text-yellow-300 text-xs font-bold flex gap-1"><Radio size={12}/> MENSAJE</button>}
+            {useLocal && <span className="text-[10px] text-orange-500 font-mono bg-orange-900/20 px-2 py-1 rounded border border-orange-500/50 flex items-center gap-1 shadow-[0_0_10px_rgba(249,115,22,0.3)]"><WifiOff size={10}/> LOCAL</span>}
+            {questionAvailable && <button onClick={openDailyQuestion} className="animate-bounce bg-green-900/50 border border-green-500 px-3 py-1 rounded text-green-300 text-xs font-bold flex gap-1 shadow-[0_0_10px_rgba(34,197,94,0.5)] hover:bg-green-800/80 transition-colors"><Radio size={12}/> MENSAJE</button>}
             
             {/* STUDENT TRAINING BUTTONS */}
             {loggedInId && (
                 <div className="flex gap-1">
-                    <button onClick={startMathChallenge} className="bg-green-500/20 border border-green-500 px-3 py-1 rounded text-green-300 text-xs font-bold flex gap-1 items-center hover:bg-green-500/40 transition-colors">
+                    <button onClick={startMathChallenge} className="bg-green-900/30 border border-green-500/50 px-3 py-1 rounded text-green-400 text-xs font-bold flex gap-1 items-center hover:bg-green-600/40 transition-colors shadow-[0_0_10px_rgba(34,197,94,0.2)] hover:shadow-[0_0_15px_rgba(34,197,94,0.5)]">
                         <Calculator size={14}/> MATES
                     </button>
-                    <button onClick={startWordChallenge} className="bg-purple-500/20 border border-purple-500 px-3 py-1 rounded text-purple-300 text-xs font-bold flex gap-1 items-center hover:bg-purple-500/40 transition-colors">
+                    <button onClick={startWordChallenge} className="bg-green-900/30 border border-green-500/50 px-3 py-1 rounded text-green-400 text-xs font-bold flex gap-1 items-center hover:bg-green-600/40 transition-colors shadow-[0_0_10px_rgba(34,197,94,0.2)] hover:shadow-[0_0_15px_rgba(34,197,94,0.5)]">
                         <Type size={14}/> DESCIFRAR
                     </button>
-                    <button onClick={startCombatChallenge} className="bg-red-500/20 border border-red-500 px-3 py-1 rounded text-red-300 text-xs font-bold flex gap-1 items-center hover:bg-red-500/40 transition-colors">
+                    <button onClick={startCombatChallenge} className="bg-green-900/30 border border-green-500/50 px-3 py-1 rounded text-green-400 text-xs font-bold flex gap-1 items-center hover:bg-green-600/40 transition-colors shadow-[0_0_10px_rgba(34,197,94,0.2)] hover:shadow-[0_0_15px_rgba(34,197,94,0.5)]">
                         <Target size={14}/> COMBATE
                     </button>
                     {/* NEW MEMORY BUTTON */}
-                    <button onClick={startMemoryChallenge} className="bg-cyan-500/20 border border-cyan-500 px-3 py-1 rounded text-cyan-300 text-xs font-bold flex gap-1 items-center hover:bg-cyan-500/40 transition-colors">
+                    <button onClick={startMemoryChallenge} className="bg-green-900/30 border border-green-500/50 px-3 py-1 rounded text-green-400 text-xs font-bold flex gap-1 items-center hover:bg-green-600/40 transition-colors shadow-[0_0_10px_rgba(34,197,94,0.2)] hover:shadow-[0_0_15px_rgba(34,197,94,0.5)]">
                         <Grid3X3 size={14}/> MEMORIA
                     </button>
-                    <button onClick={openStarkRoulette} className="bg-orange-500/20 border border-orange-500 px-3 py-1 rounded text-orange-300 text-xs font-bold flex gap-1 items-center hover:bg-orange-500/40 transition-colors animate-pulse">
+                    <button onClick={openStarkRoulette} className="bg-green-900/30 border border-green-500/50 px-3 py-1 rounded text-green-400 text-xs font-bold flex gap-1 items-center hover:bg-green-600/40 transition-colors animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.2)] hover:shadow-[0_0_15px_rgba(34,197,94,0.5)]">
                         <Disc size={14}/> RULETA
                     </button>
                 </div>
@@ -1246,50 +1129,50 @@ function AvengersTracker() {
 
             {isAdmin ? (
                 <>
-                  <button onClick={backupData} className="p-2 rounded border bg-blue-900/50 border-blue-500 hover:text-blue-300" title="Guardar Copia"><Save size={16}/></button>
-                  <button onClick={restoreData} className="p-2 rounded border bg-blue-900/50 border-blue-500 hover:text-blue-300" title="Restaurar Copia"><Upload size={16}/></button>
-                  <button onClick={resetDailyLimits} className="p-2 rounded border bg-green-900/50 border-green-500 hover:text-green-300" title="Recargar Días"><RefreshCw size={16}/></button>
-                  <button onClick={handleSnap} className="p-2 rounded border bg-slate-800 border-yellow-500 text-yellow-400 hover:scale-110 transition-transform" title="CHASQUIDO"><Hand size={16}/></button>
-                  <button onClick={handleBossAttack} className="p-2 rounded border bg-red-900/80 border-red-500 text-white hover:scale-110 transition-transform animate-pulse" title="ATAQUE DE THANOS"><Skull size={16}/></button>
-                  <button onClick={()=>setModal('fury')} className="p-2 rounded border bg-slate-800 border-slate-600 hover:text-cyan-400" title="Mensaje Fury"><MessageSquare size={16}/></button>
-                  <button onClick={startDuel} className="p-2 rounded border bg-orange-900/50 border-orange-500 hover:text-orange-300"><Swords size={16}/></button>
-                  <button onClick={triggerMultiverse} className="p-2 rounded border bg-purple-900/50 border-purple-500 hover:text-purple-300 animate-pulse"><Dices size={16}/></button>
-                  <button onClick={openCerebroMenu} className="p-2 rounded border bg-pink-900/50 border-pink-500 hover:text-pink-300" title="CEREBRO: Elegir Alumno/Equipo"><Brain size={16}/></button>
-                  <button onClick={toggleAlert} className={`p-2 rounded border ${redAlertMode ? 'bg-red-600 border-white animate-pulse' : 'bg-slate-800 border-slate-600 hover:text-red-400'}`}><Siren size={16}/></button>
-                  <button onClick={()=>setModal('history')} className="p-2 rounded border bg-slate-800 border-slate-600 hover:text-white"><History size={16}/></button>
-                  <button onClick={reset} className="p-2 rounded border bg-slate-800 border-slate-600 hover:text-red-500"><Trash2 size={16}/></button>
-                  <button onClick={()=>{setIsAdmin(false); setLoggedInId(null);}} className="bg-red-900/50 border border-red-500 px-3 py-1 rounded text-xs font-bold">SALIR</button>
+                  <button onClick={backupData} className="p-2 rounded border bg-[#0A1A0A]/50 border-green-500/40 text-green-400 hover:text-green-300 hover:bg-green-900/50 transition-colors" title="Guardar Copia"><Save size={16}/></button>
+                  <button onClick={restoreData} className="p-2 rounded border bg-[#0A1A0A]/50 border-green-500/40 text-green-400 hover:text-green-300 hover:bg-green-900/50 transition-colors" title="Restaurar Copia"><Upload size={16}/></button>
+                  <button onClick={resetDailyLimits} className="p-2 rounded border bg-[#0A1A0A]/50 border-green-500/40 text-green-400 hover:text-green-300 hover:bg-green-900/50 transition-colors" title="Recargar Días"><RefreshCw size={16}/></button>
+                  <button onClick={handleSnap} className="p-2 rounded border bg-yellow-900/20 border-yellow-500/50 text-yellow-400 hover:scale-110 transition-transform shadow-[0_0_10px_rgba(250,204,21,0.2)]" title="CHASQUIDO"><Hand size={16}/></button>
+                  <button onClick={handleBossAttack} className="p-2 rounded border bg-red-900/30 border-red-500/50 text-red-400 hover:scale-110 transition-transform animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.2)]" title="ATAQUE DE THANOS"><Skull size={16}/></button>
+                  <button onClick={()=>setModal('fury')} className="p-2 rounded border bg-[#0A1A0A]/50 border-green-500/40 text-green-400 hover:text-green-200 transition-colors" title="Mensaje Fury"><MessageSquare size={16}/></button>
+                  <button onClick={startDuel} className="p-2 rounded border bg-orange-900/20 border-orange-500/50 text-orange-400 hover:text-orange-300 shadow-[0_0_10px_rgba(249,115,22,0.2)] transition-colors"><Swords size={16}/></button>
+                  <button onClick={triggerMultiverse} className="p-2 rounded border bg-purple-900/20 border-purple-500/50 text-purple-400 hover:text-purple-300 animate-pulse shadow-[0_0_10px_rgba(168,85,247,0.2)] transition-colors"><Dices size={16}/></button>
+                  <button onClick={openCerebroMenu} className="p-2 rounded border bg-green-900/20 border-green-500/50 text-green-400 hover:text-green-200 shadow-[0_0_10px_rgba(34,197,94,0.2)] transition-colors" title="CEREBRO: Elegir Alumno/Equipo"><Brain size={16}/></button>
+                  <button onClick={toggleAlert} className={`p-2 rounded border ${redAlertMode ? 'bg-red-900/80 border-red-400 text-red-200 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-[#0A1A0A]/50 border-red-900/50 text-red-500 hover:bg-red-900/30 transition-colors'}`}><Siren size={16}/></button>
+                  <button onClick={()=>setModal('history')} className="p-2 rounded border bg-[#0A1A0A]/50 border-green-500/40 text-green-500 hover:text-green-300 transition-colors"><History size={16}/></button>
+                  <button onClick={reset} className="p-2 rounded border bg-[#0A1A0A]/50 border-red-900/50 text-red-500 hover:bg-red-900/30 transition-colors"><Trash2 size={16}/></button>
+                  <button onClick={()=>{setIsAdmin(false); setLoggedInId(null);}} className="bg-red-900/30 border border-red-500/50 px-3 py-1 rounded text-xs font-bold text-red-400 hover:bg-red-900/60 transition-colors shadow-[0_0_10px_rgba(239,68,68,0.2)]">SALIR</button>
                 </>
             ) : loggedInId ? (
-                <button onClick={()=>{setIsAdmin(false); setLoggedInId(null);}} className="bg-yellow-900/50 border border-yellow-500 px-3 py-1 rounded text-xs font-bold">SALIR</button>
+                <button onClick={()=>{setIsAdmin(false); setLoggedInId(null);}} className="bg-yellow-900/30 border border-yellow-500/50 px-3 py-1 rounded text-xs font-bold text-yellow-400 hover:bg-yellow-900/60 transition-colors shadow-[0_0_10px_rgba(250,204,21,0.2)]">SALIR</button>
             ) : (
-                <button onClick={()=>setModal('login')} className="bg-cyan-900/50 border border-cyan-500 px-3 py-1 rounded text-xs font-bold"><Lock size={12}/> ACCESO</button>
+                <button onClick={()=>setModal('login')} className="bg-green-900/30 border border-green-500/50 px-3 py-1 rounded text-xs font-bold text-green-400 hover:bg-green-900/60 transition-colors shadow-[0_0_10px_rgba(34,197,94,0.2)]"><Lock size={12}/> ACCESO</button>
             )}
-            <button onClick={() => setSound(!sound)} className={`p-2 rounded border ${sound ? 'bg-cyan-500/20 border-cyan-500' : 'bg-slate-800 border-slate-700'}`}>{sound ? <Volume2 size={16}/> : <VolumeX size={16}/>}</button>
-            <button onClick={() => setModal('catalog')} className="flex gap-1 px-3 py-1.5 bg-slate-800 border border-slate-600 rounded-sm text-slate-400 text-xs font-bold uppercase"><Info size={14}/> INFO</button>
+            <button onClick={() => setSound(!sound)} className={`p-2 rounded border ${sound ? 'bg-green-900/40 border-green-500 text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.4)]' : 'bg-[#0A1A0A] border-green-900/50 text-green-700'}`}>{sound ? <Volume2 size={16}/> : <VolumeX size={16}/>}</button>
+            <button onClick={() => setModal('catalog')} className="flex gap-1 px-3 py-1.5 bg-[#0A1A0A]/80 border border-green-700/50 rounded-sm text-green-500 hover:text-green-300 hover:border-green-500/50 transition-colors text-xs font-bold uppercase"><Info size={14}/> INFO</button>
         </div>
       </header>
 
       <main className="p-6 max-w-[1600px] mx-auto grid grid-cols-1 xl:grid-cols-4 gap-6 relative z-10">
         <aside className="xl:col-span-1 space-y-6">
-          <div className="bg-slate-900/80 border border-cyan-500/20 rounded-sm p-5 shadow-lg flex flex-col relative overflow-hidden">
-             <div className="absolute top-0 right-0 w-20 h-20 bg-cyan-500/5 rounded-bl-full pointer-events-none"></div>
-             <h3 className="text-lg font-black text-cyan-400 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-cyan-500/20 pb-2"><TrendingUp size={20} /> Clasificación</h3>
+          <div className="bg-[#0A1A0A]/80 border border-green-500/30 rounded-sm p-5 shadow-[0_0_20px_rgba(34,197,94,0.1)] flex flex-col relative overflow-hidden backdrop-blur-xl">
+             <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/5 rounded-bl-full pointer-events-none"></div>
+             <h3 className="text-lg font-black text-green-400 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-green-500/30 pb-2 drop-shadow-[0_0_5px_rgba(34,197,94,0.5)]"><TrendingUp size={20} /> Clasificación</h3>
              <div className="space-y-3 flex-1">
                 {sortedTeams.map((t, i) => {
                    const rInfo = getRankInfo(t.points);
                    const isNeg = t.points < 0;
-                   const clr = i === 0 ? "text-yellow-400" : i === 1 ? "text-slate-300" : i === 2 ? "text-orange-400" : "text-slate-500";
+                   const clr = i === 0 ? "text-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]" : i === 1 ? "text-green-200" : i === 2 ? "text-orange-400" : "text-green-600";
                    const nextRankPct = Math.min(100, Math.max(0, ((t.points - (rInfo.next - rInfo.total)) / rInfo.total) * 100));
 
                    return (
                       <div key={t.id}>
-                         <div className="flex justify-between items-center mb-1 text-xs font-bold uppercase tracking-wide"><span className={`flex items-center gap-2 ${clr}`}>{i === 0 && <Crown size={12} className="animate-bounce" />} #{i + 1} {t.name} <span className="text-[9px] text-slate-500 ml-1 opacity-70">NVL {Math.floor(t.points/100)}</span></span><span className={isNeg ? "text-red-400" : "text-cyan-300"}>{t.points}</span></div>
-                         <div className="h-1 bg-slate-800 rounded-full overflow-hidden mb-1"><div className={`h-full transition-all duration-1000 ${isNeg ? 'bg-red-600' : t.barColor}`} style={{ width: `${Math.min(100, Math.max(0, (t.points / (bossMaxHp/3)) * 100))}%` }}></div></div>
+                         <div className="flex justify-between items-center mb-1 text-xs font-bold uppercase tracking-wide"><span className={`flex items-center gap-2 ${clr}`}>{i === 0 && <Crown size={12} className="animate-bounce" />} #{i + 1} {t.name} <span className="text-[9px] text-green-600 ml-1 opacity-70">NVL {Math.floor(t.points/100)}</span></span><span className={isNeg ? "text-red-400" : "text-green-300 drop-shadow-[0_0_5px_rgba(134,239,172,0.5)]"}>{t.points}</span></div>
+                         <div className="h-1 bg-[#050F05] rounded-full overflow-hidden mb-1 border border-green-900/30"><div className={`h-full transition-all duration-1000 ${isNeg ? 'bg-red-600 shadow-[0_0_5px_rgba(220,38,38,0.8)]' : 'bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.8)]'}`} style={{ width: `${Math.min(100, Math.max(0, (t.points / (bossMaxHp/3)) * 100))}%` }}></div></div>
                          {/* XP BAR */}
-                         <div className="h-0.5 bg-slate-900 rounded-full overflow-hidden w-full opacity-50"><div className="h-full bg-white/50" style={{ width: `${nextRankPct}%` }}></div></div>
+                         <div className="h-0.5 bg-[#050F05] rounded-full overflow-hidden w-full opacity-50"><div className="h-full bg-green-400/50" style={{ width: `${nextRankPct}%` }}></div></div>
                          {t.doublePointsUntil > Date.now() && (
-                            <div className="text-[8px] font-bold text-yellow-400 animate-pulse mt-0.5">X2 PUNTOS ACTIVADO</div>
+                            <div className="text-[8px] font-bold text-yellow-400 animate-pulse mt-0.5 drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]">X2 PUNTOS ACTIVADO</div>
                          )}
                       </div>
                    );
@@ -1297,20 +1180,20 @@ function AvengersTracker() {
              </div>
           </div>
           
-          <div className="bg-slate-900/80 border border-purple-500/30 rounded-sm p-5 shadow-lg relative overflow-hidden">
+          <div className="bg-[#0A1A0A]/80 border border-purple-500/40 rounded-sm p-5 shadow-[0_0_20px_rgba(168,85,247,0.15)] relative overflow-hidden backdrop-blur-xl">
             <div className="relative z-10">
                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-full border-2 border-purple-500 overflow-hidden shadow-[0_0_15px_rgba(168,85,247,0.5)] bg-purple-900/50"><img src="https://i.ibb.co/7NjPsfgb/183d8eefe6fe041dd1169fdeaab016f8.gif" alt="Thanos" className="w-full h-full object-cover" /></div>
-                  <div><h3 className="text-sm font-black text-purple-400 uppercase leading-none mb-1">Amenaza: Thanos</h3><span className="text-xs font-mono text-purple-200">{totalPoints}/{bossMaxHp} DAÑO</span></div>
+                  <div className="w-12 h-12 rounded-full border-2 border-purple-500 overflow-hidden shadow-[0_0_15px_rgba(168,85,247,0.6)] bg-purple-900/50"><img src="https://i.ibb.co/7NjPsfgb/183d8eefe6fe041dd1169fdeaab016f8.gif" alt="Thanos" className="w-full h-full object-cover opacity-80 mix-blend-screen" /></div>
+                  <div><h3 className="text-sm font-black text-purple-400 uppercase leading-none mb-1 drop-shadow-[0_0_5px_rgba(168,85,247,0.6)]">Amenaza: Thanos</h3><span className="text-xs font-mono text-purple-300">{totalPoints}/{bossMaxHp} DAÑO</span></div>
                </div>
-               <div className="h-4 bg-slate-800 rounded-full overflow-hidden border border-purple-900 relative"><div className={`h-full transition-all duration-1000 flex items-center justify-center ${bossDefeated ? 'bg-green-500' : 'bg-gradient-to-r from-purple-600 to-red-500'}`} style={{width: `${bossProgress}%`}}></div></div>
-               {bossDefeated && <p className="text-center text-xs font-bold text-green-400 mt-1 animate-pulse">¡AMENAZA NEUTRALIZADA!</p>}
+               <div className="h-4 bg-[#050F05] rounded-full overflow-hidden border border-purple-900/50 relative"><div className={`h-full transition-all duration-1000 flex items-center justify-center ${bossDefeated ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]' : 'bg-gradient-to-r from-purple-600 to-red-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]'}`} style={{width: `${bossProgress}%`}}></div></div>
+               {bossDefeated && <p className="text-center text-xs font-bold text-green-400 mt-1 animate-pulse drop-shadow-[0_0_5px_rgba(74,222,128,0.8)]">¡AMENAZA NEUTRALIZADA!</p>}
             </div>
           </div>
 
-          <div onClick={() => isAdmin && setModal('mission')} className={`bg-slate-900/80 border border-blue-500/20 rounded-sm p-5 shadow-lg relative overflow-hidden group ${isAdmin?'cursor-pointer hover:border-blue-400':''}`}>
-             <h3 className="text-xs font-black text-blue-300 uppercase mb-2 flex gap-2"><ClipboardList size={14}/> Misión Prioritaria</h3>
-             <p className="text-xs text-white font-mono">"{mission}"</p>
+          <div onClick={() => isAdmin && setModal('mission')} className={`bg-[#0A1A0A]/80 border border-green-500/30 rounded-sm p-5 shadow-[0_0_20px_rgba(34,197,94,0.1)] relative overflow-hidden group backdrop-blur-xl ${isAdmin?'cursor-pointer hover:border-green-400/50 transition-colors':''}`}>
+             <h3 className="text-xs font-black text-green-400 uppercase mb-2 flex gap-2 drop-shadow-[0_0_5px_rgba(34,197,94,0.5)]"><ClipboardList size={14}/> Misión Prioritaria</h3>
+             <p className="text-xs text-green-100 font-mono leading-relaxed">"{mission}"</p>
           </div>
         </aside>
 
@@ -1327,12 +1210,12 @@ function AvengersTracker() {
             return (
               <div key={t.id} className={`relative group rounded p-[1px] transition-all ${isMine?'scale-[1.02] z-10':'hover:scale-[1.01]'}`}>
                 <div className={`absolute inset-0 rounded bg-gradient-to-b ${t.theme} opacity-30`}></div>
-                <div className={`h-full bg-slate-950/90 border ${isMine?'border-yellow-500':t.border.split(' ')[0]} p-4 rounded backdrop-blur-xl flex flex-col justify-between shadow-xl relative overflow-hidden`}>
-                  <div className="absolute -right-0 -bottom-0 w-40 h-40 opacity-10 pointer-events-none transition-transform group-hover:scale-110" style={{mixBlendMode:'luminosity'}}><img src={t.gif} className="w-full h-full object-cover" onError={(e) => e.target.src="https://i.ibb.co/27K5dCBM/b751779a4a3bbc38f9268036cdb5af5a.gif"}/></div>
+                <div className={`h-full bg-[#050A05]/95 border ${isMine?'border-yellow-500 shadow-[0_0_20px_rgba(250,204,21,0.3)]':t.border + ' shadow-[0_0_20px_rgba(34,197,94,0.05)]'} p-4 rounded backdrop-blur-xl flex flex-col justify-between relative overflow-hidden`}>
+                  <div className="absolute -right-0 -bottom-0 w-40 h-40 opacity-15 pointer-events-none transition-transform group-hover:scale-110" style={{mixBlendMode:'screen'}}><img src={t.gif} className="w-full h-full object-cover" onError={(e) => e.target.src="https://i.ibb.co/27K5dCBM/b751779a4a3bbc38f9268036cdb5af5a.gif"}/></div>
                   
                   {/* SHIELD OVERLAY */}
                   {t.shield && (
-                      <div className="absolute top-2 right-2 z-20 text-blue-400 animate-pulse drop-shadow-[0_0_10px_rgba(59,130,246,0.8)]" title="Campo de Fuerza Activo">
+                      <div className="absolute top-2 right-2 z-20 text-blue-400 animate-pulse drop-shadow-[0_0_15px_rgba(59,130,246,0.8)]" title="Campo de Fuerza Activo">
                           <ShieldCheck size={32} strokeWidth={2} fill="rgba(59, 130, 246, 0.2)"/>
                       </div>
                   )}
@@ -1340,13 +1223,13 @@ function AvengersTracker() {
                   <div>
                     <div className="flex justify-between items-start mb-3 relative z-10">
                       <div className="flex gap-2 items-center">
-                        <div className={`w-10 h-10 rounded-full border border-white/20 bg-slate-900 overflow-hidden ${t.accent}`}><img src={t.gif} className="w-full h-full object-cover" onError={(e) => e.target.src="https://i.ibb.co/27K5dCBM/b751779a4a3bbc38f9268036cdb5af5a.gif"}/></div>
+                        <div className={`w-10 h-10 rounded-full border border-green-500/30 bg-[#0A1A0A] overflow-hidden shadow-inner ${t.accent}`}><img src={t.gif} className="w-full h-full object-cover opacity-80 mix-blend-screen" onError={(e) => e.target.src="https://i.ibb.co/27K5dCBM/b751779a4a3bbc38f9268036cdb5af5a.gif"}/></div>
                         <div className="flex flex-col">
-                          <div className={`text-[8px] font-black uppercase tracking-widest ${rInfo.color}`}>{rInfo.title}</div>
+                          <div className={`text-[8px] font-black uppercase tracking-widest ${rInfo.color} drop-shadow-md`}>{rInfo.title}</div>
                           <div className="flex items-center gap-2">
-                             <h2 className="text-sm font-black uppercase tracking-wider text-white truncate max-w-[140px] leading-none">{t.name}</h2>
+                             <h2 className="text-sm font-black uppercase tracking-wider text-white truncate max-w-[140px] leading-none drop-shadow-md">{t.name}</h2>
                              {isUnderdog && (
-                                <span className="bg-cyan-500 text-black text-[7px] px-1 py-0.5 rounded-sm animate-pulse font-bold" title="Refuerzos de S.H.I.E.L.D. en camino (+1 Punto Extra)">
+                                <span className="bg-green-500 text-black text-[7px] px-1 py-0.5 rounded-sm animate-pulse font-bold shadow-[0_0_10px_rgba(34,197,94,0.8)]" title="Refuerzos de S.H.I.E.L.D. en camino (+1 Punto Extra)">
                                    🔥 BONUS
                                 </span>
                              )}
@@ -1363,14 +1246,14 @@ function AvengersTracker() {
                                 defaultValue={t.points}
                                 onBlur={(e) => handleManualEdit(t.id, e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleManualEdit(t.id, e.target.value)}
-                                className="w-16 bg-black border border-slate-500 rounded text-center text-sm font-mono text-white"
+                                className="w-16 bg-black border border-green-500 rounded text-center text-sm font-mono text-green-400 focus:shadow-[0_0_10px_rgba(34,197,94,0.5)] outline-none"
                               />
                           ) : (
-                              <span className={`text-2xl font-black font-mono tracking-tighter ${t.points<0?'text-red-400':'text-white'}`}>{t.points}</span>
+                              <span className={`text-3xl font-black font-mono tracking-tighter ${t.points<0?'text-red-400 drop-shadow-[0_0_10px_rgba(248,113,113,0.5)]':'text-green-400 drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]'}`}>{t.points}</span>
                           )}
                           {isAdmin && (
-                              <button onClick={() => setEditMode({...editMode, [t.id]: true})} className="opacity-50 hover:opacity-100 text-slate-400 hover:text-white">
-                                  <Settings size={12}/>
+                              <button onClick={() => setEditMode({...editMode, [t.id]: true})} className="opacity-50 hover:opacity-100 text-green-600 hover:text-green-400 transition-colors">
+                                  <Edit3 size={12}/>
                               </button>
                           )}
                       </div>
@@ -1380,7 +1263,7 @@ function AvengersTracker() {
                     {t.points >= 600 && isMine && (
                        <button 
                            onClick={openGauntletModal}
-                           className="absolute top-2 left-1/2 -translate-x-1/2 z-30 bg-yellow-500 hover:bg-yellow-400 text-black text-[10px] font-black px-3 py-1 rounded shadow-[0_0_15px_rgba(234,179,8,0.6)] animate-bounce flex items-center gap-1"
+                           className="absolute top-2 left-1/2 -translate-x-1/2 z-30 bg-yellow-500 hover:bg-yellow-400 text-black text-[10px] font-black px-3 py-1 rounded shadow-[0_0_15px_rgba(234,179,8,0.8)] animate-bounce flex items-center gap-1"
                        >
                            <Hand size={12} /> USAR GUANTELETE
                        </button>
@@ -1388,28 +1271,28 @@ function AvengersTracker() {
                     
                     {/* WAKANDA LOOT EFFECT BADGE */}
                     {t.lastLoot && (
-                        <div className={`absolute top-2 right-12 z-20 px-2 py-1 rounded text-[9px] font-bold uppercase animate-pulse shadow-lg ${t.lastLoot === 'bad' ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}>
+                        <div className={`absolute top-2 right-12 z-20 px-2 py-1 rounded text-[9px] font-bold uppercase animate-pulse shadow-lg ${t.lastLoot === 'bad' ? 'bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.8)]' : 'bg-green-600 text-white shadow-[0_0_15px_rgba(34,197,94,0.8)]'}`}>
                             {t.lastLoot === 'bad' ? '¡MALDICIÓN!' : '¡SUERTE!'}
                         </div>
                     )}
 
-                    {/* DAILY ENERGY CELLS */}
-                    <div className="flex flex-col gap-1 mb-2">
-                        <div className="flex items-center gap-1 text-[9px] text-slate-400">
-                          <Calculator size={10} className="text-green-400"/>
-                          <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-2 h-2 rounded-full border border-green-900 ${i<(t.dailyMath||0)?'bg-green-400 animate-pulse':'bg-black/50'}`}></div>)}</div>
+                    {/* DAILY ENERGY CELLS (NEON STYLE) */}
+                    <div className="flex flex-col gap-1.5 mb-3 mt-4">
+                        <div className="flex items-center gap-2 text-[9px] text-green-700">
+                          <Calculator size={10} className="text-green-500 drop-shadow-[0_0_2px_rgba(34,197,94,0.8)]"/>
+                          <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-4 h-1.5 rounded-sm border ${i<(t.dailyMath||0)?'bg-green-500 border-green-400 shadow-[0_0_8px_rgba(34,197,94,0.8)]':'bg-[#0A1A0A] border-green-900/50'}`}></div>)}</div>
                         </div>
-                        <div className="flex items-center gap-1 text-[9px] text-slate-400">
-                          <Type size={10} className="text-purple-400"/>
-                          <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-2 h-2 rounded-full border border-purple-900 ${i<(t.dailyWord||0)?'bg-purple-400 animate-pulse':'bg-black/50'}`}></div>)}</div>
+                        <div className="flex items-center gap-2 text-[9px] text-green-700">
+                          <Type size={10} className="text-purple-500 drop-shadow-[0_0_2px_rgba(168,85,247,0.8)]"/>
+                          <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-4 h-1.5 rounded-sm border ${i<(t.dailyWord||0)?'bg-purple-500 border-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.8)]':'bg-[#0A1A0A] border-green-900/50'}`}></div>)}</div>
                         </div>
-                        <div className="flex items-center gap-1 text-[9px] text-slate-400">
-                          <Target size={10} className="text-red-400"/>
-                          <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-2 h-2 rounded-full border border-red-900 ${i<(t.dailyCombat||0)?'bg-red-400 animate-pulse':'bg-black/50'}`}></div>)}</div>
+                        <div className="flex items-center gap-2 text-[9px] text-green-700">
+                          <Target size={10} className="text-red-500 drop-shadow-[0_0_2px_rgba(239,68,68,0.8)]"/>
+                          <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-4 h-1.5 rounded-sm border ${i<(t.dailyCombat||0)?'bg-red-500 border-red-400 shadow-[0_0_8px_rgba(239,68,68,0.8)]':'bg-[#0A1A0A] border-green-900/50'}`}></div>)}</div>
                         </div>
-                        <div className="flex items-center gap-1 text-[9px] text-slate-400">
-                          <Grid3X3 size={10} className="text-cyan-400"/>
-                          <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-2 h-2 rounded-full border border-cyan-900 ${i<(t.dailyMemory||0)?'bg-cyan-400 animate-pulse':'bg-black/50'}`}></div>)}</div>
+                        <div className="flex items-center gap-2 text-[9px] text-green-700">
+                          <Grid3X3 size={10} className="text-cyan-500 drop-shadow-[0_0_2px_rgba(6,182,212,0.8)]"/>
+                          <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-4 h-1.5 rounded-sm border ${i<(t.dailyMemory||0)?'bg-cyan-500 border-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)]':'bg-[#0A1A0A] border-green-900/50'}`}></div>)}</div>
                         </div>
                     </div>
 
@@ -1417,20 +1300,20 @@ function AvengersTracker() {
                     {t.badges && t.badges.length > 0 && (
                         <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
                             {t.badges.map((b, idx) => (
-                                <div key={idx} className={`p-1 rounded bg-slate-800 border border-white/10 ${b.color}`} title={b.name}>{b.icon}</div>
+                                <div key={idx} className={`p-1 rounded bg-[#0A1A0A] border border-green-900/50 ${b.color} shadow-inner`} title={b.name}>{b.icon}</div>
                             ))}
                         </div>
                     )}
                     <div className="flex gap-1 mb-3 relative z-10">
-                       {t.points >= 100 && <Award size={14} className="text-blue-400" />}
-                       {t.points >= 300 && <Award size={14} className="text-purple-400" />}
-                       {t.points >= 500 && <Award size={14} className="text-yellow-400" />}
+                       {t.points >= 100 && <Award size={14} className="text-blue-500 drop-shadow-[0_0_5px_rgba(59,130,246,0.8)]" />}
+                       {t.points >= 300 && <Award size={14} className="text-purple-500 drop-shadow-[0_0_5px_rgba(168,85,247,0.8)]" />}
+                       {t.points >= 500 && <Award size={14} className="text-yellow-500 drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]" />}
                     </div>
-                    <div className="flex justify-between bg-slate-900/50 p-1 rounded mb-3 border border-white/5 relative z-10">{INFINITY_STONES.map((s,i)=>(<div key={i} title={s.name} className={t.points>=s.threshold?s.color:'text-slate-800'}><Hexagon size={12} fill="currentColor"/></div>))}</div>
-                    <div className="mb-4 relative z-10 pl-2 border-l border-white/10"><div className="text-[9px] uppercase tracking-widest opacity-50 font-bold text-slate-300 mb-1">OPERATIVOS</div>
+                    <div className="flex justify-between bg-[#0A1A0A]/80 p-1 rounded mb-3 border border-green-900/40 relative z-10 shadow-inner">{INFINITY_STONES.map((s,i)=>(<div key={i} title={s.name} className={t.points>=s.threshold?s.color:'text-green-900'}><Hexagon size={12} fill="currentColor"/></div>))}</div>
+                    <div className="mb-4 relative z-10 pl-2 border-l border-green-900/50"><div className="text-[9px] uppercase tracking-widest opacity-60 font-bold text-green-500 mb-1">OPERATIVOS</div>
                     <div className="grid grid-cols-2 gap-1 mt-1">
                         {t.members?.map((m, idx) => (
-                            <div key={idx} className="bg-cyan-900/20 border border-cyan-500/30 rounded px-2 py-1 text-[10px] text-cyan-100 font-mono text-center shadow-[0_0_5px_rgba(6,182,212,0.1)]">
+                            <div key={idx} className="bg-green-900/20 border border-green-500/30 rounded px-2 py-1 text-[10px] text-green-300 font-mono text-center shadow-[0_0_8px_rgba(34,197,94,0.1)]">
                                 {m}
                             </div>
                         ))}
@@ -1438,52 +1321,63 @@ function AvengersTracker() {
                     </div>
                   </div>
                   <div className="relative z-10 mt-auto">
-                    <div className="mb-4 relative pl-3 border-l-2 border-white/10 group-hover:border-white/30 transition-colors"><p className={`text-xs italic font-medium leading-tight ${t.accent} opacity-80`}>"{t.quote}"</p></div>
+                    <div className="mb-4 relative pl-3 border-l-2 border-green-500/30 group-hover:border-green-400/60 transition-colors"><p className={`text-xs italic font-medium leading-tight ${t.accent} opacity-90 drop-shadow-sm`}>"{t.quote}"</p></div>
                     {/* Admin and User buttons */}
                     {isAdmin && (
                       <div className="grid gap-1">
-                        <div className="flex gap-1">{[1,5,10].map(v => <button key={v} onClick={(e)=>handlePts(t.id, v, e)} className={`${CTRL_BTN_CLASS} bg-green-900/20 text-green-400 border-green-500/30 hover:bg-green-500 hover:text-black`}>+{v}</button>)}</div>
-                        <div className="flex gap-1">{[-1,-5,-10].map(v => <button key={v} onClick={(e)=>handlePts(t.id, v, e)} className={`${CTRL_BTN_CLASS} bg-red-900/20 text-red-400 border-red-500/30 hover:bg-red-500 hover:text-black`}>{v}</button>)}</div>
+                        <div className="flex gap-1">{[1,5,10].map(v => <button key={v} onClick={(e)=>handlePts(t.id, v, e)} className={`${CTRL_BTN_CLASS} bg-green-900/30 text-green-400 border-green-500/50 hover:bg-green-500 hover:text-black hover:shadow-[0_0_10px_rgba(34,197,94,0.8)]`}>+{v}</button>)}</div>
+                        <div className="flex gap-1">{[-1,-5,-10].map(v => <button key={v} onClick={(e)=>handlePts(t.id, v, e)} className={`${CTRL_BTN_CLASS} bg-red-900/30 text-red-400 border-red-500/50 hover:bg-red-500 hover:text-black hover:shadow-[0_0_10px_rgba(239,68,68,0.8)]`}>{v}</button>)}</div>
                         <div className="flex gap-1 mt-1">
-                          <button onClick={()=>{setSelTeam(t); setModal('shop');}} className={`${CTRL_BTN_CLASS} bg-yellow-900/20 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500 hover:text-black flex justify-center gap-1`}><ShoppingCart size={12}/> TIENDA</button>
-                          <button onClick={()=>{setSelTeam(t); setPenalty(null); setModal('penalty');}} className={`${CTRL_BTN_CLASS} flex items-center justify-center gap-1 ${isNeg ? 'bg-purple-900/20 text-purple-400 border-purple-500/30 hover:bg-purple-500 hover:text-white' : 'bg-slate-600 text-slate-600 border-slate-700 cursor-not-allowed'}`}><Gavel size={12}/> SANCIÓN</button>
+                          <button onClick={()=>{setSelTeam(t); setModal('shop');}} className={`${CTRL_BTN_CLASS} bg-yellow-900/30 text-yellow-400 border-yellow-500/50 hover:bg-yellow-500 hover:text-black flex justify-center gap-1 hover:shadow-[0_0_10px_rgba(250,204,21,0.8)]`}><ShoppingCart size={12}/> TIENDA</button>
+                          <button onClick={()=>{setSelTeam(t); setPenalty(null); setModal('penalty');}} className={`${CTRL_BTN_CLASS} flex items-center justify-center gap-1 ${isNeg ? 'bg-purple-900/30 text-purple-400 border-purple-500/50 hover:bg-purple-500 hover:text-white hover:shadow-[0_0_10px_rgba(168,85,247,0.8)]' : 'bg-[#0A1A0A] text-green-800 border-green-900/50 cursor-not-allowed'}`}><Gavel size={12}/> SANCIÓN</button>
                         </div>
                         <div className="flex gap-1 mt-1">
-                            <button onClick={()=>setModal('badges_' + t.id)} className={`${CTRL_BTN_CLASS} bg-blue-900/20 text-blue-300 border-blue-500/30 hover:bg-blue-600 hover:text-white`}>MEDALLA</button>
+                            <button onClick={()=>setModal('badges_' + t.id)} className={`${CTRL_BTN_CLASS} bg-blue-900/30 text-blue-400 border-blue-500/50 hover:bg-blue-500 hover:text-white hover:shadow-[0_0_10px_rgba(59,130,246,0.8)]`}>MEDALLA</button>
                         </div>
                       </div>
                     )}
-                    {isMine && !isAdmin && <button onClick={()=>{setSelTeam(t); setModal('shop');}} className="w-full py-2 bg-yellow-600 hover:bg-yellow-500 text-black font-bold text-xs rounded uppercase shadow-lg">ARMERÍA</button>}
+                    {isMine && !isAdmin && <button onClick={()=>{setSelTeam(t); setModal('shop');}} className="w-full py-2 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-xs rounded uppercase shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:shadow-[0_0_20px_rgba(250,204,21,0.8)] transition-all tracking-wider">ARMERÍA</button>}
                   </div>
                 </div>
               </div>
             );
           })}
         </section>
-        <div className="fixed bottom-1 right-1 z-[60] text-[8px] text-white/10 font-mono select-none pointer-events-none">{APP_VERSION}</div>
+        
+        {/* FOOTER TICKER */}
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950 border-t border-green-900/50 h-8 flex items-center overflow-hidden">
+          <div className="bg-[#050A05] px-4 h-full flex items-center z-10 border-r border-green-500/30 shadow-[0_0_10px_rgba(34,197,94,0.2)]">
+            <span className="font-bold text-[10px] uppercase tracking-widest text-green-400 whitespace-nowrap flex items-center gap-2"><Activity size={12} className="animate-pulse text-green-500" /> S.H.I.E.L.D. COMMS</span>
+          </div>
+          <div className="flex-1 overflow-hidden relative h-full flex items-center">
+             <div className="absolute whitespace-nowrap animate-[marquee_25s_linear_infinite] text-[10px] font-mono text-green-200/70 uppercase tracking-widest w-full">
+               {TICKER_MESSAGES[tickerIdx]}
+             </div>
+          </div>
+        </div>
       </main>
 
       {/* --- MODALS (STARK ROULETTE) --- */}
       {modal === 'roulette' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
-              <div className="bg-slate-900 border-2 border-orange-500 p-8 rounded-lg w-full max-w-sm text-center shadow-[0_0_50px_rgba(249,115,22,0.3)] relative overflow-hidden">
+              <div className="bg-[#050A05] border-2 border-orange-500 p-8 rounded-lg w-full max-w-sm text-center shadow-[0_0_50px_rgba(249,115,22,0.3)] relative overflow-hidden">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(249,115,22,0.1),transparent_70%)]"></div>
                   <Disc size={64} className={`mx-auto text-orange-500 mb-6 ${starkSpinning ? 'animate-spin' : ''}`} />
-                  <h3 className="text-2xl font-black text-orange-400 uppercase tracking-widest mb-2">RULETA STARK</h3>
-                  <p className="text-xs text-slate-400 mb-8 font-mono">ACCESO DIARIO AUTORIZADO</p>
+                  <h3 className="text-2xl font-black text-orange-500 uppercase tracking-widest mb-2 drop-shadow-[0_0_10px_rgba(249,115,22,0.8)]">RULETA STARK</h3>
+                  <p className="text-xs text-orange-200/50 mb-8 font-mono">ACCESO DIARIO AUTORIZADO</p>
                   
                   {starkPrize ? (
                       <div className="animate-in zoom-in">
-                          <p className={`text-xl font-bold mb-2 ${starkPrize.type === 'bad' ? 'text-red-500' : starkPrize.type === 'good' ? 'text-green-400' : 'text-slate-300'}`}>
+                          <p className={`text-xl font-bold mb-2 ${starkPrize.type === 'bad' ? 'text-red-500' : starkPrize.type === 'good' ? 'text-green-500' : 'text-green-300'}`}>
                               {starkPrize.text}
                           </p>
-                          <button onClick={closeAllModals} className="mt-6 px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded uppercase">ACEPTAR</button>
+                          <button onClick={closeAllModals} className="mt-6 px-8 py-3 bg-[#0A1A0A] border border-green-500/50 hover:bg-green-900/30 text-green-400 font-bold rounded uppercase transition-colors">ACEPTAR</button>
                       </div>
                   ) : (
                       <button 
                           onClick={spinStarkRoulette} 
                           disabled={starkSpinning}
-                          className="w-full py-4 bg-orange-600 hover:bg-orange-500 text-black font-black uppercase tracking-widest rounded shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full py-4 bg-orange-600 hover:bg-orange-500 text-black font-black uppercase tracking-widest rounded shadow-[0_0_20px_rgba(234,88,12,0.6)] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                           {starkSpinning ? "INICIANDO..." : "GIRAR AHORA"}
                       </button>
@@ -1495,17 +1389,17 @@ function AvengersTracker() {
       {/* GUANTELETE MODAL */}
       {modal === 'gauntlet' && loggedInTeam && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeAllModals}></div>
-          <div className="relative bg-slate-900 border-2 border-yellow-500 w-full max-w-2xl rounded-sm overflow-hidden shadow-[0_0_50px_rgba(250,204,21,0.3)] flex flex-col max-h-[90vh]">
+          <div className="absolute inset-0 bg-black/95 backdrop-blur-sm" onClick={closeAllModals}></div>
+          <div className="relative bg-[#050A05] border-2 border-yellow-500 w-full max-w-2xl rounded-sm overflow-hidden shadow-[0_0_50px_rgba(250,204,21,0.3)] flex flex-col max-h-[90vh]">
             <div className="bg-yellow-900/20 p-6 border-b border-yellow-500/20 flex justify-between items-center">
-              <h3 className="text-xl font-black text-yellow-500 uppercase tracking-widest flex items-center gap-2"><Hand size={24} /> El Guantelete del Infinito</h3>
-              <button onClick={closeAllModals} className="text-slate-400 hover:text-white transition-colors">✕</button>
+              <h3 className="text-xl font-black text-yellow-500 uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]"><Hand size={24} /> El Guantelete del Infinito</h3>
+              <button onClick={closeAllModals} className="text-yellow-500/50 hover:text-yellow-400 transition-colors">✕</button>
             </div>
             <div className="p-6 overflow-y-auto">
               <div className="mb-6 bg-red-900/10 border border-red-500/20 p-4 rounded-sm text-center">
-                <p className="text-sm font-bold text-red-400 uppercase tracking-widest mb-1">Poder Absoluto</p>
-                <p className="text-xs text-slate-300">Selecciona <span className="font-bold text-white">hasta 3 equipos rivales</span> para reducir sus puntos a CERO.</p>
-                <p className="text-xs text-slate-300 mt-1">Coste de energía: <span className="text-yellow-400 font-bold">200 PTS</span> por cada equipo seleccionado.</p>
+                <p className="text-sm font-bold text-red-500 uppercase tracking-widest mb-1 drop-shadow-[0_0_5px_rgba(248,113,113,0.8)]">Poder Absoluto</p>
+                <p className="text-xs text-red-200">Selecciona <span className="font-bold text-white">hasta 3 equipos rivales</span> para reducir sus puntos a CERO.</p>
+                <p className="text-xs text-red-200 mt-1">Coste de energía: <span className="text-yellow-500 font-bold">200 PTS</span> por cada equipo seleccionado.</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 {teams.filter(t => t.id !== loggedInTeam.id).map(rival => {
@@ -1514,31 +1408,31 @@ function AvengersTracker() {
                       <button 
                         key={rival.id} 
                         onClick={() => toggleGauntletTarget(rival.id)}
-                        className={`flex items-center gap-4 p-4 border rounded-sm transition-all group text-left ${isSelected ? 'bg-red-900/40 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.4)]' : 'bg-black/50 border-white/10 hover:border-yellow-500/50 hover:bg-yellow-900/20'}`}
+                        className={`flex items-center gap-4 p-4 border rounded-sm transition-all group text-left ${isSelected ? 'bg-red-900/40 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.4)]' : 'bg-[#0A1A0A] border-green-900/30 hover:border-yellow-500/50 hover:bg-yellow-900/20'}`}
                       >
-                        <div className={`w-12 h-12 rounded-full border border-white/20 bg-slate-900 overflow-hidden shrink-0 ${rival.accent}`}>
-                          <img src={rival.gif} className="w-full h-full object-cover" />
+                        <div className={`w-12 h-12 rounded-full border border-white/20 bg-black overflow-hidden shrink-0 ${rival.accent}`}>
+                          <img src={rival.gif} className="w-full h-full object-cover opacity-80 mix-blend-screen" />
                         </div>
                         <div className="flex-1">
-                          <p className={`font-bold uppercase tracking-wider ${isSelected ? 'text-red-400' : 'text-white'}`}>{rival.name}</p>
-                          <p className="text-xs text-slate-400 font-mono">Puntos Actuales: <span className={rival.points > 0 ? "text-cyan-400" : "text-red-400"}>{rival.points}</span></p>
+                          <p className={`font-bold uppercase tracking-wider ${isSelected ? 'text-red-400 drop-shadow-[0_0_5px_rgba(248,113,113,0.8)]' : 'text-green-300'}`}>{rival.name}</p>
+                          <p className="text-xs text-green-600 font-mono">Puntos Actuales: <span className={rival.points > 0 ? "text-green-400" : "text-red-500"}>{rival.points}</span></p>
                           {isSelected && <p className="text-[10px] text-red-500 font-bold mt-1 animate-pulse">¡OBJETIVO FIJADO!</p>}
                         </div>
-                        {isSelected && <Skull size={20} className="text-red-500" />}
+                        {isSelected && <Skull size={20} className="text-red-500 drop-shadow-[0_0_5px_rgba(248,113,113,0.8)]" />}
                       </button>
                    );
                 })}
               </div>
               
               <div className="flex gap-4 items-center">
-                 <div className="flex-1 bg-black/50 p-4 rounded border border-slate-700 text-center">
-                    <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-1">Coste de Energía</p>
-                    <p className="text-2xl font-mono font-bold text-yellow-400">-{gauntletTargets.length * 200}</p>
+                 <div className="flex-1 bg-[#0A1A0A] p-4 rounded border border-green-900/50 text-center shadow-inner">
+                    <p className="text-[10px] text-green-600 uppercase tracking-widest mb-1">Coste de Energía</p>
+                    <p className="text-2xl font-mono font-bold text-yellow-500 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]">-{gauntletTargets.length * 200}</p>
                  </div>
                  <button 
                     onClick={executeGauntletSnap}
                     disabled={gauntletTargets.length === 0}
-                    className={`flex-1 py-4 font-black uppercase tracking-widest rounded transition-all ${gauntletTargets.length > 0 ? 'bg-yellow-500 hover:bg-yellow-400 text-black shadow-[0_0_20px_rgba(250,204,21,0.5)]' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}`}
+                    className={`flex-1 py-4 font-black uppercase tracking-widest rounded transition-all ${gauntletTargets.length > 0 ? 'bg-yellow-500 hover:bg-yellow-400 text-black shadow-[0_0_20px_rgba(250,204,21,0.5)]' : 'bg-[#0A1A0A] border border-green-900/30 text-green-900 cursor-not-allowed'}`}
                  >
                     {gauntletTargets.length > 0 ? 'Ejecutar Chasquido' : 'Selecciona Objetivo'}
                  </button>
@@ -1550,23 +1444,23 @@ function AvengersTracker() {
       
       {modal === 'bossAttack' && bossAttackState.active && (
          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
-             <div className="bg-slate-900 border-4 border-red-600 p-6 rounded-lg w-full max-w-lg shadow-[0_0_50px_rgba(220,38,38,0.5)] relative overflow-hidden animate-in zoom-in duration-300">
+             <div className="bg-[#050A05] border-4 border-red-600 p-6 rounded-lg w-full max-w-lg shadow-[0_0_50px_rgba(220,38,38,0.5)] relative overflow-hidden animate-in zoom-in duration-300">
                  
                  <div className="flex justify-between items-center mb-6 border-b border-red-900/50 pb-4">
-                     <h3 className="text-2xl font-black text-red-500 uppercase tracking-widest flex items-center gap-2">
+                     <h3 className="text-2xl font-black text-red-500 uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_10px_rgba(248,113,113,0.8)]">
                          <Skull size={32} className="animate-pulse"/> PROTOCOLO GUANTELETE
                      </h3>
-                     <div className="text-xs font-mono text-slate-400">OBJETIVO: {bossAttackState.team.name}</div>
+                     <div className="text-xs font-mono text-red-300/50">OBJETIVO: {bossAttackState.team.name}</div>
                  </div>
 
                  <div className="mb-8">
-                     <div className="flex justify-between text-xs font-bold text-slate-500 mb-2 uppercase">
+                     <div className="flex justify-between text-xs font-bold text-red-400 mb-2 uppercase">
                          <span>Gema {bossAttackState.currentIdx + 1}/6</span>
                          <span>Fallos: <span className="text-red-500">{bossAttackState.mistakes}</span></span>
                      </div>
-                     <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                     <div className="h-2 bg-[#0A1A0A] rounded-full overflow-hidden shadow-inner border border-red-900/30">
                          <div 
-                            className="h-full transition-all duration-500" 
+                            className="h-full transition-all duration-500 shadow-[0_0_10px_rgba(255,255,255,0.5)]" 
                             style={{ 
                                 width: `${((bossAttackState.currentIdx) / 6) * 100}%`,
                                 backgroundColor: ['#3b82f6', '#ef4444', '#a855f7', '#eab308', '#22c55e', '#f97316'][bossAttackState.currentIdx] 
@@ -1575,8 +1469,8 @@ function AvengersTracker() {
                      </div>
                  </div>
 
-                 <div className="bg-black/50 p-6 rounded border border-white/10 mb-6 text-center min-h-[8rem] flex items-center justify-center">
-                     <p className="text-xl font-bold text-white leading-relaxed">
+                 <div className="bg-[#0A1A0A] p-6 rounded border border-red-900/50 mb-6 text-center min-h-[8rem] flex items-center justify-center shadow-inner">
+                     <p className="text-xl font-bold text-red-100 leading-relaxed">
                          {bossAttackState.questions[bossAttackState.currentIdx]?.q}
                      </p>
                  </div>
@@ -1584,20 +1478,20 @@ function AvengersTracker() {
                  <div className="grid grid-cols-2 gap-4">
                      <button 
                          onClick={() => submitBossAnswer("INCORRECTO")} 
-                         className="py-4 bg-red-900/20 hover:bg-red-600 border border-red-600 text-red-200 font-bold uppercase rounded transition-all"
+                         className="py-4 bg-red-900/20 hover:bg-red-600 border border-red-600 text-red-200 font-bold uppercase rounded transition-all hover:shadow-[0_0_15px_rgba(248,113,113,0.6)]"
                      >
                          FALLO (-10 PTS)
                      </button>
                      <button 
                          onClick={() => submitBossAnswer(bossAttackState.questions[bossAttackState.currentIdx]?.a)} 
-                         className="py-4 bg-green-900/20 hover:bg-green-600 border border-green-600 text-green-200 font-bold uppercase rounded transition-all"
+                         className="py-4 bg-green-900/20 hover:bg-green-600 border border-green-600 text-green-200 font-bold uppercase rounded transition-all hover:shadow-[0_0_15px_rgba(74,222,128,0.6)]"
                      >
                          ACIERTO
                      </button>
                  </div>
                  
                  <div className="mt-4 text-center">
-                    <p className="text-[10px] text-slate-500 font-mono">RESPUESTA: <span className="text-slate-300 font-bold">{bossAttackState.questions[bossAttackState.currentIdx]?.a}</span></p>
+                    <p className="text-[10px] text-red-500/50 font-mono">RESPUESTA: <span className="text-slate-300 font-bold">{bossAttackState.questions[bossAttackState.currentIdx]?.a}</span></p>
                  </div>
              </div>
          </div>
@@ -1606,16 +1500,16 @@ function AvengersTracker() {
       {/* MATH CHALLENGE MODAL */}
       {modal === 'mathChallenge' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
-              <div className="bg-slate-900 border-2 border-green-500 p-6 rounded-sm w-full max-w-sm shadow-2xl relative overflow-hidden">
+              <div className="bg-[#050A05] border-2 border-green-500 p-6 rounded-sm w-full max-w-sm shadow-[0_0_30px_rgba(34,197,94,0.2)] relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-1 bg-green-500/50 animate-pulse"></div>
-                  <h3 className="text-xl font-black text-green-400 mb-1 flex items-center gap-2"><Brain size={24}/> ENTRENAMIENTO MATEMÁTICO</h3>
+                  <h3 className="text-xl font-black text-green-500 mb-1 flex items-center gap-2 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]"><Brain size={24}/> ENTRENAMIENTO MATEMÁTICO</h3>
                   <div className="flex justify-between items-center mb-4">
-                      <p className="text-[10px] font-mono text-green-600/70">NIVEL {mathState.level} | FASE {mathState.currentIdx + 1} / 5</p>
-                      {streak > 1 && <div className="text-orange-500 text-xs font-bold flex items-center animate-pulse"><Flame size={12}/> x{streak}</div>}
+                      <p className="text-[10px] font-mono text-green-700">NIVEL {mathState.level} | FASE {mathState.currentIdx + 1} / 5</p>
+                      {streak > 1 && <div className="text-orange-500 text-xs font-bold flex items-center animate-pulse drop-shadow-[0_0_5px_rgba(249,115,22,0.8)]"><Flame size={12}/> x{streak}</div>}
                   </div>
 
-                  <div className="bg-black p-6 rounded border border-green-900 mb-6 text-center flex flex-col gap-2">
-                      <p className="text-4xl font-mono font-bold text-white tracking-widest">
+                  <div className="bg-[#0A1A0A] p-6 rounded border border-green-900/50 mb-6 text-center flex flex-col gap-2 shadow-inner">
+                      <p className="text-4xl font-mono font-bold text-green-300 tracking-widest drop-shadow-[0_0_10px_rgba(74,222,128,0.5)]">
                           {mathState.questions[mathState.currentIdx]?.q}
                       </p>
                   </div>
@@ -1625,14 +1519,14 @@ function AvengersTracker() {
                       value={mathInput} 
                       onChange={(e) => setMathInput(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && submitMathAnswer()}
-                      className="w-full bg-slate-800 border border-green-700 p-3 text-white text-center font-bold text-xl mb-4 focus:border-green-400 outline-none"
+                      className="w-full bg-black border border-green-700 p-3 text-green-400 text-center font-bold text-xl mb-4 focus:border-green-400 outline-none focus:shadow-[0_0_15px_rgba(34,197,94,0.3)] transition-shadow"
                       placeholder="Resultado"
                       autoFocus
                   />
                   
                   <div className="flex gap-2">
-                      <button onClick={closeAllModals} className="flex-1 py-3 text-xs text-slate-500 hover:text-white">ABORTAR</button>
-                      <button onClick={submitMathAnswer} className="flex-1 bg-green-600 hover:bg-green-500 text-black font-bold py-3 rounded uppercase">CONFIRMAR</button>
+                      <button onClick={closeAllModals} className="flex-1 py-3 text-xs text-green-700 hover:text-green-500 transition-colors">ABORTAR</button>
+                      <button onClick={submitMathAnswer} className="flex-1 bg-green-600 hover:bg-green-500 text-black font-bold py-3 rounded uppercase hover:shadow-[0_0_15px_rgba(34,197,94,0.6)] transition-shadow">CONFIRMAR</button>
                   </div>
               </div>
           </div>
@@ -1641,15 +1535,15 @@ function AvengersTracker() {
       {/* WORD CHALLENGE MODAL */}
       {modal === 'wordChallenge' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
-              <div className="bg-slate-900 border-2 border-purple-500 p-6 rounded-sm w-full max-w-sm shadow-2xl relative overflow-hidden">
+              <div className="bg-[#050A05] border-2 border-purple-500 p-6 rounded-sm w-full max-w-sm shadow-[0_0_30px_rgba(168,85,247,0.2)] relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-1 bg-purple-500/50 animate-pulse"></div>
-                  <h3 className="text-xl font-black text-purple-400 mb-4 flex items-center gap-2"><Binary size={24}/> DESCIFRADO HYDRA</h3>
+                  <h3 className="text-xl font-black text-purple-500 mb-4 flex items-center gap-2 drop-shadow-[0_0_5px_rgba(192,132,252,0.5)]"><Binary size={24}/> DESCIFRADO HYDRA</h3>
                   
-                  <div className="bg-black p-6 rounded border border-purple-900 mb-6 text-center">
-                      <p className="text-3xl font-mono font-bold text-purple-200 tracking-[0.5em] animate-pulse">
+                  <div className="bg-[#0A1A0A] p-6 rounded border border-purple-900/50 mb-6 text-center shadow-inner">
+                      <p className="text-3xl font-mono font-bold text-purple-300 tracking-[0.5em] animate-pulse drop-shadow-[0_0_10px_rgba(192,132,252,0.8)]">
                           {wordState.scrambled}
                       </p>
-                      <p className="text-[10px] text-slate-500 mt-2">ORDENA LAS LETRAS</p>
+                      <p className="text-[10px] text-purple-800 mt-2">ORDENA LAS LETRAS</p>
                   </div>
 
                   <input 
@@ -1657,14 +1551,14 @@ function AvengersTracker() {
                       value={wordInput} 
                       onChange={(e) => setWordInput(e.target.value.toUpperCase())}
                       onKeyDown={(e) => e.key === 'Enter' && submitWordAnswer()}
-                      className="w-full bg-slate-800 border border-purple-700 p-3 text-white text-center font-bold text-xl mb-4 focus:border-purple-400 outline-none uppercase"
+                      className="w-full bg-black border border-purple-700 p-3 text-purple-400 text-center font-bold text-xl mb-4 focus:border-purple-400 outline-none uppercase focus:shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-shadow"
                       placeholder="SOLUCIÓN"
                       autoFocus
                   />
                   
                   <div className="flex gap-2">
-                      <button onClick={closeAllModals} className="flex-1 py-3 text-xs text-slate-500 hover:text-white">ABORTAR</button>
-                      <button onClick={submitWordAnswer} className="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded uppercase">ENVIAR CÓDIGO</button>
+                      <button onClick={closeAllModals} className="flex-1 py-3 text-xs text-purple-800 hover:text-purple-500 transition-colors">ABORTAR</button>
+                      <button onClick={submitWordAnswer} className="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded uppercase hover:shadow-[0_0_15px_rgba(168,85,247,0.6)] transition-shadow">ENVIAR CÓDIGO</button>
                   </div>
               </div>
           </div>
@@ -1673,15 +1567,15 @@ function AvengersTracker() {
       {/* COMBAT CHALLENGE MODAL */}
       {modal === 'combatChallenge' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
-              <div className="bg-slate-900 border-2 border-red-500 p-6 rounded-sm w-full max-w-sm shadow-2xl relative overflow-hidden">
+              <div className="bg-[#050A05] border-2 border-red-500 p-6 rounded-sm w-full max-w-sm shadow-[0_0_30px_rgba(239,68,68,0.2)] relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-1 bg-red-500/50 animate-pulse"></div>
-                  <h3 className="text-xl font-black text-red-400 mb-4 flex items-center gap-2"><Target size={24}/> SIMULACIÓN COMBATE</h3>
+                  <h3 className="text-xl font-black text-red-500 mb-4 flex items-center gap-2 drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]"><Target size={24}/> SIMULACIÓN COMBATE</h3>
                   <div className="flex justify-between items-center mb-4">
-                      <p className="text-[10px] font-mono text-red-400/70">OBJETIVO {combatState.currentIdx + 1} / 5</p>
+                      <p className="text-[10px] font-mono text-red-700">OBJETIVO {combatState.currentIdx + 1} / 5</p>
                   </div>
                   
-                  <div className="bg-black p-6 rounded border border-red-900 mb-6 text-center">
-                      <p className="text-lg font-bold text-white leading-relaxed">
+                  <div className="bg-[#0A1A0A] p-6 rounded border border-red-900/50 mb-6 text-center shadow-inner">
+                      <p className="text-lg font-bold text-red-300 leading-relaxed drop-shadow-[0_0_5px_rgba(248,113,113,0.3)]">
                           {combatState.questions[combatState.currentIdx]?.q}
                       </p>
                   </div>
@@ -1691,14 +1585,14 @@ function AvengersTracker() {
                       value={combatInput} 
                       onChange={(e) => setCombatInput(e.target.value.toUpperCase())}
                       onKeyDown={(e) => e.key === 'Enter' && submitCombatAnswer()}
-                      className="w-full bg-slate-800 border border-red-700 p-3 text-white text-center font-bold text-xl mb-4 focus:border-red-400 outline-none uppercase"
+                      className="w-full bg-black border border-red-700 p-3 text-red-400 text-center font-bold text-xl mb-4 focus:border-red-400 outline-none uppercase focus:shadow-[0_0_15px_rgba(239,68,68,0.3)] transition-shadow"
                       placeholder="RESPUESTA"
                       autoFocus
                   />
                   
                   <div className="flex gap-2">
-                      <button onClick={closeAllModals} className="flex-1 py-3 text-xs text-slate-500 hover:text-white">ABORTAR</button>
-                      <button onClick={submitCombatAnswer} className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded uppercase">DISPARAR</button>
+                      <button onClick={closeAllModals} className="flex-1 py-3 text-xs text-red-800 hover:text-red-500 transition-colors">ABORTAR</button>
+                      <button onClick={submitCombatAnswer} className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded uppercase hover:shadow-[0_0_15px_rgba(239,68,68,0.6)] transition-shadow">DISPARAR</button>
                   </div>
               </div>
           </div>
@@ -1707,10 +1601,10 @@ function AvengersTracker() {
       {/* MEMORY CHALLENGE MODAL */}
       {modal === 'memoryChallenge' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
-              <div className="bg-slate-900 border-2 border-cyan-500 p-6 rounded-sm w-full max-w-3xl shadow-2xl relative overflow-hidden">
+              <div className="bg-[#050A05] border-2 border-cyan-500 p-6 rounded-sm w-full max-w-3xl shadow-[0_0_30px_rgba(6,182,212,0.2)] relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-1 bg-cyan-500/50 animate-pulse"></div>
-                  <h3 className="text-xl font-black text-cyan-400 mb-4 flex items-center gap-2"><Grid3X3 size={24}/> PROTOCOLO SINCRONIZACIÓN</h3>
-                  <p className="text-xs text-slate-400 mb-4 font-mono">EMPAREJA LOS CONCEPTOS</p>
+                  <h3 className="text-xl font-black text-cyan-500 mb-4 flex items-center gap-2 drop-shadow-[0_0_5px_rgba(103,232,249,0.5)]"><Grid3X3 size={24}/> PROTOCOLO SINCRONIZACIÓN</h3>
+                  <p className="text-xs text-cyan-800 mb-4 font-mono">EMPAREJA LOS CONCEPTOS</p>
 
                   <div className="grid grid-cols-4 gap-3">
                       {memoryState.cards.map((card) => (
@@ -1718,21 +1612,21 @@ function AvengersTracker() {
                               key={card.id} 
                               onClick={() => handleCardClick(card.id)}
                               className={`h-24 rounded border flex items-center justify-center cursor-pointer transition-all duration-300 relative overflow-hidden ${
-                                  card.isMatched ? 'bg-green-900/50 border-green-500' :
-                                  card.isFlipped ? 'bg-cyan-900/50 border-cyan-400' : 
-                                  'bg-slate-800 border-slate-700 hover:bg-slate-700'
+                                  card.isMatched ? 'bg-green-900/50 border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)]' :
+                                  card.isFlipped ? 'bg-cyan-900/50 border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.5)]' : 
+                                  'bg-[#0A1A0A] border-cyan-900/30 hover:border-cyan-700/50'
                               }`}
                           >
                               {card.isFlipped || card.isMatched ? (
-                                  <p className="text-xs font-bold text-white text-center p-2 leading-tight">{card.content}</p>
+                                  <p className="text-xs font-bold text-white text-center p-2 leading-tight drop-shadow-md">{card.content}</p>
                               ) : (
-                                  <Shield size={32} className="text-slate-600 opacity-20" />
+                                  <Shield size={32} className="text-cyan-900/30" />
                               )}
                           </div>
                       ))}
                   </div>
 
-                  <button onClick={closeAllModals} className="mt-6 w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-bold uppercase rounded">CANCELAR</button>
+                  <button onClick={closeAllModals} className="mt-6 w-full py-3 bg-[#0A1A0A] border border-cyan-900/50 hover:bg-cyan-900/30 text-cyan-500 text-xs font-bold uppercase rounded transition-colors">CANCELAR</button>
               </div>
           </div>
       )}
@@ -1740,34 +1634,34 @@ function AvengersTracker() {
       {/* BADGE SELECTION MODAL */}
       {modal?.startsWith('badges_') && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
-              <div className="bg-slate-900 border border-blue-500/50 p-6 rounded-sm w-full max-w-sm shadow-2xl">
-                  <h3 className="text-xl font-bold text-white mb-4">OTORGAR CONDECORACIÓN</h3>
+              <div className="bg-[#050A05] border border-blue-500/50 p-6 rounded-sm w-full max-w-sm shadow-2xl">
+                  <h3 className="text-xl font-bold text-blue-400 mb-4">OTORGAR CONDECORACIÓN</h3>
                   <div className="grid grid-cols-2 gap-2">
                       {BADGES_LIST.map((b, idx) => (
-                          <button key={idx} onClick={() => { handleBadge(modal.split('_')[1], b); closeAllModals(); }} className={`p-3 border border-white/10 rounded flex flex-col items-center gap-2 hover:bg-slate-800 ${b.color}`}>
+                          <button key={idx} onClick={() => { handleBadge(modal.split('_')[1], b); closeAllModals(); }} className={`p-3 border border-white/10 rounded flex flex-col items-center gap-2 hover:bg-[#0A1A0A] transition-colors ${b.color}`}>
                               {b.icon}
                               <span className="text-xs font-bold">{b.name}</span>
                           </button>
                       ))}
                   </div>
-                  <button onClick={closeAllModals} className="mt-4 w-full text-xs text-slate-500">Cancelar</button>
+                  <button onClick={closeAllModals} className="mt-4 w-full text-xs text-blue-800 hover:text-blue-500 transition-colors">Cancelar</button>
               </div>
           </div>
       )}
 
       {furyMessage && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-6 animate-in zoom-in duration-300">
-              <div className="max-w-2xl w-full border-4 border-red-600 bg-slate-900 p-8 shadow-[0_0_50px_rgba(220,38,38,0.5)] relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-2 bg-red-600 animate-pulse"></div>
-                  <div className="absolute bottom-0 left-0 w-full h-2 bg-red-600 animate-pulse"></div>
+              <div className="max-w-2xl w-full border-4 border-green-500 bg-[#0A1A0A] p-8 shadow-[0_0_50px_rgba(34,197,94,0.5)] relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-2 bg-green-500 animate-pulse"></div>
+                  <div className="absolute bottom-0 left-0 w-full h-2 bg-green-500 animate-pulse"></div>
                   <div className="flex flex-col items-center gap-6 text-center relative z-10">
-                      <div className="bg-red-600 text-black p-3 rounded-full animate-bounce"><Shield size={64} /></div>
-                      <h1 className="text-4xl md:text-6xl font-black text-white tracking-widest uppercase">PRIORIDAD ALPHA</h1>
-                      <div className="w-full h-px bg-red-600/50 my-2"></div>
-                      <p className="text-2xl md:text-3xl font-mono text-red-400 font-bold leading-relaxed typing-effect">{furyMessage}</p>
-                      {isAdmin && <button onClick={clearFuryMessage} className="mt-8 px-8 py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs uppercase tracking-widest rounded border border-slate-600">Cancelar Alerta</button>}
+                      <div className="bg-green-500 text-black p-3 rounded-full animate-bounce shadow-[0_0_30px_rgba(34,197,94,0.8)]"><Shield size={64} /></div>
+                      <h1 className="text-4xl md:text-6xl font-black text-green-400 tracking-widest uppercase drop-shadow-[0_0_10px_rgba(74,222,128,0.5)] font-mono">PRIORIDAD ALPHA</h1>
+                      <div className="w-full h-px bg-green-500/50 my-2"></div>
+                      <p className="text-2xl md:text-3xl font-mono text-green-300 font-bold leading-relaxed typing-effect drop-shadow-[0_0_5px_rgba(134,239,172,0.8)]">{furyMessage}</p>
+                      {isAdmin && <button onClick={clearFuryMessage} className="mt-8 px-8 py-3 bg-[#050F05] hover:bg-green-900/30 text-green-500 text-xs uppercase tracking-widest rounded border border-green-700 transition-colors">Cancelar Alerta</button>}
                   </div>
-                  <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-0 pointer-events-none bg-[length:100%_4px,3px_100%]"></div>
+                  <div className="absolute inset-0 bg-[linear-gradient(rgba(34,197,94,0.1)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(34,197,94,0.06),rgba(0,0,0,0.02),rgba(34,197,94,0.06))] z-0 pointer-events-none bg-[length:100%_4px,3px_100%]"></div>
               </div>
           </div>
       )}
@@ -1777,12 +1671,12 @@ function AvengersTracker() {
          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
              <div className="text-center animate-in zoom-in max-w-lg w-full relative">
                 <div className="absolute inset-0 bg-purple-500/20 blur-3xl animate-pulse"></div>
-                <div className="relative z-10 bg-slate-900 border-2 border-purple-500 p-8 rounded-lg shadow-2xl">
-                    <Sparkles size={64} className="mx-auto text-yellow-400 mb-4 animate-bounce" />
+                <div className="relative z-10 bg-[#050A05] border-2 border-purple-500 p-8 rounded-lg shadow-2xl">
+                    <Sparkles size={64} className="mx-auto text-yellow-400 mb-4 animate-bounce drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]" />
                     <h2 className="text-2xl font-black text-purple-300 uppercase tracking-widest mb-4 border-b border-purple-500/30 pb-4">{multiverseEvent.title}</h2>
-                    <p className="text-xl font-medium text-white mb-6 leading-relaxed">{multiverseEvent.desc}</p>
-                    {multiverseEvent.points !== 0 && <div className={`inline-block px-4 py-2 rounded font-bold text-lg mb-6 ${multiverseEvent.points > 0 ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>{multiverseEvent.points > 0 ? '+' : ''}{multiverseEvent.points} PTS GLOBAL</div>}
-                    <button onClick={closeAllModals} className="w-full py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded uppercase tracking-wider transition-colors">Cerrar Brecha</button>
+                    <p className="text-xl font-medium text-purple-200 mb-6 leading-relaxed">{multiverseEvent.desc}</p>
+                    {multiverseEvent.points !== 0 && <div className={`inline-block px-4 py-2 rounded font-bold text-lg mb-6 font-mono ${multiverseEvent.points > 0 ? 'bg-green-600 text-black shadow-[0_0_15px_rgba(34,197,94,0.6)]' : 'bg-red-600 text-black shadow-[0_0_15px_rgba(239,68,68,0.6)]'}`}>{multiverseEvent.points > 0 ? '+' : ''}{multiverseEvent.points} PTS GLOBAL</div>}
+                    <button onClick={closeAllModals} className="w-full py-3 bg-[#0A1A0A] border border-purple-900/50 hover:bg-purple-900/30 text-purple-400 font-bold rounded uppercase tracking-wider transition-colors">Cerrar Brecha</button>
                 </div>
              </div>
          </div>
@@ -1791,20 +1685,20 @@ function AvengersTracker() {
       {/* DUEL MODAL */}
       {modal === 'duel' && duelData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
-             <div className="text-center animate-in zoom-in max-w-lg w-full relative bg-slate-900 border-2 border-orange-500 p-8 rounded-lg">
-                 <Swords size={64} className="mx-auto text-orange-500 mb-4 animate-pulse" />
+             <div className="text-center animate-in zoom-in max-w-lg w-full relative bg-[#050A05] border-2 border-orange-500 p-8 rounded-lg shadow-[0_0_30px_rgba(249,115,22,0.3)]">
+                 <Swords size={64} className="mx-auto text-orange-500 mb-4 animate-pulse drop-shadow-[0_0_10px_rgba(249,115,22,0.8)]" />
                  <h2 className="text-2xl font-black text-orange-400 uppercase tracking-widest mb-2">CIVIL WAR</h2>
-                 <p className="text-white text-lg font-bold mb-6">{duelData.challenge}</p>
+                 <p className="text-orange-200 text-lg font-bold mb-6">{duelData.challenge}</p>
                  <div className="flex justify-between items-center gap-4 mb-6">
-                    <div className="text-center"><div className={`w-16 h-16 rounded-full mx-auto mb-2 border-2 ${duelData.t1.accent} overflow-hidden`}><img src={duelData.t1.gif} className="w-full h-full object-cover"/></div><p className="text-xs font-bold text-white">{duelData.t1.name}</p></div>
-                    <div className="text-2xl font-black text-white">VS</div>
-                    <div className="text-center"><div className={`w-16 h-16 rounded-full mx-auto mb-2 border-2 ${duelData.t2.accent} overflow-hidden`}><img src={duelData.t2.gif} className="w-full h-full object-cover"/></div><p className="text-xs font-bold text-white">{duelData.t2.name}</p></div>
+                    <div className="text-center"><div className={`w-16 h-16 rounded-full mx-auto mb-2 border-2 ${duelData.t1.accent} overflow-hidden shadow-lg`}><img src={duelData.t1.gif} className="w-full h-full object-cover opacity-80 mix-blend-screen"/></div><p className="text-xs font-bold text-orange-300">{duelData.t1.name}</p></div>
+                    <div className="text-2xl font-black text-orange-500 font-mono">VS</div>
+                    <div className="text-center"><div className={`w-16 h-16 rounded-full mx-auto mb-2 border-2 ${duelData.t2.accent} overflow-hidden shadow-lg`}><img src={duelData.t2.gif} className="w-full h-full object-cover opacity-80 mix-blend-screen"/></div><p className="text-xs font-bold text-orange-300">{duelData.t2.name}</p></div>
                  </div>
                  <div className="grid grid-cols-2 gap-4">
-                    <button onClick={()=>resolveDuel(duelData.t1.id)} className="py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded">GANA {duelData.t1.name}</button>
-                    <button onClick={()=>resolveDuel(duelData.t2.id)} className="py-2 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded">GANA {duelData.t2.name}</button>
+                    <button onClick={()=>resolveDuel(duelData.t1.id)} className="py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded hover:shadow-[0_0_15px_rgba(59,130,246,0.6)] transition-all">GANA {duelData.t1.name}</button>
+                    <button onClick={()=>resolveDuel(duelData.t2.id)} className="py-2 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded hover:shadow-[0_0_15px_rgba(239,68,68,0.6)] transition-all">GANA {duelData.t2.name}</button>
                  </div>
-                 <button onClick={closeAllModals} className="mt-4 text-xs text-slate-500 underline">Cancelar Duelo</button>
+                 <button onClick={closeAllModals} className="mt-4 text-xs text-orange-800 hover:text-orange-500 underline transition-colors">Cancelar Duelo</button>
              </div>
         </div>
       )}
@@ -1812,16 +1706,16 @@ function AvengersTracker() {
       {/* TIMER MODAL */}
       {modal === 'timerConfig' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-           <div className="bg-slate-900 border border-cyan-500/50 p-6 rounded-sm w-full max-w-sm shadow-2xl">
-               <h3 className="text-xl font-bold text-cyan-400 mb-4 flex items-center gap-2"><List size={20}/> CRONÓMETRO</h3>
+           <div className="bg-[#050A05] border border-cyan-500/50 p-6 rounded-sm w-full max-w-sm shadow-2xl">
+               <h3 className="text-xl font-bold text-cyan-500 mb-4 flex items-center gap-2"><List size={20}/> CRONÓMETRO</h3>
                <div className="flex gap-2 mb-4">
                   {[5, 10, 15, 30].map(m => (
-                      <button key={m} onClick={()=>setTimerInput(m)} className={`flex-1 py-2 border ${timerInput===m?'bg-cyan-900/50 border-cyan-400 text-white':'bg-black border-slate-700 text-slate-400'} rounded font-bold`}>{m}m</button>
+                      <button key={m} onClick={()=>setTimerInput(m)} className={`flex-1 py-2 border ${timerInput===m?'bg-cyan-900/50 border-cyan-400 text-cyan-300':'bg-black border-cyan-900/30 text-cyan-800'} rounded font-bold transition-colors`}>{m}m</button>
                   ))}
                </div>
-               <input type="number" value={timerInput} onChange={e=>setTimerInput(parseInt(e.target.value))} className="w-full bg-black border border-slate-700 p-2 text-white mb-4 text-center font-mono" />
-               <button onClick={()=>setTimer(timerInput)} className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded uppercase">INICIAR CUENTA ATRÁS</button>
-               <button onClick={closeAllModals} className="w-full mt-2 text-slate-500 text-xs">Cancelar</button>
+               <input type="number" value={timerInput} onChange={e=>setTimerInput(parseInt(e.target.value))} className="w-full bg-black border border-cyan-800 p-2 text-cyan-400 mb-4 text-center font-mono outline-none focus:border-cyan-500" />
+               <button onClick={()=>setTimer(timerInput)} className="w-full bg-cyan-600 hover:bg-cyan-500 text-black font-bold py-3 rounded uppercase transition-colors">INICIAR CUENTA ATRÁS</button>
+               <button onClick={closeAllModals} className="w-full mt-2 text-cyan-800 hover:text-cyan-500 text-xs transition-colors">Cancelar</button>
            </div>
         </div>
       )}
@@ -1829,12 +1723,12 @@ function AvengersTracker() {
       {/* FURY MESSAGE MODAL */}
       {modal === 'fury' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-           <div className="bg-slate-900 border border-slate-500 p-6 rounded-sm w-full max-w-md shadow-2xl">
-               <h3 className="text-xl font-black text-white mb-4 flex items-center gap-2"><MessageSquare size={20}/> MENSAJE DE FURY</h3>
-               <textarea value={newFuryMsg} onChange={e=>setNewFuryMsg(e.target.value)} className="w-full bg-black border border-slate-700 p-4 text-white mb-4 font-mono text-sm h-32" placeholder="Escribe el mensaje urgente..." />
-               <button onClick={()=> { sendFuryMessage(); closeAllModals(); }} className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded uppercase mb-2">ENVIAR A TODOS</button>
-               <button onClick={clearFuryMessage} className="w-full bg-red-900/50 hover:bg-red-900 text-red-300 font-bold py-2 rounded uppercase text-xs mb-2">BORRAR MENSAJE ACTUAL</button>
-               <button onClick={closeAllModals} className="w-full mt-2 text-slate-500 text-xs">Cancelar</button>
+           <div className="bg-[#050A05] border border-green-500 p-6 rounded-sm w-full max-w-md shadow-2xl">
+               <h3 className="text-xl font-black text-green-500 mb-4 flex items-center gap-2"><MessageSquare size={20}/> MENSAJE DE DIRECTOR</h3>
+               <textarea value={newFuryMsg} onChange={e=>setNewFuryMsg(e.target.value)} className="w-full bg-[#0A1A0A] border border-green-800 p-4 text-green-400 mb-4 font-mono text-sm h-32 outline-none focus:border-green-500 transition-colors" placeholder="Escribe el mensaje urgente..." />
+               <button onClick={()=> { sendFuryMessage(); closeAllModals(); }} className="w-full bg-green-700 hover:bg-green-600 text-black font-bold py-3 rounded uppercase mb-2 transition-colors">ENVIAR A TODOS</button>
+               <button onClick={clearFuryMessage} className="w-full bg-red-900/20 hover:bg-red-900/50 border border-red-900/50 text-red-500 font-bold py-2 rounded uppercase text-xs mb-2 transition-colors">BORRAR MENSAJE ACTUAL</button>
+               <button onClick={closeAllModals} className="w-full mt-2 text-green-800 hover:text-green-500 text-xs transition-colors">Cancelar</button>
            </div>
         </div>
       )}
@@ -1843,15 +1737,15 @@ function AvengersTracker() {
       {modal === 'dailyQ' && dailyQuestion && (
          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
              <div className="text-center animate-in zoom-in max-w-lg w-full relative">
-                <div className="absolute inset-0 bg-blue-500/10 blur-3xl animate-pulse"></div>
-                <div className="relative z-10 bg-slate-900 border-2 border-cyan-500 p-8 rounded-lg shadow-2xl">
-                    <BookOpen size={64} className="mx-auto text-cyan-400 mb-4" />
-                    <h2 className="text-xl font-black text-white uppercase tracking-widest mb-2">PROTOCOLO OJO DE HALCÓN</h2>
-                    <p className="text-xs text-cyan-400 mb-6 font-mono">NIVEL DE ACCESO: 6º PRIMARIA</p>
-                    <div className="bg-black/50 p-6 rounded border border-white/10 mb-6"><p className="text-xl font-bold text-white leading-relaxed">"{dailyQuestion.q}"</p></div>
-                    {showAnswer ? (<div className="bg-green-900/30 border border-green-500/50 p-4 rounded mb-6 animate-in fade-in"><p className="text-xs text-green-400 uppercase font-bold mb-1">SOLUCIÓN DESCLASIFICADA:</p><p className="text-lg text-white font-bold">{dailyQuestion.a}</p></div>) : isAdmin ? (<button onClick={()=>setShowAnswer(true)} className="mb-6 text-xs text-slate-500 underline hover:text-white">Ver Solución (Solo Director)</button>) : null}
-                    {isAdmin && showAnswer && (<div className="grid grid-cols-2 gap-2 mb-6">{teams.map(t => (<button key={t.id} onClick={() => { handlePts(t.id, 5); closeAllModals(); }} className="p-2 bg-slate-800 hover:bg-green-600 border border-white/10 rounded text-xs text-white font-bold transition-colors">+5 Pts {t.name}</button>))}</div>)}
-                    <button onClick={closeAllModals} className="w-full py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded uppercase tracking-wider transition-colors">Cerrar Transmisión</button>
+                <div className="absolute inset-0 bg-green-500/10 blur-3xl animate-pulse"></div>
+                <div className="relative z-10 bg-[#050A05] border-2 border-green-500 p-8 rounded-lg shadow-[0_0_30px_rgba(34,197,94,0.3)]">
+                    <BookOpen size={64} className="mx-auto text-green-500 mb-4 drop-shadow-[0_0_10px_rgba(34,197,94,0.8)]" />
+                    <h2 className="text-xl font-black text-green-400 uppercase tracking-widest mb-2">PROTOCOLO OJO DE HALCÓN</h2>
+                    <p className="text-xs text-green-600 mb-6 font-mono">NIVEL DE ACCESO: 6º PRIMARIA</p>
+                    <div className="bg-[#0A1A0A] p-6 rounded border border-green-900/50 mb-6 shadow-inner"><p className="text-xl font-bold text-green-300 leading-relaxed font-mono">"{dailyQuestion.q}"</p></div>
+                    {showAnswer ? (<div className="bg-green-900/30 border border-green-500/50 p-4 rounded mb-6 animate-in fade-in"><p className="text-xs text-green-600 uppercase font-bold mb-1">SOLUCIÓN DESCLASIFICADA:</p><p className="text-lg text-green-400 font-bold drop-shadow-[0_0_5px_rgba(74,222,128,0.8)] font-mono">{dailyQuestion.a}</p></div>) : isAdmin ? (<button onClick={()=>setShowAnswer(true)} className="mb-6 text-xs text-green-700 underline hover:text-green-500 transition-colors">Ver Solución (Solo Director)</button>) : null}
+                    {isAdmin && showAnswer && (<div className="grid grid-cols-2 gap-2 mb-6">{teams.map(t => (<button key={t.id} onClick={() => { handlePts(t.id, 5); closeAllModals(); }} className="p-2 bg-[#0A1A0A] hover:bg-green-900/50 border border-green-900/50 rounded text-xs text-green-500 font-bold transition-all hover:border-green-500">+5 Pts {t.name}</button>))}</div>)}
+                    <button onClick={closeAllModals} className="w-full py-3 bg-[#0A1A0A] border border-green-900/50 hover:bg-green-900/30 text-green-500 font-bold rounded uppercase tracking-wider transition-colors">Cerrar Transmisión</button>
                 </div>
              </div>
          </div>
@@ -1860,11 +1754,11 @@ function AvengersTracker() {
       {/* HISTORY MODAL */}
       {modal === 'history' && isAdmin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeAllModals}></div>
-          <div className="relative bg-slate-900 border border-slate-600 w-full max-w-2xl rounded-sm overflow-hidden shadow-2xl flex flex-col max-h-[80vh]">
-            <div className="bg-slate-800/80 p-4 border-b border-slate-600 flex justify-between items-center"><h3 className="text-lg font-black text-slate-300 uppercase tracking-widest flex items-center gap-2"><History size={18} /> Bitácora</h3><button onClick={closeAllModals}>✕</button></div>
-            <div className="p-4 overflow-y-auto bg-black/40 font-mono text-xs text-slate-400">
-              {history.length === 0 ? <p className="text-center py-4">Sin registros.</p> : <ul className="space-y-2">{history.map((l, i) => <li key={i} className="flex gap-4 border-b border-white/5 pb-1"><span>{l.time}</span><span>{l.text}</span></li>)}</ul>}
+          <div className="absolute inset-0 bg-black/95 backdrop-blur-sm" onClick={closeAllModals}></div>
+          <div className="relative bg-[#050A05] border border-green-700 w-full max-w-2xl rounded-sm overflow-hidden shadow-[0_0_30px_rgba(34,197,94,0.15)] flex flex-col max-h-[80vh]">
+            <div className="bg-[#0A1A0A] p-4 border-b border-green-800 flex justify-between items-center"><h3 className="text-lg font-black text-green-500 uppercase tracking-widest flex items-center gap-2"><History size={18} /> Bitácora</h3><button onClick={closeAllModals} className="text-green-800 hover:text-green-500 transition-colors">✕</button></div>
+            <div className="p-4 overflow-y-auto bg-black font-mono text-xs text-green-600/80">
+              {history.length === 0 ? <p className="text-center py-4">Sin registros.</p> : <ul className="space-y-2">{history.map((l, i) => <li key={i} className="flex gap-4 border-b border-green-900/30 pb-1 hover:text-green-400 transition-colors"><span className="text-green-800 shrink-0">{l.time}</span><span>{l.text}</span></li>)}</ul>}
             </div>
           </div>
         </div>
@@ -1873,12 +1767,12 @@ function AvengersTracker() {
       {/* LOGIN MODAL */}
       {modal === 'login' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeAllModals}></div>
-          <div className="relative bg-slate-900 border border-cyan-500/30 p-8 rounded-sm w-full max-w-md shadow-2xl">
-            <h3 className="text-xl font-black text-cyan-400 uppercase tracking-widest mb-6 flex items-center gap-2"><Lock size={20} /> Acceso</h3>
+          <div className="absolute inset-0 bg-black/95 backdrop-blur-sm" onClick={closeAllModals}></div>
+          <div className="relative bg-[#050A05] border border-green-500/50 p-8 rounded-sm w-full max-w-md shadow-[0_0_30px_rgba(34,197,94,0.2)]">
+            <h3 className="text-xl font-black text-green-500 uppercase tracking-widest mb-6 flex items-center gap-2"><Lock size={20} /> Acceso</h3>
             <form onSubmit={checkPass} className="space-y-4">
-              <input type="password" value={pass} onChange={e=>setPass(e.target.value)} className="w-full bg-black/50 border border-cyan-900 rounded-sm p-4 text-center text-white tracking-[0.5em] focus:border-cyan-500 outline-none transition-colors font-mono" placeholder="••••••••" autoFocus />
-              <div className="flex gap-2"><button type="button" onClick={closeAllModals} className="flex-1 bg-slate-800 py-2 text-xs text-slate-400 font-bold">CANCELAR</button><button type="submit" className="flex-1 bg-cyan-600 py-2 text-xs text-black font-bold">ENTRAR</button></div>
+              <input type="password" value={pass} onChange={e=>setPass(e.target.value)} className="w-full bg-black border border-green-800 rounded-sm p-4 text-center text-green-400 tracking-[0.5em] focus:border-green-500 outline-none transition-colors font-mono focus:shadow-[0_0_15px_rgba(34,197,94,0.3)]" placeholder="••••••••" autoFocus />
+              <div className="flex gap-2"><button type="button" onClick={closeAllModals} className="flex-1 bg-[#0A1A0A] border border-green-900/50 hover:bg-green-900/20 py-2 text-xs text-green-600 font-bold transition-colors">CANCELAR</button><button type="submit" className="flex-1 bg-green-700 hover:bg-green-600 py-2 text-xs text-black font-bold transition-all shadow-[0_0_15px_rgba(34,197,94,0.3)]">ENTRAR</button></div>
             </form>
           </div>
         </div>
@@ -1887,16 +1781,16 @@ function AvengersTracker() {
       {/* SHOP MODAL */}
       {modal === 'shop' && selTeam && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeAllModals}></div>
-          <div className="relative bg-slate-900 border border-yellow-500/30 w-full max-w-2xl rounded-sm overflow-hidden shadow-2xl">
-            <div className="bg-yellow-900/20 p-6 border-b border-yellow-500/20 flex justify-between items-center">
-              <div><h3 className="text-xl font-black text-yellow-500 uppercase tracking-widest flex items-center gap-2"><ShoppingCart size={20} /> Armería</h3><div className="flex items-center gap-4 mt-2 text-sm"><span className="text-slate-400">Equipo: <span className="text-white font-bold">{selTeam.name}</span></span><span className="text-slate-400">Saldo: <span className="text-yellow-400 font-bold font-mono text-lg">{selTeam.points}</span></span></div></div>
-              <button onClick={closeAllModals} className="text-slate-500 hover:text-white transition-colors">✕</button>
+          <div className="absolute inset-0 bg-black/95 backdrop-blur-sm" onClick={closeAllModals}></div>
+          <div className="relative bg-[#050A05] border border-yellow-500/50 w-full max-w-2xl rounded-sm overflow-hidden shadow-[0_0_30px_rgba(250,204,21,0.2)]">
+            <div className="bg-yellow-900/10 p-6 border-b border-yellow-500/30 flex justify-between items-center">
+              <div><h3 className="text-xl font-black text-yellow-500 uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]"><ShoppingCart size={20} /> Armería</h3><div className="flex items-center gap-4 mt-2 text-sm font-mono"><span className="text-yellow-700">Equipo: <span className="text-yellow-500 font-bold">{selTeam.name}</span></span><span className="text-yellow-700">Saldo: <span className="text-yellow-400 font-bold text-lg drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">{selTeam.points}</span></span></div></div>
+              <button onClick={closeAllModals} className="text-yellow-800 hover:text-yellow-500 transition-colors">✕</button>
             </div>
             <div className="p-6 grid gap-4 max-h-[60vh] overflow-y-auto">
-              <div className="mb-4 bg-purple-900/20 border border-purple-500/40 p-4 rounded-sm flex justify-between items-center animate-pulse"><div className="flex gap-4"><div className="bg-purple-500/20 p-3 rounded-sm text-purple-300"><Package size={24}/></div><div><h4 className="font-bold text-purple-200">CAJA DE WAKANDA</h4><p className="text-xs text-purple-400">¿Te atreves? Resultado aleatorio.</p></div></div><button onClick={() => openLootBox(selTeam.id)} disabled={selTeam.points < 50} className={`px-6 py-2 rounded-sm font-bold font-mono text-sm border ${selTeam.points >= 50 ? 'bg-purple-600 hover:bg-purple-500 text-white border-purple-400' : 'bg-transparent text-slate-600 border-slate-800'}`}>50 PTS</button></div>
-              {lootResult && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95"><div className="text-center animate-in zoom-in"><Package size={64} className="mx-auto text-yellow-400 mb-4 animate-bounce" /><h2 className="text-3xl font-black text-white mb-2">{lootResult.text}</h2><button onClick={()=>setLootResult(null)} className="mt-8 px-6 py-2 bg-slate-700 text-white rounded text-xs uppercase">Cerrar</button></div></div>}
-              {REWARDS_LIST.map((reward) => (<div key={reward.id} className="group relative bg-black/40 border border-white/5 hover:border-yellow-500/50 rounded-sm p-4 transition-all hover:bg-yellow-900/10 flex justify-between items-center"><div className="flex items-start gap-4"><div className="bg-yellow-500/10 p-3 rounded-sm text-yellow-500 group-hover:scale-110 transition-transform"><Zap size={20} /></div><div><h4 className="font-bold text-slate-200 group-hover:text-yellow-400 transition-colors uppercase tracking-wide">{reward.name}</h4><p className="text-xs text-slate-500 mt-1">{reward.desc}</p></div></div><button onClick={() => handleBuy(selTeam.id, reward.cost, reward.id)} disabled={selTeam.points < reward.cost} className={`px-6 py-2 rounded-sm font-bold font-mono text-sm border transition-all duration-300 ${selTeam.points >= reward.cost ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50 hover:bg-yellow-500 hover:text-black shadow-lg' : 'bg-transparent text-slate-600 border-slate-800 cursor-not-allowed'}`}>{reward.cost} PTS</button></div>))}
+              <div className="mb-4 bg-purple-900/10 border border-purple-500/50 p-4 rounded-sm flex justify-between items-center animate-pulse shadow-[0_0_15px_rgba(168,85,247,0.1)]"><div className="flex gap-4"><div className="bg-purple-500/20 p-3 rounded-sm text-purple-400 border border-purple-500/30"><Package size={24}/></div><div><h4 className="font-bold text-purple-400 font-mono drop-shadow-[0_0_5px_rgba(192,132,252,0.5)]">CAJA DE WAKANDA</h4><p className="text-xs text-purple-600 font-mono">¿Te atreves? Resultado aleatorio.</p></div></div><button onClick={() => openLootBox(selTeam.id)} disabled={selTeam.points < 50} className={`px-6 py-2 rounded-sm font-bold font-mono text-sm border ${selTeam.points >= 50 ? 'bg-purple-900/30 hover:bg-purple-600 text-purple-300 hover:text-white border-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.3)] transition-all' : 'bg-transparent text-purple-900 border-purple-900/50 cursor-not-allowed'}`}>50 PTS</button></div>
+              {lootResult && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95"><div className="text-center animate-in zoom-in"><Package size={64} className="mx-auto text-yellow-500 mb-4 animate-bounce drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]" /><h2 className="text-3xl font-black text-yellow-400 mb-2 font-mono">{lootResult.text}</h2><button onClick={()=>setLootResult(null)} className="mt-8 px-6 py-2 bg-[#0A1A0A] border border-yellow-700 text-yellow-500 hover:bg-yellow-900/30 rounded text-xs uppercase font-mono transition-colors">Cerrar</button></div></div>}
+              {REWARDS_LIST.map((reward) => (<div key={reward.id} className="group relative bg-[#0A1A0A] border border-green-900/50 hover:border-yellow-500/50 rounded-sm p-4 transition-all hover:bg-yellow-900/10 flex justify-between items-center"><div className="flex items-start gap-4"><div className="bg-yellow-900/20 p-3 rounded-sm text-yellow-600 group-hover:text-yellow-400 group-hover:scale-110 transition-all border border-yellow-900/30 group-hover:border-yellow-500/50"><Zap size={20} /></div><div><h4 className="font-bold text-green-500 group-hover:text-yellow-400 transition-colors uppercase tracking-wide font-mono">{reward.name}</h4><p className="text-xs text-green-700 group-hover:text-yellow-600 mt-1 font-mono transition-colors">{reward.desc}</p></div></div><button onClick={() => handleBuy(selTeam.id, reward.cost, reward.id)} disabled={selTeam.points < reward.cost} className={`px-6 py-2 rounded-sm font-bold font-mono text-sm border transition-all duration-300 ${selTeam.points >= reward.cost ? 'bg-yellow-900/20 text-yellow-500 border-yellow-600 hover:bg-yellow-500 hover:text-black shadow-[0_0_10px_rgba(250,204,21,0.2)] hover:shadow-[0_0_15px_rgba(250,204,21,0.6)]' : 'bg-transparent text-green-900 border-green-900/50 cursor-not-allowed'}`}>{reward.cost} PTS</button></div>))}
             </div>
           </div>
         </div>
@@ -1905,11 +1799,11 @@ function AvengersTracker() {
       {/* PENALTY MODAL */}
       {modal === 'penalty' && selTeam && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeAllModals}></div>
-          <div className="relative bg-slate-900 border border-red-500/50 p-6 rounded-sm w-full max-w-lg shadow-2xl">
-            <div className="bg-red-950/50 p-8 text-center border-b border-red-900/50"><div className="mx-auto bg-red-500/10 w-20 h-20 rounded-full flex items-center justify-center mb-4 animate-pulse"><Skull size={40} className="text-red-500" /></div><h3 className="text-2xl font-black text-red-500 uppercase tracking-[0.2em] mb-2">Zona de Castigo</h3><p className="text-red-200/60 text-sm">Medidas disciplinarias para {selTeam.name}</p></div>
+          <div className="absolute inset-0 bg-black/95 backdrop-blur-sm" onClick={closeAllModals}></div>
+          <div className="relative bg-[#050A05] border border-red-500/50 p-6 rounded-sm w-full max-w-lg shadow-[0_0_30px_rgba(220,38,38,0.2)]">
+            <div className="bg-red-950/20 p-8 text-center border-b border-red-900/50"><div className="mx-auto bg-red-900/20 border border-red-500/30 w-20 h-20 rounded-full flex items-center justify-center mb-4 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.3)]"><Skull size={40} className="text-red-500 drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]" /></div><h3 className="text-2xl font-black text-red-500 uppercase tracking-[0.2em] mb-2 drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]">Zona de Castigo</h3><p className="text-red-400/60 text-sm font-mono">Medidas disciplinarias para <span className="font-bold text-red-300">{selTeam.name}</span></p></div>
             <div className="p-8">
-              {!penalty ? (<button onClick={spinPenalty} className="w-full bg-red-600 hover:bg-red-500 text-white font-black py-5 rounded-sm shadow-[0_0_30px_rgba(220,38,38,0.4)] flex justify-center gap-3"><RefreshCw size={20} /> GENERAR SANCIÓN</button>) : (<div className="animate-in zoom-in duration-300"><div className="bg-black/50 p-6 rounded-sm border border-red-500/30 mb-6 text-center"><p className="text-xs text-red-400 mb-3">Sentencia:</p><div className={`text-xl font-bold font-mono p-2 rounded ${penalty==='BLOCKED'?'text-blue-300 border border-blue-500':'text-white'}`}>{penalty==='BLOCKED'?'¡ESCUDO ACTIVADO! Sanción bloqueada.':penalty}</div></div><div className="flex gap-3"><button onClick={spinPenalty} className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-sm font-bold text-xs uppercase">Reintentar</button><button onClick={closeAllModals} className="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white rounded-sm font-bold text-xs uppercase shadow-lg">Ejecutar</button></div></div>)}
+              {!penalty ? (<button onClick={spinPenalty} className="w-full bg-red-900/30 border border-red-500/50 hover:bg-red-600 text-red-400 hover:text-black font-black py-5 rounded-sm shadow-[0_0_15px_rgba(220,38,38,0.2)] hover:shadow-[0_0_30px_rgba(220,38,38,0.6)] flex justify-center gap-3 transition-all"><RefreshCw size={20} /> GENERAR SANCIÓN</button>) : (<div className="animate-in zoom-in duration-300"><div className="bg-black/50 p-6 rounded-sm border border-red-500/30 mb-6 text-center shadow-inner"><p className="text-xs text-red-600 mb-3 uppercase tracking-widest font-mono">Sentencia:</p><div className={`text-xl font-bold font-mono p-2 rounded ${penalty==='BLOCKED'?'text-blue-400 border border-blue-500/50 bg-blue-900/10 shadow-[0_0_15px_rgba(59,130,246,0.2)]':'text-red-300 drop-shadow-md'}`}>{penalty==='BLOCKED'?'¡ESCUDO ACTIVADO! Sanción bloqueada.':penalty}</div></div><div className="flex gap-3"><button onClick={spinPenalty} className="flex-1 py-3 bg-[#0A1A0A] border border-red-900/50 hover:bg-red-900/20 text-red-500 rounded-sm font-bold text-xs uppercase transition-colors font-mono">Reintentar</button><button onClick={closeAllModals} className="flex-1 py-3 bg-red-700 hover:bg-red-600 text-black rounded-sm font-bold text-xs uppercase shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all hover:shadow-[0_0_20px_rgba(239,68,68,0.6)] font-mono">Ejecutar</button></div></div>)}
             </div>
           </div>
         </div>
@@ -1918,13 +1812,13 @@ function AvengersTracker() {
       {/* CATALOG MODAL */}
       {modal === 'catalog' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeAllModals}></div>
-          <div className="relative bg-slate-900 border border-blue-500/30 w-full max-w-6xl rounded-sm overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-            <div className="bg-slate-800/80 p-6 border-b border-blue-500/20 flex justify-between items-center"><h3 className="text-2xl font-black text-white uppercase tracking-widest flex items-center gap-2"><Info size={24} className="text-blue-400" /> Archivos</h3><button onClick={closeAllModals}>✕</button></div>
+          <div className="absolute inset-0 bg-black/95 backdrop-blur-sm" onClick={closeAllModals}></div>
+          <div className="relative bg-[#050A05] border border-green-500/40 w-full max-w-6xl rounded-sm overflow-hidden shadow-[0_0_30px_rgba(34,197,94,0.15)] flex flex-col max-h-[90vh]">
+            <div className="bg-[#0A1A0A] p-6 border-b border-green-800/50 flex justify-between items-center"><h3 className="text-2xl font-black text-green-500 uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_5px_rgba(34,197,94,0.5)]"><Info size={24} className="text-green-400" /> Archivos</h3><button onClick={closeAllModals} className="text-green-800 hover:text-green-400 transition-colors">✕</button></div>
             <div className="p-6 overflow-y-auto grid md:grid-cols-3 gap-8">
-              <div><h4 className="text-lg font-bold text-yellow-500 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-yellow-500/20 pb-2"><Zap size={18} /> Ventajas</h4><div className="space-y-3">{REWARDS_LIST.map((r) => (<div key={r.id} className="bg-yellow-900/10 border border-yellow-500/10 p-3 rounded-sm flex justify-between items-start"><div><p className="font-bold text-slate-200 text-sm">{r.name}</p><p className="text-xs text-slate-500 mt-0.5">{r.desc}</p></div><span className="bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-sm text-xs font-mono font-bold whitespace-nowrap">{r.cost} PTS</span></div>))}</div></div>
-              <div><h4 className="text-lg font-bold text-blue-400 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-blue-500/20 pb-2"><Hexagon size={18} /> Gemas</h4><div className="space-y-3">{INFINITY_STONES.map((s, index) => (<div key={index} className="bg-slate-800/50 border border-white/5 p-3 rounded-sm flex items-start gap-3"><div className={`mt-1 ${s.color.split(' ')[0]}`}><Hexagon size={16} fill="currentColor" /></div><div><p className={`font-bold text-sm uppercase ${s.color.split(' ')[0]}`}>Gema del {s.name} <span className="text-xs text-slate-500 ml-1">({s.threshold} pts)</span></p><p className="text-xs text-slate-300 mt-0.5">{s.perk}</p></div></div>))}</div></div>
-              <div><h4 className="text-lg font-bold text-red-500 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-red-500/20 pb-2"><AlertTriangle size={18} /> Sanciones</h4><div className="space-y-3">{PENALTIES_LIST.map((p, index) => (<div key={index} className="bg-red-900/10 border border-red-500/10 p-3 rounded-sm flex items-start gap-3"><div className="bg-red-500/20 p-1.5 rounded-sm text-red-400 mt-0.5"><Skull size={12} /></div><p className="text-sm text-slate-300 leading-relaxed">{p}</p></div>))}</div></div>
+              <div><h4 className="text-lg font-bold text-yellow-500 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-yellow-500/30 pb-2 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)] font-mono"><Zap size={18} /> Ventajas</h4><div className="space-y-3">{REWARDS_LIST.map((r) => (<div key={r.id} className="bg-yellow-900/5 border border-yellow-900/30 p-3 rounded-sm flex justify-between items-start"><div><p className="font-bold text-green-400 text-sm font-mono">{r.name}</p><p className="text-xs text-green-700 mt-0.5 font-mono">{r.desc}</p></div><span className="bg-yellow-900/20 text-yellow-500 border border-yellow-700/50 px-2 py-1 rounded-sm text-xs font-mono font-bold whitespace-nowrap">{r.cost} PTS</span></div>))}</div></div>
+              <div><h4 className="text-lg font-bold text-blue-400 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-blue-500/30 pb-2 drop-shadow-[0_0_5px_rgba(96,165,250,0.5)] font-mono"><Hexagon size={18} /> Gemas</h4><div className="space-y-3">{INFINITY_STONES.map((s, index) => (<div key={index} className="bg-[#0A1A0A] border border-green-900/30 p-3 rounded-sm flex items-start gap-3"><div className={`mt-1 ${s.color.split(' ')[0]}`}><Hexagon size={16} fill="currentColor" /></div><div><p className={`font-bold text-sm uppercase font-mono ${s.color.split(' ')[0]}`}>Gema del {s.name} <span className="text-xs text-green-700 ml-1">({s.threshold} pts)</span></p><p className="text-xs text-green-600 mt-0.5 font-mono">{s.perk}</p></div></div>))}</div></div>
+              <div><h4 className="text-lg font-bold text-red-500 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-red-500/30 pb-2 drop-shadow-[0_0_5px_rgba(248,113,113,0.5)] font-mono"><AlertTriangle size={18} /> Sanciones</h4><div className="space-y-3">{PENALTIES_LIST.map((p, index) => (<div key={index} className="bg-red-900/5 border border-red-900/30 p-3 rounded-sm flex items-start gap-3"><div className="bg-red-900/20 border border-red-700/50 p-1.5 rounded-sm text-red-500 mt-0.5"><Skull size={12} /></div><p className="text-sm text-red-400/80 leading-relaxed font-mono">{p}</p></div>))}</div></div>
             </div>
           </div>
         </div>
@@ -1933,31 +1827,31 @@ function AvengersTracker() {
       {/* MISSION MODAL */}
       {modal === 'mission' && isAdmin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeAllModals}></div>
-          <div className="relative bg-slate-900 border border-blue-500/30 w-full max-w-2xl rounded-sm overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-            <div className="bg-slate-800/80 p-6 border-b border-blue-500/20 flex justify-between items-center"><h3 className="text-xl font-black text-blue-400 uppercase tracking-widest flex items-center gap-2"><ClipboardList size={24} /> Órdenes Tácticas</h3><button onClick={closeAllModals}>✕</button></div>
+          <div className="absolute inset-0 bg-black/95 backdrop-blur-sm" onClick={closeAllModals}></div>
+          <div className="relative bg-[#050A05] border border-green-500/50 w-full max-w-2xl rounded-sm overflow-hidden shadow-[0_0_30px_rgba(34,197,94,0.2)] flex flex-col max-h-[90vh]">
+            <div className="bg-[#0A1A0A] p-6 border-b border-green-800/50 flex justify-between items-center"><h3 className="text-xl font-black text-green-500 uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_5px_rgba(34,197,94,0.5)] font-mono"><ClipboardList size={24} /> Órdenes Tácticas</h3><button onClick={closeAllModals} className="text-green-800 hover:text-green-400 transition-colors">✕</button></div>
             <div className="p-6 overflow-y-auto">
-              <div className="mb-6 bg-blue-900/10 border border-blue-500/20 p-4 rounded-sm">
-                <label className="block text-xs font-bold text-blue-300 uppercase tracking-widest mb-2">Órdenes Manuales del Director</label>
+              <div className="mb-6 bg-green-900/10 border border-green-700/30 p-4 rounded-sm">
+                <label className="block text-xs font-bold text-green-600 uppercase tracking-widest mb-2 font-mono">Órdenes Manuales del Director</label>
                 <div className="flex gap-2">
                   <input 
                     type="text" 
                     value={customMission} 
                     onChange={(e) => setCustomMission(e.target.value)} 
                     placeholder="Escribir misión..." 
-                    className="flex-1 bg-black/50 border border-blue-500/30 rounded-sm px-3 py-2 text-white outline-none text-sm focus:border-blue-400 transition-colors"
+                    className="flex-1 bg-black border border-green-800/50 rounded-sm px-3 py-2 text-green-400 outline-none text-sm focus:border-green-500 transition-colors focus:shadow-[0_0_10px_rgba(34,197,94,0.2)] font-mono"
                     onKeyDown={(e) => e.key === 'Enter' && customMission.trim() && updateM(customMission)}
                   />
                   <button 
                     onClick={() => { if (customMission.trim()) updateM(customMission); }} 
-                    className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-sm font-bold text-xs uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-green-700 hover:bg-green-600 text-black px-4 py-2 rounded-sm font-bold text-xs uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-mono"
                     disabled={!customMission.trim()}
                   >
                     Activar
                   </button>
                 </div>
               </div>
-              <div className="space-y-6">{['Comportamiento', 'Académico', 'Organización', 'Social', 'Especial'].map(cat => (<div key={cat}><h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 border-b border-white/5 pb-1">{cat}</h4><div className="grid grid-cols-1 md:grid-cols-2 gap-3">{MISSION_BATTERY.filter(m => m.category === cat).map((m, i) => (<button key={i} onClick={() => updateM(m.text)} className="text-left bg-slate-800/50 hover:bg-blue-600/20 border border-white/5 hover:border-blue-500/50 p-3 rounded-sm transition-all group flex items-start gap-3">{mission === m.text ? <CheckCircle2 size={16} className="text-green-400 mt-0.5 shrink-0" /> : <PlusCircle size={16} className="text-slate-500 group-hover:text-blue-400 mt-0.5 shrink-0" />}<span className={`text-sm ${mission === m.text ? 'text-green-300 font-bold' : 'text-slate-300 group-hover:text-white'}`}>{m.text}</span></button>))}</div></div>))}</div>
+              <div className="space-y-6">{['Comportamiento', 'Académico', 'Organización', 'Social', 'Especial'].map(cat => (<div key={cat}><h4 className="text-xs font-bold text-green-700 uppercase tracking-widest mb-3 border-b border-green-900/50 pb-1 font-mono">{cat}</h4><div className="grid grid-cols-1 md:grid-cols-2 gap-3">{MISSION_BATTERY.filter(m => m.category === cat).map((m, i) => (<button key={i} onClick={() => updateM(m.text)} className="text-left bg-[#0A1A0A] hover:bg-green-900/20 border border-green-900/30 hover:border-green-500/50 p-3 rounded-sm transition-all group flex items-start gap-3 font-mono">{mission === m.text ? <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0" /> : <PlusCircle size={16} className="text-green-800 group-hover:text-green-500 mt-0.5 shrink-0" />}<span className={`text-sm ${mission === m.text ? 'text-green-400 font-bold' : 'text-green-600 group-hover:text-green-300'}`}>{m.text}</span></button>))}</div></div>))}</div>
             </div>
           </div>
         </div>
@@ -1967,31 +1861,31 @@ function AvengersTracker() {
       {cerebro.active && (
         <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4">
           <div className="absolute inset-0" onClick={()=>{if(!cerebro.searching)setCerebro({...cerebro, active:false})}}></div>
-          <div className="relative z-10 text-center bg-slate-900/80 p-8 rounded-xl border border-purple-500/30 backdrop-blur-sm max-w-lg w-full mx-4 shadow-[0_0_50px_rgba(168,85,247,0.2)]">
+          <div className="relative z-10 text-center bg-[#050A05] p-8 rounded-xl border border-green-500/50 max-w-lg w-full mx-4 shadow-[0_0_50px_rgba(34,197,94,0.2)]">
             
             {/* IF NO MODE SELECTED */}
             {!cerebro.type ? (
                <>
-                 <Brain size={80} className="mx-auto text-purple-500 mb-6 animate-pulse" />
-                 <h2 className="text-2xl font-black text-purple-400 uppercase tracking-widest mb-6">PROTOCOLO CEREBRO</h2>
-                 <p className="text-sm text-slate-300 mb-8">Seleccione el objetivo del rastreo:</p>
+                 <Brain size={80} className="mx-auto text-green-500 mb-6 animate-pulse drop-shadow-[0_0_15px_rgba(34,197,94,0.8)]" />
+                 <h2 className="text-2xl font-black text-green-400 uppercase tracking-widest mb-6 drop-shadow-[0_0_5px_rgba(34,197,94,0.5)] font-mono">PROTOCOLO CEREBRO</h2>
+                 <p className="text-sm text-green-600 mb-8 font-mono">Seleccione el objetivo del rastreo:</p>
                  <div className="grid grid-cols-2 gap-4">
                     <button 
                         onClick={(e) => { e.stopPropagation(); activateCerebro('member'); }}
-                        className="py-6 bg-purple-900/50 hover:bg-purple-600 border border-purple-500 text-white font-black uppercase tracking-widest rounded transition-all active:scale-95 flex flex-col items-center gap-2"
+                        className="py-6 bg-[#0A1A0A] hover:bg-green-900/30 border border-green-800/50 hover:border-green-500 text-green-500 font-black uppercase tracking-widest rounded transition-all active:scale-95 flex flex-col items-center gap-2 hover:shadow-[0_0_20px_rgba(34,197,94,0.3)] font-mono"
                     >
                         <User size={32}/> OPERATIVO
                     </button>
                     <button 
                         onClick={(e) => { e.stopPropagation(); activateCerebro('team'); }}
-                        className="py-6 bg-cyan-900/50 hover:bg-cyan-600 border border-cyan-500 text-white font-black uppercase tracking-widest rounded transition-all active:scale-95 flex flex-col items-center gap-2"
+                        className="py-6 bg-[#0A1A0A] hover:bg-green-900/30 border border-green-800/50 hover:border-green-500 text-green-500 font-black uppercase tracking-widest rounded transition-all active:scale-95 flex flex-col items-center gap-2 hover:shadow-[0_0_20px_rgba(34,197,94,0.3)] font-mono"
                     >
                         <Users size={32}/> ESCUADRÓN
                     </button>
                  </div>
                  <button 
                     onClick={(e) => { e.stopPropagation(); setCerebro({...cerebro, active:false}); }}
-                    className="mt-6 text-slate-500 text-xs hover:text-white underline"
+                    className="mt-6 text-green-800 text-xs hover:text-green-500 underline font-mono transition-colors"
                 >
                     CANCELAR RASTREO
                 </button>
@@ -2000,27 +1894,27 @@ function AvengersTracker() {
                // IF MODE SELECTED (SEARCHING OR RESULT)
                <>
                  <div className={`mb-6 ${cerebro.searching ? 'animate-spin' : ''}`}>
-                    {cerebro.type === 'team' ? <Users size={64} className="mx-auto text-cyan-400"/> : <Brain size={64} className="mx-auto text-purple-500"/>}
+                    {cerebro.type === 'team' ? <Users size={64} className="mx-auto text-green-500 drop-shadow-[0_0_15px_rgba(34,197,94,0.8)]"/> : <Brain size={64} className="mx-auto text-green-500 drop-shadow-[0_0_15px_rgba(34,197,94,0.8)]"/>}
                  </div>
-                 <h2 className="text-xl font-black text-white uppercase tracking-widest mb-4">
+                 <h2 className="text-xl font-black text-green-400 uppercase tracking-widest mb-4 font-mono">
                     {cerebro.searching ? "RASTREANDO..." : (cerebro.type === 'team' ? "ESCUADRÓN LOCALIZADO" : "SUJETO LOCALIZADO")}
                  </h2>
                  
-                 <div className="text-3xl md:text-5xl font-mono font-black text-white mb-8 min-h-[4rem] flex items-center justify-center p-4 bg-black/40 rounded border border-white/10">
-                    {cerebro.target || <span className="animate-pulse text-slate-500">...</span>}
+                 <div className="text-3xl md:text-5xl font-mono font-black text-green-300 mb-8 min-h-[4rem] flex items-center justify-center p-4 bg-black rounded border border-green-800 shadow-inner drop-shadow-[0_0_10px_rgba(74,222,128,0.3)]">
+                    {cerebro.target || <span className="animate-pulse text-green-800">...</span>}
                  </div>
                 
                  {!cerebro.searching && (
                     <div className="grid grid-cols-2 gap-4">
                         <button 
                             onClick={(e) => { e.stopPropagation(); activateCerebro(cerebro.type); }}
-                            className="py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-widest rounded shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+                            className="py-3 bg-green-700 hover:bg-green-600 text-black font-bold uppercase tracking-widest rounded shadow-[0_0_15px_rgba(34,197,94,0.3)] transition-all active:scale-95 flex items-center justify-center gap-2 font-mono"
                         >
                             <RefreshCw size={16}/> RE-ESCANEAR
                         </button>
                         <button 
                             onClick={(e) => { e.stopPropagation(); setCerebro({...cerebro, active:false}); }}
-                            className="py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold uppercase tracking-widest rounded transition-all active:scale-95"
+                            className="py-3 bg-[#0A1A0A] border border-green-800 hover:bg-green-900/40 text-green-500 font-bold uppercase tracking-widest rounded transition-all active:scale-95 font-mono"
                         >
                             CERRAR
                         </button>
