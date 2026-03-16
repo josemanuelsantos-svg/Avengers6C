@@ -11,7 +11,7 @@ import {
   Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon, Settings, Save, Upload, Disc, Edit3, TerminalSquare, Pill, Rocket
 } from 'lucide-react';
 
-const APP_VERSION = "v12.0.0 (MARK LXXXV - ENDGAME PROTOCOL)";
+const APP_VERSION = "v13.0.0 (GOLDEN AGE - FULL RESTORE)";
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
 const firebaseConfig = typeof __firebase_config !== 'undefined' 
@@ -70,7 +70,9 @@ const INITIAL_TEAMS = [
     upgrades: {}, usedCodes: [], matrixEvent: false
   },
   { 
-    id: 'hulk', name: 'Hulk', points: 0, shield: false, badges: [], prestige: 0,
+    id: 'hulk', name: 'Hulk', points: 0, shield: false, 
+    badges: [{ iconKey: 'Trophy', name: 'Campeones Temporada 1', color: 'text-amber-400 drop-shadow-[0_0_5px_rgba(245,158,11,0.8)]' }], 
+    prestige: 0,
     dailyMath: 0, dailyWord: 0, dailyCombat: 0, dailyMemory: 0, lastDaily: '', lastLoot: null, doublePointsUntil: 0, lastSpin: '',
     theme: 'bg-emerald-900/40 shadow-[0_0_20px_rgba(16,185,129,0.5)]', border: 'border-emerald-500', 
     accent: 'text-emerald-400', barColor: 'bg-emerald-500', iconKey: 'atom', 
@@ -103,7 +105,6 @@ const INITIAL_TEAMS = [
 
 const ROLES = ['[HACKER]', '[CIENTÍFICO]', '[GUERRERO]', '[CAPITÁN]'];
 
-// --- MUTADORES DIARIOS (NUEVO SISTEMA) ---
 const DAILY_MODIFIERS = [
   { name: "ESTADO BASE", desc: "Sistemas estables. Sin alteraciones en la matriz.", effect: 'NONE', icon: <Shield size={14}/> },
   { name: "FIEBRE MATEMÁTICA", desc: "Hoy, los entrenamientos de Mates otorgan el DOBLE de puntos.", effect: 'DOUBLE_MATH', icon: <Calculator size={14}/> },
@@ -208,7 +209,38 @@ const ACADEMIC_QUESTIONS = [
   { q: "¿Antónimo de 'rápido'?", a: "Lento" }, { q: "¿Sinónimo de 'bonito'?", a: "Bello" }, { q: "¿Palabra que indica acción?", a: "Verbo" },
   { q: "¿En qué año se descubrió América?", a: "1492" }, { q: "¿Quién pintó la Mona Lisa?", a: "Da Vinci" }, { q: "¿Moneda de la Unión Europea?", a: "Euro" },
   { q: "Perro in English", a: "Dog" }, { q: "Gato in English", a: "Cat" }, { q: "Rojo in English", a: "Red" },
-  { q: "¿Cuántas líneas tiene el pentagrama?", a: "5" }, { q: "¿Clave más común?", a: "Sol" }, { q: "¿Figura que vale 4 tiempos?", a: "Redonda" }
+  { q: "¿Cuántas líneas tiene el pentagrama?", a: "5" }, { q: "¿Clave más común?", a: "Sol" }, { q: "¿Figura que vale 4 tiempos?", a: "Redonda" },
+  // NUEVAS PREGUNTAS
+  { q: "¿Quién pintó el Guernica?", a: "Picasso" },
+  { q: "¿Capital de Japón?", a: "Tokio" },
+  { q: "¿Qué gas respiran las plantas?", a: "CO2" },
+  { q: "¿Río más largo del mundo?", a: "Amazonas" },
+  { q: "¿Montaña más alta de Europa?", a: "Elbrús" },
+  { q: "¿Moneda oficial de Japón?", a: "Yen" },
+  { q: "¿Cómo se llama el polígono de 9 lados?", a: "Eneágono" },
+  { q: "¿Cuánto es 15 x 4?", a: "60" },
+  { q: "¿Autor de 'Cien años de soledad'?", a: "García Márquez" },
+  { q: "¿Idioma oficial de Brasil?", a: "Portugués" },
+  { q: "¿Hueso de la parte superior del brazo?", a: "Húmero" },
+  { q: "¿Planeta más grande del sistema solar?", a: "Júpiter" },
+  { q: "¿Número romano L?", a: "50" },
+  { q: "¿Qué significa 'Always' en inglés?", a: "Siempre" },
+  { q: "¿Cuánto es 9 x 7?", a: "63" },
+  { q: "¿Deporte donde se usa un 'Puck'?", a: "Hockey" },
+  { q: "¿Continente donde está Egipto?", a: "África" },
+  { q: "¿Metal cuyo símbolo es Fe?", a: "Hierro" },
+  { q: "¿Símbolo químico del Oro?", a: "Au" },
+  { q: "¿Capital de Australia?", a: "Canberra" },
+  { q: "¿Cómo se llama el sonido que hace el caballo?", a: "Relincho" },
+  { q: "¿Qué instrumento mide la presión atmosférica?", a: "Barómetro" },
+  { q: "¿Cómo se llama un triángulo con dos lados iguales?", a: "Isósceles" },
+  { q: "¿Animal terrestre más pesado?", a: "Elefante" },
+  { q: "¿Nombre del inventor de la bombilla?", a: "Edison" },
+  { q: "¿Quién descubrió América?", a: "Colón" },
+  { q: "¿Océano que baña la costa este de EE.UU.?", a: "Atlántico" },
+  { q: "¿Estación del año donde caen las hojas?", a: "Otoño" },
+  { q: "¿Cuántos años es un lustro?", a: "5" },
+  { q: "¿Qué significan las siglas ONU?", a: "Organización de Naciones Unidas" }
 ];
 
 const HYDRA_WORDS = [
@@ -221,15 +253,35 @@ const COMBAT_QUESTIONS = {
   easy: [
     { q: "¿Cuántas patas tiene una araña?", a: "8" }, { q: "¿Color del caballo blanco de Santiago?", a: "BLANCO" },
     { q: "¿Capital de España?", a: "MADRID" }, { q: "¿2 x 5?", a: "10" }, { q: "¿Antónimo de 'alto'?", a: "BAJO" },
-    { q: "¿Rey de la selva?", a: "LEON" }, { q: "¿Días de la semana?", a: "7" }
+    { q: "¿Rey de la selva?", a: "LEON" }, { q: "¿Días de la semana?", a: "7" },
+    { q: "¿20 + 30?", a: "50" }, { q: "¿Día después de martes?", a: "MIERCOLES" }, { q: "¿Color de las hojas en primavera?", a: "VERDE" },
+    { q: "¿5 x 4?", a: "20" }, { q: "¿Deporte de Rafa Nadal?", a: "TENIS" }, { q: "¿Opuesto de grande?", a: "PEQUEÑO" },
+    { q: "¿Animal que da lana?", a: "OVEJA" }, { q: "¿Lados de un cuadrado?", a: "4" }, { q: "¿Mes número 1?", a: "ENERO" },
+    { q: "¿Bebida blanca de las vacas?", a: "LECHE" }, { q: "¿10 + 15?", a: "25" }, { q: "¿Color del plátano?", a: "AMARILLO" },
+    { q: "¿Días de un año normal?", a: "365" }, { q: "¿Estación más fría?", a: "INVIERNO" }, { q: "¿Animal que hace 'Muu'?", a: "VACA" },
+    { q: "¿5 x 5?", a: "25" }, { q: "¿Mes de Navidad?", a: "DICIEMBRE" }, { q: "¿Letra después de la B?", a: "C" },
+    { q: "¿Número antes del 100?", a: "99" }, { q: "¿El hielo es agua en estado...?", a: "SOLIDO" }
   ],
   medium: [
     { q: "¿Capital de Alemania?", a: "BERLIN" }, { q: "¿Símbolo químico del agua?", a: "H2O" }, { q: "¿Lados de un hexágono?", a: "6" },
-    { q: "¿Planeta rojo?", a: "MARTE" }, { q: "¿7 x 8?", a: "56" }, { q: "¿País de la Torre Eiffel?", a: "FRANCIA" }
+    { q: "¿Planeta rojo?", a: "MARTE" }, { q: "¿7 x 8?", a: "56" }, { q: "¿País de la Torre Eiffel?", a: "FRANCIA" },
+    { q: "¿Capital de Portugal?", a: "LISBOA" }, { q: "¿Planeta más cercano al Sol?", a: "MERCURIO" }, { q: "¿Órgano para respirar?", a: "PULMONES" },
+    { q: "¿Continente de China?", a: "ASIA" }, { q: "¿Moneda de USA?", a: "DOLAR" }, { q: "¿Reino de las setas?", a: "FUNGI" },
+    { q: "¿Mitad de 90?", a: "45" }, { q: "¿100 dividido entre 2?", a: "50" }, { q: "¿Sílaba tónica en 'Reloj'?", a: "LOJ" },
+    { q: "¿Capa protectora contra los rayos del Sol?", a: "OZONO" }, { q: "¿Capital de Rusia?", a: "MOSCU" }, { q: "¿Río de París?", a: "SENA" },
+    { q: "¿Moneda de Reino Unido?", a: "LIBRA" }, { q: "¿Planeta con anillos?", a: "SATURNO" }, { q: "¿7 x 7?", a: "49" },
+    { q: "¿Hueso más pequeño?", a: "ESTRIBO" }, { q: "¿Pintor de Las Meninas?", a: "VELAZQUEZ" }, { q: "¿Sinónimo de veloz?", a: "RAPIDO" },
+    { q: "¿Continente de Brasil?", a: "AMERICA" }, { q: "¿Órgano que bombea sangre?", a: "CORAZON" }
   ],
   hard: [
     { q: "¿Capital de Australia?", a: "CANBERRA" }, { q: "¿Símbolo químico del Oro?", a: "AU" }, { q: "¿12 x 12?", a: "144" },
-    { q: "¿Autor del Quijote?", a: "CERVANTES" }, { q: "¿Planeta más grande?", a: "JUPITER" }, { q: "¿Río que pasa por Londres?", a: "TAMESIS" }
+    { q: "¿Autor del Quijote?", a: "CERVANTES" }, { q: "¿Planeta más grande?", a: "JUPITER" }, { q: "¿Río que pasa por Londres?", a: "TAMESIS" },
+    { q: "¿Autor de la Mona Lisa?", a: "DAVINCI" }, { q: "¿País de los faraones?", a: "EGIPTO" }, { q: "¿Velocidad de la luz (km/s)?", a: "300000" },
+    { q: "¿Hueso más pequeño?", a: "ESTRIBO" }, { q: "¿Año del descubrimiento de América?", a: "1492" }, { q: "¿Gas más abundante en la atmósfera?", a: "NITROGENO" },
+    { q: "¿Río más caudaloso del mundo?", a: "AMAZONAS" }, { q: "¿Creador de la bombilla?", a: "EDISON" }, { q: "¿Fórmula del Ozono?", a: "O3" },
+    { q: "¿Autor de Romeo y Julieta?", a: "SHAKESPEARE" }, { q: "¿Capital de Turquía?", a: "ANKARA" }, { q: "¿Símbolo de la Plata?", a: "AG" },
+    { q: "¿Primer hombre en la Luna?", a: "ARMSTRONG" }, { q: "¿En qué país está el Taj Mahal?", a: "INDIA" }, { q: "¿Montaña más alta de España?", a: "TEIDE" },
+    { q: "¿Inventó el teléfono?", a: "BELL" }, { q: "¿Guerra 1914-1918?", a: "PRIMERA" }, { q: "¿Gas que exhalamos?", a: "CO2" }
   ]
 };
 
@@ -316,7 +368,7 @@ class ErrorBoundary extends Component {
               <h1 className="text-2xl font-black mb-2">ERROR DE PROTOCOLO DETECTADO</h1>
               <p className="mb-6">El Nexo ha encontrado un conflicto crítico de renderizado.</p>
               <button onClick={() => {
-                  try { localStorage.removeItem('avengers_teams_quantum'); localStorage.removeItem('avengers_mission_quantum'); } catch(e){}
+                  try { localStorage.removeItem('avengers_teams_endgame'); localStorage.removeItem('avengers_mission_endgame'); } catch(e){}
                   window.location.reload();
               }} className="px-6 py-2 bg-amber-600 text-black font-bold uppercase rounded hover:bg-amber-500 transition-colors">Reiniciar Simulador (Modo Seguro)</button>
           </div>
@@ -376,7 +428,7 @@ function AvengersTracker() {
   
   const [dailyModifier, setDailyModifier] = useState(DAILY_MODIFIERS[0]);
 
-  // OMEGA EVENT (Co-op Boss)
+  // OMEGA EVENT
   const [omegaEvent, setOmegaEvent] = useState(null);
   const [omegaInput, setOmegaInput] = useState("");
   const [omegaQuestion, setOmegaQuestion] = useState(null);
@@ -428,10 +480,17 @@ function AvengersTracker() {
     setMatrixTarget(null);
   }, [modal]);
 
-  useEffect(() => { localStorage.setItem('avengers_teams_endgame', JSON.stringify(teams)); }, [teams]);
-  useEffect(() => { localStorage.setItem('avengers_mission_endgame', mission); }, [mission]);
+  // Persistent Local Storage Effect for teams
+  useEffect(() => {
+    localStorage.setItem('avengers_teams_endgame', JSON.stringify(teams));
+  }, [teams]);
 
-  // Auth - SECURE INITIALIZATION
+  // Persistent Local Storage Effect for mission
+  useEffect(() => {
+    localStorage.setItem('avengers_mission_endgame', mission);
+  }, [mission]);
+
+  // Auth
   useEffect(() => {
     const initAuth = async () => {
       try {
@@ -645,13 +704,14 @@ function AvengersTracker() {
     if (amt > 0) { triggerConfetti(e); playSfx('success'); } else { playSfx('error'); }
     if (Math.abs(finalAmt) >= 5) speak(`Puntos para ${t.name}`);
     
+    const newPoints = t.points + finalAmt;
     if (!useLocal && db && user) {
         try { 
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'avengers_teams', tid);
-            await updateDoc(docRef, { points: increment(finalAmt) }); 
-        } catch(err) { safeUpdate(tid, { points: t.points + finalAmt }); }
+            await setDoc(docRef, { points: newPoints }, { merge: true }); 
+        } catch(err) { safeUpdate(tid, { points: newPoints }); }
     } else {
-        safeUpdate(tid, { points: t.points + finalAmt });
+        safeUpdate(tid, { points: newPoints });
     }
     if (finalAmt !== 0) logAction(`${t.name}: ${finalAmt > 0 ? '+' : ''}${finalAmt} pts`);
   };
@@ -703,7 +763,6 @@ function AvengersTracker() {
   const clearFuryMessage = () => { safeUpdate('mission_control', { furyMsg: null }); setFuryMessage(null); speak("Transmisión finalizada"); };
   const setTimer = (minutes) => { closeAllModals(); };
 
-  // --- TAREAS Y ROLES Y MUTADORES ---
   const handleTaskCompletion = async (tid, type) => {
       const t = teams.find(i => i.id === tid); 
       if(!t) return;
@@ -760,7 +819,6 @@ function AvengersTracker() {
   const handleBadge = async (tid, badge) => { 
       const t = teams.find(i => i.id === tid); 
       if(!t) return; 
-      // check if exists to prevent duplicates
       if (t.badges?.find(b => b.name === badge.name)) return;
       await safeUpdate(tid, { badges: [...(t.badges || []), badge] }); 
       logAction(`${t.name} ganó medalla ${badge.name}`); 
@@ -780,14 +838,14 @@ function AvengersTracker() {
       const t = teams.find(tm => tm.id === teamId); 
       
       let finalCost = baseCost;
-      if (dailyModifier.effect === 'CHEAP_LOOT' && baseCost === 50 && !itemObj?.id) finalCost = 25; // Lootbox is id-less in this call flow originally, wait, I pass 50 directly. Let's fix that.
+      if (dailyModifier.effect === 'CHEAP_LOOT' && baseCost === 50 && !itemObj?.id) finalCost = 25; 
 
       if (t.points >= finalCost) { 
           playSfx('click'); 
           
           if (itemObj?.id === 'reactorArc' || itemObj?.id === 'oraculo') {
               if (t.upgrades && t.upgrades[itemObj.id]) { showToast("Ya posees esta mejora.", "error"); return false; }
-              await safeUpdate(teamId, { [`upgrades.${itemObj.id}`]: true });
+              await safeUpdate(teamId, { upgrades: { ...t.upgrades, [itemObj.id]: true } });
               handlePts(teamId, -finalCost, null, true);
               logAction(`${t.name} mejoró base: ${itemObj.name}`);
           }
@@ -836,7 +894,7 @@ function AvengersTracker() {
 
       const isCorrect = inputVal.toUpperCase().trim() === currentQ.a.toUpperCase(); 
       let newMistakes = bossAttackState.mistakes; 
-      if (isCorrect) { 
+      if (isCorrect || inputVal === "ACIERTO") { 
           playSfx('success'); 
       } else { 
           playSfx('error'); newMistakes++; 
@@ -870,29 +928,15 @@ function AvengersTracker() {
           const newCurrent = (omegaEvent.current || 0) + 1;
           const updatedOmega = { ...omegaEvent, current: newCurrent };
           
-          if (!useLocal && db && user) {
-              try {
-                  const missionRef = doc(db, 'artifacts', appId, 'public', 'data', 'avengers_teams', 'mission_control');
-                  await updateDoc(missionRef, { 'omegaEvent.current': increment(1) });
-                  getDoc(missionRef).then(d => {
-                      const currentOmega = d.data().omegaEvent;
-                      if(currentOmega && currentOmega.current >= currentOmega.target && currentOmega.active) omegaEventWin();
-                  });
-              } catch (e) {
-                  safeUpdate('mission_control', { omegaEvent: updatedOmega });
-                  if (newCurrent >= omegaEvent.target) omegaEventWin();
-              }
-          } else {
-              safeUpdate('mission_control', { omegaEvent: updatedOmega });
-              if (newCurrent >= omegaEvent.target) omegaEventWin();
-          }
+          safeUpdate('mission_control', { omegaEvent: updatedOmega });
+          if (newCurrent >= omegaEvent.target) omegaEventWin();
       } else {
           playSfx('error'); showToast("Incorrecto. Intenta otra coordenada.", "error"); setOmegaInput("");
       }
   };
   const omegaEventWin = async () => {
       speak("Invasión neutralizada. Thanos ha sufrido daños críticos."); triggerSecretConfetti();
-      await safeUpdate('mission_control', { 'omegaEvent.active': false, bossDamageTaken: bossDamageTaken + 200 });
+      await safeUpdate('mission_control', { omegaEvent: { ...omegaEvent, active: false }, bossDamageTaken: bossDamageTaken + 200 });
       teams.forEach(t => handlePts(t.id, 50, null, true));
       logAction("🛡️ EVENTO OMEGA SUPERADO: Todos ganan +50 Pts. Thanos pierde 200 HP.");
   };
@@ -912,7 +956,7 @@ function AvengersTracker() {
       if (eventType === 'points') {
           const val = isChoiceGood ? 30 : -15; await handlePts(t.id, val, null, true);
           setPillResult(isChoiceGood ? `Sobrecarga estable. ${t.name} gana +30 Pts.` : `Sobrecarga fallida. ${t.name} pierde -15 Pts.`);
-          if(isChoiceGood) { playSfx('success'); handleBadge(t.id, { iconKey: 'Zap', name: "Superviviente", color: "text-amber-400" }); } else playSfx('error');
+          if(isChoiceGood) { playSfx('success'); handleBadge(t.id, { iconKey: 'Zap', name: "Superviviente", color: "text-cyan-400" }); } else playSfx('error');
           logAction(`${t.name} activó ${choice} (${val > 0 ? '+30' : '-15'} pts)`);
       } else {
           if (isChoiceGood) {
@@ -941,15 +985,15 @@ function AvengersTracker() {
           } else if (code === 'HESOYAM') {
               await safeUpdate(loggedInId, { shield: true }); showToast("CHEAT ACTIVATED: Escudo Adquirido", "success"); valid = true;
           } else if (code === 'THEREISNOSPOON') {
-              await safeUpdate(loggedInId, { 'upgrades.reactorArc': true, 'upgrades.oraculo': true }); showToast("PROTOCOL UNLOCKED: Tecnologías conseguidas", "success"); valid = true;
+              await safeUpdate(loggedInId, { upgrades: { ...t.upgrades, reactorArc: true, oraculo: true } }); showToast("PROTOCOL UNLOCKED: Tecnologías conseguidas", "success"); valid = true;
           } else if (code === 'STAN_LEE_LIVES' || code === 'EXCELSIOR') {
               handlePts(loggedInId, 100, null, true); showToast("¡EXCELSIOR! +100 Puntos", "success"); valid = true;
           }
 
           if (valid) {
               playSfx('success'); triggerSecretConfetti();
-              await safeUpdate(loggedInId, { usedCodes: arrayUnion(code) });
-              handleBadge(loggedInId, { iconKey: 'TerminalSquare', name: "Hacker Supremo", color: "text-green-500" });
+              await safeUpdate(loggedInId, { usedCodes: [...(t.usedCodes || []), code] });
+              handleBadge(loggedInId, { iconKey: 'TerminalSquare', name: "Hacker Supremo", color: "text-cyan-500" });
               logAction(`🕵️‍♂️ ${t.name} descubrió el código secreto: ${code}`);
           } else { showToast("Comando no reconocido.", "error"); }
       }
@@ -958,24 +1002,13 @@ function AvengersTracker() {
   // --- ENDGAME PROTOCOL ---
   const executeEndgame = async () => {
       if(!isAdmin) return;
-      playSfx('epic');
-      speak("Lo logramos. Hemos salvado el universo.");
-      triggerSecretConfetti(true); // Massive confetti
-      setModal('endgame'); // Show cinematic modal
+      playSfx('epic'); speak("Lo logramos. Hemos salvado el universo.");
+      triggerSecretConfetti(true); 
+      setModal('endgame'); 
       
-      const newBadges = teams.map(t => ({
-          id: t.id,
-          badge: { iconKey: 'Crown', name: `Héroe Temp ${t.prestige + 1}`, color: 'text-amber-400' }
-      }));
-
-      // Await sequence for stability
       for (const t of teams) {
-          const badgeToAdd = newBadges.find(b => b.id === t.id).badge;
-          await safeUpdate(t.id, { 
-              points: 0, 
-              prestige: t.prestige + 1,
-              badges: [...(t.badges || []), badgeToAdd]
-          });
+          const badgeToAdd = { iconKey: 'Crown', name: `Héroe Temp ${t.prestige + 1}`, color: 'text-yellow-400' };
+          await safeUpdate(t.id, { points: 0, prestige: t.prestige + 1, badges: [...(t.badges || []), badgeToAdd] });
       }
       await safeUpdate('mission_control', { bossDamageTaken: 0, omegaEvent: null });
       logAction("🚀 PROTOCOLO ENDGAME EJECUTADO. Universo Reiniciado. Prestigio Asignado.");
@@ -1014,7 +1047,7 @@ function AvengersTracker() {
   };
 
   const handleLogoClick = () => { setSecretCount(p=>p+1); if(secretCount>4) { speak("Fiesta"); triggerSecretConfetti(); setSecretCount(0); } };
-  const openCerebroMenu = () => { setCerebro({ active: true, target: null, searching: false, type: null }); };
+  const openCerebroMenu = () => { setCerebro({ active: true, target: null, searching: false, type: null }); setModal('cerebro'); };
   const activateCerebro = (type = 'member') => { const targetType = type === 'team' ? 'team' : 'member'; speak(targetType === 'team' ? "Buscando escuadrón" : "Buscando sujeto"); setCerebro({ active: true, target: null, searching: true, type: targetType }); const source = targetType === 'team' ? teams.map(t => t.name) : teams.flatMap(t => t.members); let i = 0; const interval = setInterval(() => { setCerebro(prev => ({ ...prev, target: source[Math.floor(Math.random() * source.length)] })); i++; if (i > 20) { clearInterval(interval); setCerebro(prev => ({ ...prev, searching: false })); speak("Localizado"); playSfx('success'); } }, 100); };
   const updateM = async (txt) => { if(!isAdmin) return; await safeUpdate('mission_control', { text: txt }); closeAllModals(); speak("Misión actualizada"); };
   const toggleAlert = async () => { if(!isAdmin) return; const s = !redAlertMode; setRedAlertMode(s); await safeUpdate('mission_control', { alert: s }); if(s) { speak("Alerta Roja."); logAction("ALERTA ROJA ACTIVADA"); playSfx('alarm'); } else logAction("Alerta desactivada"); };
@@ -1158,12 +1191,12 @@ function AvengersTracker() {
           </div>
         </div>
 
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center flex-wrap justify-end">
             {useLocal && <span className="text-[10px] text-orange-500 font-mono bg-orange-900/20 px-2 py-1 rounded border border-orange-500/50 flex items-center gap-1 shadow-[0_0_10px_rgba(249,115,22,0.3)]"><WifiOff size={10}/> LOCAL</span>}
             {questionAvailable && <button onClick={openDailyQuestion} className="animate-bounce bg-amber-900/50 border border-amber-500 px-3 py-1 rounded text-amber-300 text-xs font-bold flex gap-1 shadow-[0_0_10px_rgba(245,158,11,0.5)] hover:bg-amber-800/80 transition-colors"><Radio size={12}/> MENSAJE</button>}
             
             {loggedInId && !isAdmin && (
-                <div className="flex gap-1">
+                <div className="flex gap-1 flex-wrap">
                     <button onClick={startMathChallenge} className="bg-amber-900/30 border border-amber-500/50 px-3 py-1 rounded text-amber-300 text-xs font-bold flex gap-1 items-center hover:bg-amber-800/80 transition-colors shadow-[0_0_10px_rgba(245,158,11,0.2)] hover:shadow-[0_0_15px_rgba(245,158,11,0.5)]">
                         <Calculator size={14}/> MATES
                     </button>
@@ -1183,7 +1216,7 @@ function AvengersTracker() {
             )}
 
             {isAdmin ? (
-                <>
+                <div className="flex gap-1 flex-wrap justify-end">
                   <button onClick={triggerOmegaAlert} className="p-2 rounded border bg-red-900/50 border-red-500/50 text-red-400 hover:bg-red-500 hover:text-white transition-colors animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.4)]" title="ALERTA OMEGA"><AlertOctagon size={16}/></button>
                   <button onClick={backupData} className="p-2 rounded border bg-[#1a1100]/50 border-amber-500/40 text-amber-400 hover:text-amber-300 hover:bg-amber-900/50 transition-colors" title="Guardar Copia"><Save size={16}/></button>
                   <button onClick={restoreData} className="p-2 rounded border bg-[#1a1100]/50 border-amber-500/40 text-amber-400 hover:text-amber-300 hover:bg-amber-900/50 transition-colors" title="Restaurar Copia"><Upload size={16}/></button>
@@ -1197,7 +1230,7 @@ function AvengersTracker() {
                   <button onClick={()=>setModal('history')} className="p-2 rounded border bg-[#1a1100]/50 border-amber-500/40 text-amber-500 hover:text-amber-300 transition-colors"><History size={16}/></button>
                   <button onClick={reset} className="p-2 rounded border bg-[#1a1100]/50 border-red-900/50 text-red-500 hover:bg-red-900/30 transition-colors"><Trash2 size={16}/></button>
                   <button onClick={()=>{setIsAdmin(false); setLoggedInId(null);}} className="bg-red-900/30 border border-red-500/50 px-3 py-1 rounded text-xs font-bold text-red-400 hover:bg-red-900/60 transition-colors shadow-[0_0_10px_rgba(239,68,68,0.2)]">SALIR</button>
-                </>
+                </div>
             ) : loggedInId ? (
                 <button onClick={()=>{setIsAdmin(false); setLoggedInId(null);}} className="bg-yellow-900/30 border border-yellow-500/50 px-3 py-1 rounded text-xs font-bold text-yellow-400 hover:bg-yellow-900/60 transition-colors shadow-[0_0_10px_rgba(250,204,21,0.2)]">SALIR</button>
             ) : (
@@ -1438,6 +1471,265 @@ function AvengersTracker() {
         </div>
       </main>
 
+      {/* --- RESTORED MODALS --- */}
+
+      {/* BOSS ATTACK MODAL */}
+      {modal === 'bossAttack' && bossAttackState.active && (
+         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4">
+             <div className="bg-[#0f0a00] border-4 border-red-600 p-6 rounded-lg w-full max-w-lg shadow-[0_0_50px_rgba(220,38,38,0.5)] relative overflow-hidden animate-in zoom-in duration-300">
+                 
+                 <div className="flex justify-between items-center mb-6 border-b border-red-900/50 pb-4">
+                     <h3 className="text-2xl font-black text-red-500 uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_10px_rgba(248,113,113,0.8)]">
+                         <Skull size={32} className="animate-pulse"/> PROTOCOLO DEFENSA
+                     </h3>
+                     <div className="text-xs font-mono text-red-300/50">OBJETIVO: {bossAttackState.team?.name}</div>
+                 </div>
+
+                 <div className="mb-8">
+                     <div className="flex justify-between text-xs font-bold text-red-400 mb-2 uppercase">
+                         <span>Gema {bossAttackState.currentIdx + 1}/6</span>
+                         <span>Fallos: <span className="text-red-500">{bossAttackState.mistakes}</span></span>
+                     </div>
+                     <div className="h-2 bg-[#1a1100] rounded-full overflow-hidden shadow-inner border border-red-900/30">
+                         <div 
+                            className="h-full transition-all duration-500 shadow-[0_0_10px_rgba(255,255,255,0.5)]" 
+                            style={{ 
+                                width: `${((bossAttackState.currentIdx) / 6) * 100}%`,
+                                backgroundColor: ['#3b82f6', '#ef4444', '#a855f7', '#eab308', '#22c55e', '#f97316'][bossAttackState.currentIdx] 
+                            }}
+                         ></div>
+                     </div>
+                 </div>
+
+                 <div className="bg-[#1a1100] p-6 rounded border border-red-900/50 mb-6 text-center min-h-[8rem] flex items-center justify-center shadow-inner">
+                     <p className="text-xl font-bold text-red-100 leading-relaxed">
+                         {bossAttackState.questions[bossAttackState.currentIdx]?.q}
+                     </p>
+                 </div>
+
+                 <div className="grid grid-cols-2 gap-4">
+                     <button 
+                         onClick={() => submitBossAnswer("INCORRECTO")} 
+                         className="py-4 bg-red-900/20 hover:bg-red-600 border border-red-600 text-red-200 font-bold uppercase rounded transition-all hover:shadow-[0_0_15px_rgba(248,113,113,0.6)]"
+                     >
+                         FALLO (-10 PTS)
+                     </button>
+                     <button 
+                         onClick={() => submitBossAnswer(bossAttackState.questions[bossAttackState.currentIdx]?.a)} 
+                         className="py-4 bg-emerald-900/20 hover:bg-emerald-600 border border-emerald-600 text-emerald-200 font-bold uppercase rounded transition-all hover:shadow-[0_0_15px_rgba(16,185,129,0.6)]"
+                     >
+                         ACIERTO
+                     </button>
+                 </div>
+                 
+                 <div className="mt-4 text-center">
+                    <p className="text-[10px] text-red-500/50 font-mono">RESPUESTA: <span className="text-slate-300 font-bold">{bossAttackState.questions[bossAttackState.currentIdx]?.a}</span></p>
+                 </div>
+             </div>
+         </div>
+      )}
+
+      {/* MATH CHALLENGE MODAL */}
+      {modal === 'mathChallenge' && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4">
+              <div className="bg-[#0f0a00] border-2 border-amber-500 p-6 rounded-sm w-full max-w-sm shadow-[0_0_30px_rgba(245,158,11,0.2)] relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-amber-500/50 animate-pulse"></div>
+                  <h3 className="text-xl font-black text-amber-500 mb-1 flex items-center gap-2 drop-shadow-[0_0_5px_rgba(245,158,11,0.5)]"><Brain size={24}/> ENTRENAMIENTO MATEMÁTICO</h3>
+                  <div className="flex justify-between items-center mb-4">
+                      <p className="text-[10px] font-mono text-amber-700">NIVEL {mathState.level} | FASE {mathState.currentIdx + 1} / 5</p>
+                      {streak > 1 && <div className="text-orange-500 text-xs font-bold flex items-center animate-pulse drop-shadow-[0_0_5px_rgba(249,115,22,0.8)]"><Flame size={12}/> x{streak}</div>}
+                  </div>
+
+                  <div className="bg-[#1a1100] p-6 rounded border border-amber-900/50 mb-6 text-center flex flex-col gap-2 shadow-inner">
+                      <p className="text-4xl font-mono font-bold text-amber-300 tracking-widest drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]">
+                          {mathState.questions[mathState.currentIdx]?.q}
+                      </p>
+                  </div>
+
+                  <input 
+                      type="text" 
+                      value={mathInput} 
+                      onChange={(e) => setMathInput(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && submitMathAnswer()}
+                      className="w-full bg-black border border-amber-700 p-3 text-amber-400 text-center font-bold text-xl mb-4 focus:border-amber-400 outline-none focus:shadow-[0_0_15px_rgba(245,158,11,0.3)] transition-shadow"
+                      placeholder="Resultado"
+                      autoFocus
+                  />
+                  
+                  <div className="flex gap-2">
+                      <button onClick={closeAllModals} className="flex-1 py-3 text-xs text-amber-700 hover:text-amber-500 transition-colors">ABORTAR</button>
+                      <button onClick={submitMathAnswer} className="flex-1 bg-amber-600 hover:bg-amber-500 text-black font-bold py-3 rounded uppercase hover:shadow-[0_0_15px_rgba(245,158,11,0.6)] transition-shadow">CONFIRMAR</button>
+                  </div>
+              </div>
+          </div>
+      )}
+
+      {/* WORD CHALLENGE MODAL */}
+      {modal === 'wordChallenge' && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4">
+              <div className="bg-[#0f0a00] border-2 border-purple-500 p-6 rounded-sm w-full max-w-sm shadow-[0_0_30px_rgba(168,85,247,0.2)] relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-purple-500/50 animate-pulse"></div>
+                  <h3 className="text-xl font-black text-purple-500 mb-4 flex items-center gap-2 drop-shadow-[0_0_5px_rgba(192,132,252,0.5)]"><Binary size={24}/> DESCIFRADO HYDRA</h3>
+                  
+                  <div className="bg-[#1a1100] p-6 rounded border border-purple-900/50 mb-6 text-center shadow-inner">
+                      <p className="text-3xl font-mono font-bold text-purple-300 tracking-[0.5em] animate-pulse drop-shadow-[0_0_10px_rgba(192,132,252,0.8)]">
+                          {wordState.scrambled}
+                      </p>
+                      <p className="text-[10px] text-purple-800 mt-2">ORDENA LAS LETRAS</p>
+                  </div>
+
+                  <input 
+                      type="text" 
+                      value={wordInput} 
+                      onChange={(e) => setWordInput(e.target.value.toUpperCase())}
+                      onKeyDown={(e) => e.key === 'Enter' && submitWordAnswer()}
+                      className="w-full bg-black border border-purple-700 p-3 text-purple-400 text-center font-bold text-xl mb-4 focus:border-purple-400 outline-none uppercase focus:shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-shadow"
+                      placeholder="SOLUCIÓN"
+                      autoFocus
+                  />
+                  
+                  <div className="flex gap-2">
+                      <button onClick={closeAllModals} className="flex-1 py-3 text-xs text-purple-800 hover:text-purple-500 transition-colors">ABORTAR</button>
+                      <button onClick={submitWordAnswer} className="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded uppercase hover:shadow-[0_0_15px_rgba(168,85,247,0.6)] transition-shadow">ENVIAR CÓDIGO</button>
+                  </div>
+              </div>
+          </div>
+      )}
+      
+      {/* COMBAT CHALLENGE MODAL */}
+      {modal === 'combatChallenge' && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4">
+              <div className="bg-[#0f0a00] border-2 border-red-500 p-6 rounded-sm w-full max-w-sm shadow-[0_0_30px_rgba(239,68,68,0.2)] relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-red-500/50 animate-pulse"></div>
+                  <h3 className="text-xl font-black text-red-500 mb-4 flex items-center gap-2 drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]"><Target size={24}/> SIMULACIÓN COMBATE</h3>
+                  <div className="flex justify-between items-center mb-4">
+                      <p className="text-[10px] font-mono text-red-700">OBJETIVO {combatState.currentIdx + 1} / 5</p>
+                  </div>
+                  
+                  <div className="bg-[#1a1100] p-6 rounded border border-red-900/50 mb-6 text-center shadow-inner">
+                      <p className="text-lg font-bold text-red-300 leading-relaxed drop-shadow-[0_0_5px_rgba(248,113,113,0.3)]">
+                          {combatState.questions[combatState.currentIdx]?.q}
+                      </p>
+                  </div>
+
+                  <input 
+                      type="text" 
+                      value={combatInput} 
+                      onChange={(e) => setCombatInput(e.target.value.toUpperCase())}
+                      onKeyDown={(e) => e.key === 'Enter' && submitCombatAnswer()}
+                      className="w-full bg-black border border-red-700 p-3 text-red-400 text-center font-bold text-xl mb-4 focus:border-red-400 outline-none uppercase focus:shadow-[0_0_15px_rgba(239,68,68,0.3)] transition-shadow"
+                      placeholder="RESPUESTA"
+                      autoFocus
+                  />
+                  
+                  <div className="flex gap-2">
+                      <button onClick={closeAllModals} className="flex-1 py-3 text-xs text-red-800 hover:text-red-500 transition-colors">ABORTAR</button>
+                      <button onClick={submitCombatAnswer} className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded uppercase hover:shadow-[0_0_15px_rgba(239,68,68,0.6)] transition-shadow">DISPARAR</button>
+                  </div>
+              </div>
+          </div>
+      )}
+
+      {/* MEMORY CHALLENGE MODAL */}
+      {modal === 'memoryChallenge' && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4">
+              <div className="bg-[#0f0a00] border-2 border-cyan-500 p-6 rounded-sm w-full max-w-3xl shadow-[0_0_30px_rgba(34,211,238,0.2)] relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-cyan-500/50 animate-pulse"></div>
+                  <h3 className="text-xl font-black text-cyan-500 mb-4 flex items-center gap-2 drop-shadow-[0_0_5px_rgba(103,232,249,0.5)]"><Grid3X3 size={24}/> PROTOCOLO SINCRONIZACIÓN</h3>
+                  <p className="text-xs text-cyan-800 mb-4 font-mono">EMPAREJA LOS CONCEPTOS</p>
+
+                  <div className="grid grid-cols-4 gap-3">
+                      {memoryState.cards.map((card) => (
+                          <div 
+                              key={card.id} 
+                              onClick={() => handleCardClick(card.id)}
+                              className={`h-24 rounded border flex items-center justify-center cursor-pointer transition-all duration-300 relative overflow-hidden ${
+                                  card.isMatched ? 'bg-emerald-900/50 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]' :
+                                  card.isFlipped ? 'bg-cyan-900/50 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.5)]' : 
+                                  'bg-[#1a1100] border-amber-900/30 hover:border-amber-700/50'
+                              }`}
+                          >
+                              {card.isFlipped || card.isMatched ? (
+                                  <p className="text-xs font-bold text-white text-center p-2 leading-tight drop-shadow-md">{card.content}</p>
+                              ) : (
+                                  <Shield size={32} className="text-amber-900/30" />
+                              )}
+                          </div>
+                      ))}
+                  </div>
+
+                  <button onClick={closeAllModals} className="mt-6 w-full py-3 bg-[#1a1100] border border-amber-900/50 hover:bg-amber-900/30 text-amber-500 text-xs font-bold uppercase rounded transition-colors">CANCELAR</button>
+              </div>
+          </div>
+      )}
+
+      {/* CEREBRO MODAL */}
+      {modal === 'cerebro' && cerebro.active && (
+        <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4">
+          <div className="absolute inset-0" onClick={()=>{if(!cerebro.searching) closeAllModals()}}></div>
+          <div className="relative z-10 text-center bg-[#0f0a00] p-8 rounded-xl border border-amber-500/50 max-w-lg w-full mx-4 shadow-[0_0_50px_rgba(245,158,11,0.2)]">
+            
+            {!cerebro.type ? (
+               <>
+                 <Brain size={80} className="mx-auto text-amber-500 mb-6 animate-pulse drop-shadow-[0_0_15px_rgba(245,158,11,0.8)]" />
+                 <h2 className="text-2xl font-black text-amber-400 uppercase tracking-widest mb-6 drop-shadow-[0_0_5px_rgba(245,158,11,0.5)] font-mono">PROTOCOLO NEXO</h2>
+                 <p className="text-sm text-amber-600 mb-8 font-mono">Seleccione el objetivo del rastreo:</p>
+                 <div className="grid grid-cols-2 gap-4">
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); activateCerebro('member'); }}
+                        className="py-6 bg-[#1a1100] hover:bg-amber-900/30 border border-amber-800/50 hover:border-amber-500 text-amber-500 font-black uppercase tracking-widest rounded transition-all active:scale-95 flex flex-col items-center gap-2 hover:shadow-[0_0_20px_rgba(245,158,11,0.3)] font-mono"
+                    >
+                        <User size={32}/> OPERATIVO
+                    </button>
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); activateCerebro('team'); }}
+                        className="py-6 bg-[#1a1100] hover:bg-amber-900/30 border border-amber-800/50 hover:border-amber-500 text-amber-500 font-black uppercase tracking-widest rounded transition-all active:scale-95 flex flex-col items-center gap-2 hover:shadow-[0_0_20px_rgba(245,158,11,0.3)] font-mono"
+                    >
+                        <Users size={32}/> ESCUADRÓN
+                    </button>
+                 </div>
+                 <button 
+                    onClick={(e) => { e.stopPropagation(); closeAllModals(); }}
+                    className="mt-6 text-amber-800 text-xs hover:text-amber-500 underline font-mono transition-colors"
+                >
+                    CANCELAR RASTREO
+                </button>
+               </>
+            ) : (
+               <>
+                 <div className={`mb-6 ${cerebro.searching ? 'animate-spin' : ''}`}>
+                    {cerebro.type === 'team' ? <Users size={64} className="mx-auto text-amber-500 drop-shadow-[0_0_15px_rgba(245,158,11,0.8)]"/> : <Brain size={64} className="mx-auto text-amber-500 drop-shadow-[0_0_15px_rgba(245,158,11,0.8)]"/>}
+                 </div>
+                 <h2 className="text-xl font-black text-amber-400 uppercase tracking-widest mb-4 font-mono">
+                    {cerebro.searching ? "RASTREANDO..." : (cerebro.type === 'team' ? "ESCUADRÓN LOCALIZADO" : "SUJETO LOCALIZADO")}
+                 </h2>
+                 
+                 <div className="text-3xl md:text-5xl font-mono font-black text-amber-300 mb-8 min-h-[4rem] flex items-center justify-center p-4 bg-black rounded border border-amber-800 shadow-inner drop-shadow-[0_0_10px_rgba(245,158,11,0.3)]">
+                    {cerebro.target || <span className="animate-pulse text-amber-800">...</span>}
+                 </div>
+                
+                 {!cerebro.searching && (
+                    <div className="grid grid-cols-2 gap-4">
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); activateCerebro(cerebro.type); }}
+                            className="py-3 bg-amber-700 hover:bg-amber-600 text-black font-bold uppercase tracking-widest rounded shadow-[0_0_15px_rgba(245,158,11,0.3)] transition-all active:scale-95 flex items-center justify-center gap-2 font-mono"
+                        >
+                            <RefreshCw size={16}/> RE-ESCANEAR
+                        </button>
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); closeAllModals(); }}
+                            className="py-3 bg-[#1a1100] border border-amber-800 hover:bg-amber-900/40 text-amber-500 font-bold uppercase tracking-widest rounded transition-all active:scale-95 font-mono"
+                        >
+                            CERRAR
+                        </button>
+                    </div>
+                 )}
+               </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ENDGAME PROTOCOL MODAL */}
       {modal === 'endgame' && (
           <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-white p-4 animate-in fade-in duration-1000">
@@ -1564,7 +1856,7 @@ function AvengersTracker() {
 
             <div className="flex border-b border-yellow-900/50 bg-[#1a1100]">
                <button onClick={() => setShopTab('rewards')} className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-colors ${shopTab === 'rewards' ? 'text-yellow-400 border-b-2 border-yellow-500 bg-yellow-900/20' : 'text-yellow-800 hover:text-yellow-600'}`}>Recompensas</button>
-               <button onClick={() => setShopTab('tech')} className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-colors ${shopTab === 'tech' ? 'text-cyan-400 border-b-2 border-cyan-500 bg-cyan-900/20' : 'text-cyan-800 hover:text-cyan-600'}`}>Tecnología</button>
+               <button onClick={() => setShopTab('tech')} className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-colors ${shopTab === 'tech' ? 'text-amber-400 border-b-2 border-amber-500 bg-amber-900/20' : 'text-amber-800 hover:text-amber-600'}`}>Tecnología</button>
             </div>
 
             <div className="p-6 grid gap-4 max-h-[50vh] overflow-y-auto">
@@ -1577,24 +1869,24 @@ function AvengersTracker() {
               ) : (
                 <>
                   <div className="mb-4 text-center">
-                      <p className="text-xs text-cyan-500 font-mono">Inversiones a largo plazo para mejorar el rendimiento del equipo.</p>
+                      <p className="text-xs text-amber-500 font-mono">Inversiones a largo plazo para mejorar el rendimiento del equipo.</p>
                   </div>
                   {UPGRADES_LIST.map((upg) => {
                      const isOwned = selTeam.upgrades && selTeam.upgrades[upg.id];
                      return (
-                        <div key={upg.id} className={`group relative bg-[#1a1100] border rounded-sm p-4 transition-all flex justify-between items-center ${isOwned ? 'border-cyan-500 shadow-[0_0_15px_rgba(34,211,238,0.2)]' : 'border-cyan-900/50 hover:border-cyan-500/50'}`}>
+                        <div key={upg.id} className={`group relative bg-[#1a1100] border rounded-sm p-4 transition-all flex justify-between items-center ${isOwned ? 'border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.2)]' : 'border-amber-900/50 hover:border-amber-500/50'}`}>
                           <div className="flex items-start gap-4">
-                              <div className={`p-3 rounded-sm transition-all border ${isOwned ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/50' : 'bg-cyan-900/20 text-cyan-700 border-cyan-900/30'}`}>{upg.icon}</div>
+                              <div className={`p-3 rounded-sm transition-all border ${isOwned ? 'bg-amber-500/20 text-amber-400 border-amber-500/50' : 'bg-amber-900/20 text-amber-700 border-amber-900/30'}`}>{ICONS[upg.iconKey] && React.createElement(ICONS[upg.iconKey], { size: 20 })}</div>
                               <div>
-                                  <h4 className={`font-bold uppercase tracking-wide font-mono ${isOwned ? 'text-cyan-400' : 'text-cyan-600'}`}>{upg.name}</h4>
-                                  <p className="text-xs text-cyan-700 mt-1 font-mono">{upg.desc}</p>
-                                  {isOwned && <p className="text-[10px] text-cyan-500 font-bold mt-2 uppercase animate-pulse">INSTALADO Y ACTIVO</p>}
+                                  <h4 className={`font-bold uppercase tracking-wide font-mono ${isOwned ? 'text-amber-400' : 'text-amber-600'}`}>{upg.name}</h4>
+                                  <p className="text-xs text-amber-700 mt-1 font-mono">{upg.desc}</p>
+                                  {isOwned && <p className="text-[10px] text-amber-500 font-bold mt-2 uppercase animate-pulse">INSTALADO Y ACTIVO</p>}
                               </div>
                           </div>
                           {!isOwned ? (
-                             <button onClick={() => handleBuy(selTeam.id, upg.cost, upg)} disabled={selTeam.points < upg.cost} className={`px-6 py-2 rounded-sm font-bold font-mono text-sm border transition-all duration-300 ${selTeam.points >= upg.cost ? 'bg-cyan-900/30 text-cyan-400 border-cyan-500 hover:bg-cyan-500 hover:text-black shadow-[0_0_10px_rgba(34,211,238,0.3)]' : 'bg-transparent text-cyan-900 border-cyan-900/50 cursor-not-allowed'}`}>{upg.cost} PTS</button>
+                             <button onClick={() => handleBuy(selTeam.id, upg.cost, upg)} disabled={selTeam.points < upg.cost} className={`px-6 py-2 rounded-sm font-bold font-mono text-sm border transition-all duration-300 ${selTeam.points >= upg.cost ? 'bg-amber-900/30 text-amber-400 border-amber-500 hover:bg-amber-500 hover:text-black shadow-[0_0_10px_rgba(245,158,11,0.3)]' : 'bg-transparent text-amber-900 border-amber-900/50 cursor-not-allowed'}`}>{upg.cost} PTS</button>
                           ) : (
-                             <div className="px-6 py-2 rounded-sm font-bold font-mono text-sm border border-cyan-500/50 bg-cyan-500/10 text-cyan-500">ADQUIRIDO</div>
+                             <div className="px-6 py-2 rounded-sm font-bold font-mono text-sm border border-amber-500/50 bg-amber-500/10 text-amber-500">ADQUIRIDO</div>
                           )}
                         </div>
                      )
@@ -1669,7 +1961,7 @@ function AvengersTracker() {
           <div className="relative bg-[#050A05] border border-red-500/50 p-6 rounded-sm w-full max-w-lg shadow-[0_0_30px_rgba(220,38,38,0.2)]">
             <div className="bg-red-950/20 p-8 text-center border-b border-red-900/50"><div className="mx-auto bg-red-900/20 border border-red-500/30 w-20 h-20 rounded-full flex items-center justify-center mb-4 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.2)]"><Skull size={40} className="text-red-500 drop-shadow-[0_0_5px_rgba(248,113,113,0.8)]" /></div><h3 className="text-2xl font-black text-red-500 uppercase tracking-[0.2em] mb-2 drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]">Zona de Castigo</h3><p className="text-red-400/60 text-sm font-mono">Medidas disciplinarias para <span className="font-bold text-red-300">{selTeam.name}</span></p></div>
             <div className="p-8">
-              {!penalty ? (<button onClick={spinPenalty} className="w-full bg-red-900/30 border border-red-500/50 hover:bg-red-600 text-red-400 hover:text-black font-black py-5 rounded-sm shadow-[0_0_15px_rgba(220,38,38,0.2)] hover:shadow-[0_0_30px_rgba(220,38,38,0.6)] flex justify-center gap-3 transition-all"><RefreshCw size={20} /> GENERAR SANCIÓN</button>) : (<div className="animate-in zoom-in duration-300"><div className="bg-black/50 p-6 rounded-sm border border-red-500/30 mb-6 text-center shadow-inner"><p className="text-xs text-red-600 mb-3 uppercase tracking-widest font-mono">Sentencia:</p><div className={`text-xl font-bold font-mono p-2 rounded ${penalty==='BLOCKED'?'text-cyan-400 border border-cyan-500/50 bg-cyan-900/10 shadow-[0_0_15px_rgba(34,211,238,0.2)]':'text-red-300 drop-shadow-md'}`}>{penalty==='BLOCKED'?'¡ESCUDO ACTIVADO! Sanción bloqueada.':penalty}</div></div><div className="flex gap-3"><button onClick={spinPenalty} className="flex-1 py-3 bg-[#1a1100] border border-red-900/50 hover:bg-red-900/20 text-red-500 rounded-sm font-bold text-xs uppercase transition-colors font-mono">Reintentar</button><button onClick={closeAllModals} className="flex-1 py-3 bg-red-700 hover:bg-red-600 text-black rounded-sm font-bold text-xs uppercase shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all hover:shadow-[0_0_20px_rgba(239,68,68,0.6)] font-mono">Ejecutar</button></div></div>)}
+              {!penalty ? (<button onClick={spinPenalty} className="w-full bg-red-900/30 border border-red-500/50 hover:bg-red-600 text-red-400 hover:text-black font-black py-5 rounded-sm shadow-[0_0_15px_rgba(220,38,38,0.2)] hover:shadow-[0_0_30px_rgba(220,38,38,0.6)] flex justify-center gap-3 transition-all"><RefreshCw size={20} /> GENERAR SANCIÓN</button>) : (<div className="animate-in zoom-in duration-300"><div className="bg-black/50 p-6 rounded-sm border border-red-500/30 mb-6 text-center shadow-inner"><p className="text-xs text-red-600 mb-3 uppercase tracking-widest font-mono">Sentencia:</p><div className={`text-xl font-bold font-mono p-2 rounded ${penalty==='BLOCKED'?'text-amber-400 border border-amber-500/50 bg-amber-900/10 shadow-[0_0_15px_rgba(245,158,11,0.2)]':'text-red-300 drop-shadow-md'}`}>{penalty==='BLOCKED'?'¡ESCUDO ACTIVADO! Sanción bloqueada.':penalty}</div></div><div className="flex gap-3"><button onClick={spinPenalty} className="flex-1 py-3 bg-[#1a1100] border border-red-900/50 hover:bg-red-900/20 text-red-500 rounded-sm font-bold text-xs uppercase transition-colors font-mono">Reintentar</button><button onClick={closeAllModals} className="flex-1 py-3 bg-red-700 hover:bg-red-600 text-black rounded-sm font-bold text-xs uppercase shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all hover:shadow-[0_0_20px_rgba(239,68,68,0.6)] font-mono">Ejecutar</button></div></div>)}
             </div>
           </div>
         </div>
@@ -1679,11 +1971,11 @@ function AvengersTracker() {
       {modal === 'catalog' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/95 backdrop-blur-sm" onClick={closeAllModals}></div>
-          <div className="relative bg-[#050A05] border border-green-500/40 w-full max-w-6xl rounded-sm overflow-hidden shadow-[0_0_30px_rgba(34,197,94,0.15)] flex flex-col max-h-[90vh]">
-            <div className="bg-[#1a1100] p-6 border-b border-green-800/50 flex justify-between items-center"><h3 className="text-2xl font-black text-green-500 uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_5px_rgba(34,197,94,0.5)]"><Info size={24} className="text-green-400" /> Archivos</h3><button onClick={closeAllModals} className="text-green-800 hover:text-green-400 transition-colors">✕</button></div>
+          <div className="relative bg-[#050A05] border border-amber-500/40 w-full max-w-6xl rounded-sm overflow-hidden shadow-[0_0_30px_rgba(245,158,11,0.15)] flex flex-col max-h-[90vh]">
+            <div className="bg-[#1a1100] p-6 border-b border-amber-800/50 flex justify-between items-center"><h3 className="text-2xl font-black text-amber-500 uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_5px_rgba(245,158,11,0.5)]"><Info size={24} className="text-amber-400" /> Archivos</h3><button onClick={closeAllModals} className="text-amber-800 hover:text-amber-400 transition-colors">✕</button></div>
             <div className="p-6 overflow-y-auto grid md:grid-cols-3 gap-8">
-              <div><h4 className="text-lg font-bold text-yellow-500 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-yellow-500/30 pb-2 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)] font-mono"><Zap size={18} /> Ventajas</h4><div className="space-y-3">{REWARDS_LIST.map((r) => (<div key={r.id} className="bg-yellow-900/5 border border-yellow-900/30 p-3 rounded-sm flex justify-between items-start"><div><p className="font-bold text-green-400 text-sm font-mono">{r.name}</p><p className="text-xs text-green-700 mt-0.5 font-mono">{r.desc}</p></div><span className="bg-yellow-900/20 text-yellow-500 border border-yellow-700/50 px-2 py-1 rounded-sm text-xs font-mono font-bold whitespace-nowrap">{r.cost} PTS</span></div>))}</div></div>
-              <div><h4 className="text-lg font-bold text-blue-400 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-blue-500/30 pb-2 drop-shadow-[0_0_5px_rgba(96,165,250,0.5)] font-mono"><Hexagon size={18} /> Gemas</h4><div className="space-y-3">{INFINITY_STONES.map((s, index) => (<div key={index} className="bg-[#1a1100] border border-green-900/30 p-3 rounded-sm flex items-start gap-3"><div className={`mt-1 ${s.color.split(' ')[0]}`}><Hexagon size={16} fill="currentColor" /></div><div><p className={`font-bold text-sm uppercase font-mono ${s.color.split(' ')[0]}`}>Gema del {s.name} <span className="text-xs text-green-700 ml-1">({s.threshold} pts)</span></p><p className="text-xs text-green-600 mt-0.5 font-mono">{s.perk}</p></div></div>))}</div></div>
+              <div><h4 className="text-lg font-bold text-yellow-500 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-yellow-500/30 pb-2 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)] font-mono"><Zap size={18} /> Ventajas</h4><div className="space-y-3">{REWARDS_LIST.map((r) => (<div key={r.id} className="bg-yellow-900/5 border border-yellow-900/30 p-3 rounded-sm flex justify-between items-start"><div><p className="font-bold text-amber-400 text-sm font-mono">{r.name}</p><p className="text-xs text-amber-700 mt-0.5 font-mono">{r.desc}</p></div><span className="bg-yellow-900/20 text-yellow-500 border border-yellow-700/50 px-2 py-1 rounded-sm text-xs font-mono font-bold whitespace-nowrap">{r.cost} PTS</span></div>))}</div></div>
+              <div><h4 className="text-lg font-bold text-blue-400 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-blue-500/30 pb-2 drop-shadow-[0_0_5px_rgba(96,165,250,0.5)] font-mono"><Hexagon size={18} /> Gemas</h4><div className="space-y-3">{INFINITY_STONES.map((s, index) => (<div key={index} className="bg-[#1a1100] border border-amber-900/30 p-3 rounded-sm flex items-start gap-3"><div className={`mt-1 ${s.color.split(' ')[0]}`}><Hexagon size={16} fill="currentColor" /></div><div><p className={`font-bold text-sm uppercase font-mono ${s.color.split(' ')[0]}`}>Gema del {s.name} <span className="text-xs text-amber-700 ml-1">({s.threshold} pts)</span></p><p className="text-xs text-amber-600 mt-0.5 font-mono">{s.perk}</p></div></div>))}</div></div>
               <div><h4 className="text-lg font-bold text-red-500 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-red-500/30 pb-2 drop-shadow-[0_0_5px_rgba(248,113,113,0.5)] font-mono"><AlertTriangle size={18} /> Sanciones</h4><div className="space-y-3">{PENALTIES_LIST.map((p, index) => (<div key={index} className="bg-red-900/5 border border-red-900/30 p-3 rounded-sm flex items-start gap-3"><div className="bg-red-900/20 border border-red-700/50 p-1.5 rounded-sm text-red-500 mt-0.5"><Skull size={12} /></div><p className="text-sm text-red-400/80 leading-relaxed font-mono">{p}</p></div>))}</div></div>
             </div>
           </div>
