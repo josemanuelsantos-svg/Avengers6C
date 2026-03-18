@@ -602,35 +602,38 @@ function AvengersTracker() {
         
         setTeams(prevTeams => {
             let shouldSyncLocal = false;
-            const merged = prevTeams.map(prevTeam => {
-               const t = tArr.find(it => it.id === prevTeam.id);
+            
+            // CRUCIAL: Mapeamos SIEMPRE sobre INITIAL_TEAMS en lugar de prevTeams
+            // para garantizar que nunca desaparezca ninguna de las 6 tarjetas.
+            const merged = INITIAL_TEAMS.map(staticData => {
+               const fbTeam = tArr.find(it => it.id === staticData.id);
+               const prevLocalTeam = prevTeams.find(it => it.id === staticData.id) || staticData;
                
                // Si Firebase no tiene el equipo (está en blanco), MANTENEMOS la memoria local
-               // donde están tus puntos viejos guardados.
-               if (!t) {
+               if (!fbTeam) {
                    shouldSyncLocal = true;
-                   return prevTeam;
+                   return prevLocalTeam;
                }
 
-               let isNewDay = t.lastDaily && t.lastDaily !== today;
+               let isNewDay = fbTeam.lastDaily && fbTeam.lastDaily !== today;
 
                return {
-                   ...prevTeam,
-                   points: t.points ?? prevTeam.points, 
-                   shield: t.shield ?? prevTeam.shield,
-                   badges: t.badges ?? prevTeam.badges,
-                   prestige: t.prestige ?? prevTeam.prestige ?? 0,
-                   dailyMath: isNewDay ? 0 : (t.dailyMath ?? prevTeam.dailyMath ?? 0), 
-                   dailyWord: isNewDay ? 0 : (t.dailyWord ?? prevTeam.dailyWord ?? 0),
-                   dailyCombat: isNewDay ? 0 : (t.dailyCombat ?? prevTeam.dailyCombat ?? 0), 
-                   dailyMemory: isNewDay ? 0 : (t.dailyMemory ?? prevTeam.dailyMemory ?? 0),
-                   lastLoot: isNewDay ? null : (t.lastLoot ?? prevTeam.lastLoot ?? null), 
-                   doublePointsUntil: t.doublePointsUntil ?? prevTeam.doublePointsUntil ?? 0,
-                   lastSpin: isNewDay ? '' : (t.lastSpin ?? prevTeam.lastSpin ?? ''), 
-                   gif: t.gif ?? prevTeam.gif,
-                   upgrades: t.upgrades || prevTeam.upgrades || {}, 
-                   usedCodes: t.usedCodes || prevTeam.usedCodes || [], 
-                   matrixEvent: t.matrixEvent ?? prevTeam.matrixEvent ?? false
+                   ...staticData,
+                   points: fbTeam.points ?? prevLocalTeam.points, 
+                   shield: fbTeam.shield ?? prevLocalTeam.shield,
+                   badges: fbTeam.badges ?? prevLocalTeam.badges,
+                   prestige: fbTeam.prestige ?? prevLocalTeam.prestige ?? 0,
+                   dailyMath: isNewDay ? 0 : (fbTeam.dailyMath ?? prevLocalTeam.dailyMath ?? 0), 
+                   dailyWord: isNewDay ? 0 : (fbTeam.dailyWord ?? prevLocalTeam.dailyWord ?? 0),
+                   dailyCombat: isNewDay ? 0 : (fbTeam.dailyCombat ?? prevLocalTeam.dailyCombat ?? 0), 
+                   dailyMemory: isNewDay ? 0 : (fbTeam.dailyMemory ?? prevLocalTeam.dailyMemory ?? 0),
+                   lastLoot: isNewDay ? null : (fbTeam.lastLoot ?? prevLocalTeam.lastLoot ?? null), 
+                   doublePointsUntil: fbTeam.doublePointsUntil ?? prevLocalTeam.doublePointsUntil ?? 0,
+                   lastSpin: isNewDay ? '' : (fbTeam.lastSpin ?? prevLocalTeam.lastSpin ?? ''), 
+                   gif: fbTeam.gif ?? prevLocalTeam.gif,
+                   upgrades: fbTeam.upgrades || prevLocalTeam.upgrades || {}, 
+                   usedCodes: fbTeam.usedCodes || prevLocalTeam.usedCodes || [], 
+                   matrixEvent: fbTeam.matrixEvent ?? prevLocalTeam.matrixEvent ?? false
                };
             }).sort((a,b)=>b.points-a.points);
 
