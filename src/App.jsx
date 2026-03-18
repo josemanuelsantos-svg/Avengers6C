@@ -1,4 +1,4 @@
-import { useState, useEffect, Component, useCallback, useRef } from 'react';
+import React, { useState, useEffect, Component, useCallback, useRef } from 'react';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
 import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, arrayUnion, increment, getDoc } from 'firebase/firestore';
@@ -11,7 +11,7 @@ import {
   Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon, Settings, Save, Upload, Disc, Edit3, TerminalSquare, Pill, Rocket
 } from 'lucide-react';
 
-const APP_VERSION = "v13.0.0 (GOLDEN AGE - FULL RESTORE)";
+const APP_VERSION = "v14.1.0 (S.H.I.E.L.D. PROTOCOL - NEON SPECTRUM)";
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
 const firebaseConfig = typeof __firebase_config !== 'undefined' 
@@ -145,7 +145,7 @@ const BADGE_ICONS = { Star: Star, Zap: Zap, Brain: Brain, Shield: Shield, Flame:
 
 const BADGES_LIST = [
     { iconKey: 'Star', name: "Excelencia", color: "text-amber-400" },
-    { iconKey: 'Zap', name: "Rapidez", color: "text-cyan-400" },
+    { iconKey: 'Zap', name: "Rapidez", color: "text-blue-400" },
     { iconKey: 'Brain', name: "Ingenio", color: "text-purple-400" },
     { iconKey: 'Shield', name: "Defensor", color: "text-emerald-400" },
     { iconKey: 'Flame', name: "Racha", color: "text-orange-400" },
@@ -196,6 +196,15 @@ const MULTIVERSE_EVENTS = [
   { title: "TORMENTA CUÁNTICA", desc: "Cambio de sitios aleatorio.", points: 0, type: 'neutral' },
 ];
 
+const LOOT_ITEMS = [
+  { text: "Chatarra", val: 0, type: 'neutral' },
+  { text: "Tecnología Chitauri", val: 10, type: 'good' },
+  { text: "Núcleo de Poder", val: 25, type: 'good' },
+  { text: "Cristal Kyber", val: 50, type: 'good' },
+  { text: "Trampa Skrull", val: -10, type: 'bad' },
+  { text: "Virus Ultron", val: -25, type: 'bad' }
+];
+
 const DUEL_CHALLENGES = ["Piedra, Papel o Tijera", "Duelo de miradas", "Pregunta de Mates", "Deletreo rápido", "El que parpadee pierde", "Adivinanza"];
 
 const ACADEMIC_QUESTIONS = [
@@ -210,7 +219,6 @@ const ACADEMIC_QUESTIONS = [
   { q: "¿En qué año se descubrió América?", a: "1492" }, { q: "¿Quién pintó la Mona Lisa?", a: "Da Vinci" }, { q: "¿Moneda de la Unión Europea?", a: "Euro" },
   { q: "Perro in English", a: "Dog" }, { q: "Gato in English", a: "Cat" }, { q: "Rojo in English", a: "Red" },
   { q: "¿Cuántas líneas tiene el pentagrama?", a: "5" }, { q: "¿Clave más común?", a: "Sol" }, { q: "¿Figura que vale 4 tiempos?", a: "Redonda" },
-  // NUEVAS PREGUNTAS
   { q: "¿Quién pintó el Guernica?", a: "Picasso" },
   { q: "¿Capital de Japón?", a: "Tokio" },
   { q: "¿Qué gas respiran las plantas?", a: "CO2" },
@@ -292,10 +300,10 @@ const CTRL_BTN_CLASS = "flex-1 py-1.5 rounded-sm text-[10px] font-bold font-mono
 
 const getRankInfo = (p) => {
   if (p < 0) return { title: 'AMENAZA', color: 'text-red-500', glow: 'shadow-red-900/50', iconScale: 1, next: 0, total: 100 };
-  if (p < 100) return { title: 'RECLUTA', color: 'text-amber-600', glow: 'shadow-none', iconScale: 1, next: 100, total: 100 };
-  if (p < 200) return { title: 'AGENTE', color: 'text-amber-500', glow: 'shadow-amber-500/20', iconScale: 1.1, next: 200, total: 200 };
-  if (p < 400) return { title: 'VENGADOR', color: 'text-yellow-400', glow: 'shadow-yellow-500/30', iconScale: 1.25, next: 400, total: 200 };
-  return { title: 'LEYENDA', color: 'text-yellow-300', glow: 'shadow-[0_0_30px_rgba(250,204,21,0.3)]', iconScale: 1.5, next: 1000, total: 600 };
+  if (p < 100) return { title: 'RECLUTA', color: 'text-cyan-600', glow: 'shadow-none', iconScale: 1, next: 100, total: 100 };
+  if (p < 200) return { title: 'AGENTE', color: 'text-cyan-500', glow: 'shadow-cyan-500/20', iconScale: 1.1, next: 200, total: 200 };
+  if (p < 400) return { title: 'VENGADOR', color: 'text-blue-400', glow: 'shadow-blue-500/30', iconScale: 1.25, next: 400, total: 200 };
+  return { title: 'LEYENDA', color: 'text-cyan-300', glow: 'shadow-[0_0_30px_rgba(6,182,212,0.3)]', iconScale: 1.5, next: 1000, total: 600 };
 };
 
 const playSfx = (type) => {
@@ -340,7 +348,7 @@ const Confeti = ({ active, x, y, massive = false }) => {
   return (
     <div className="pointer-events-none fixed z-[200]" style={{ left: x, top: y }}>
       {[...Array(count)].map((_, i) => (
-        <div key={i} className={`absolute w-2 h-2 rounded-full ${massive ? 'animate-confetti-massive' : 'animate-confetti'}`} style={{ backgroundColor: ['#ef4444', '#f59e0b', '#eab308', '#a855f7', '#3b82f6', '#fff'][Math.floor(Math.random() * 6)], '--tx': `${(Math.random()-0.5)*(massive?800:300)}px`, '--ty': `${(Math.random()-0.5)*(massive?800:300)}px`, '--r': `${Math.random() * 360}deg`, animationDelay: massive ? `${Math.random()*0.2}s` : '0s' }} />
+        <div key={i} className={`absolute w-2 h-2 rounded-full ${massive ? 'animate-confetti-massive' : 'animate-confetti'}`} style={{ backgroundColor: ['#ef4444', '#06b6d4', '#3b82f6', '#a855f7', '#f59e0b', '#fff'][Math.floor(Math.random() * 6)], '--tx': `${(Math.random()-0.5)*(massive?800:300)}px`, '--ty': `${(Math.random()-0.5)*(massive?800:300)}px`, '--r': `${Math.random() * 360}deg`, animationDelay: massive ? `${Math.random()*0.2}s` : '0s' }} />
       ))}
     </div>
   );
@@ -348,11 +356,11 @@ const Confeti = ({ active, x, y, massive = false }) => {
 
 const Toast = ({ message, type, onClose }) => {
   useEffect(() => { const t = setTimeout(onClose, 3000); return () => clearTimeout(t); }, [onClose]); 
-  const bg = type === 'success' ? 'bg-amber-900/40 border-amber-500' : type === 'error' ? 'bg-red-900/40 border-red-500' : 'bg-amber-900/40 border-amber-500';
+  const bg = type === 'success' ? 'bg-cyan-900/40 border-cyan-500' : type === 'error' ? 'bg-red-900/40 border-red-500' : 'bg-cyan-900/40 border-cyan-500';
   const icon = type === 'success' ? <CheckCircle2 /> : type === 'error' ? <AlertTriangle /> : <Info />;
   return (
-    <div className={`fixed top-24 right-4 z-50 flex items-center gap-3 p-4 rounded-lg border ${bg} backdrop-blur-md shadow-[0_0_15px_rgba(245,158,11,0.3)] animate-in slide-in-from-right fade-in duration-300 max-w-sm`}>
-      <div className={type === 'success' ? 'text-amber-400' : type === 'error' ? 'text-red-400' : 'text-amber-400'}>{icon}</div>
+    <div className={`fixed top-24 right-4 z-50 flex items-center gap-3 p-4 rounded-lg border ${bg} backdrop-blur-md shadow-[0_0_15px_rgba(6,182,212,0.3)] animate-in slide-in-from-right fade-in duration-300 max-w-sm`}>
+      <div className={type === 'success' ? 'text-cyan-400' : type === 'error' ? 'text-red-400' : 'text-cyan-400'}>{icon}</div>
       <p className="text-sm font-bold text-white font-mono">{message}</p>
     </div>
   );
@@ -363,14 +371,14 @@ class ErrorBoundary extends Component {
   static getDerivedStateFromError(error) { return { hasError: true }; }
   render() { 
       if (this.state.hasError) return (
-          <div className="p-10 flex flex-col items-center justify-center min-h-screen bg-stone-950 text-amber-400 font-mono text-center">
+          <div className="p-10 flex flex-col items-center justify-center min-h-screen bg-[#050b14] text-cyan-400 font-mono text-center">
               <AlertTriangle size={64} className="mb-4 text-red-500 animate-pulse" />
               <h1 className="text-2xl font-black mb-2">ERROR DE PROTOCOLO DETECTADO</h1>
               <p className="mb-6">El Nexo ha encontrado un conflicto crítico de renderizado.</p>
               <button onClick={() => {
                   try { localStorage.removeItem('avengers_teams_endgame'); localStorage.removeItem('avengers_mission_endgame'); } catch(e){}
                   window.location.reload();
-              }} className="px-6 py-2 bg-amber-600 text-black font-bold uppercase rounded hover:bg-amber-500 transition-colors">Reiniciar Simulador (Modo Seguro)</button>
+              }} className="px-6 py-2 bg-cyan-600 text-black font-bold uppercase rounded hover:bg-cyan-500 transition-colors">Reiniciar Simulador (Modo Seguro)</button>
           </div>
       ); 
       return this.props.children; 
@@ -577,9 +585,9 @@ function AvengersTracker() {
     if (useLocal || !user || !db) { if (useLocal) setLoading(false); return; }
     try {
       const unsub = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'avengers_teams'), (snap) => {
-        if (snap.empty) { setTeams(INITIAL_TEAMS); } else {
-          const tArr = []; let fMission=null, fAlert=false, fHist=[], fFury=null, fShake=false, fBossHp=null, fOmega=null, fBossDmg=0;
-          
+        const tArr = []; let fMission=null, fAlert=false, fHist=[], fFury=null, fShake=false, fBossHp=null, fOmega=null, fBossDmg=0;
+        
+        if (!snap.empty) {
           snap.docs.forEach(d => {
             if (d.id === 'mission_control') { 
                 const data=d.data(); 
@@ -588,43 +596,45 @@ function AvengersTracker() {
             }
             else { tArr.push({ id: d.id, ...d.data() }); }
           });
-
-          const today = new Date().toDateString();
-          const merged = tArr.map(t => {
-             const staticData = INITIAL_TEAMS.find(it => it.id === t.id);
-             if (!staticData) return t;
-             let isNewDay = t.lastDaily && t.lastDaily !== today;
-
-             return {
-                 ...staticData,
-                 points: t.points ?? staticData.points, 
-                 shield: t.shield ?? staticData.shield,
-                 badges: t.badges ?? staticData.badges,
-                 prestige: t.prestige ?? staticData.prestige ?? 0,
-                 dailyMath: isNewDay ? 0 : (t.dailyMath ?? 0), 
-                 dailyWord: isNewDay ? 0 : (t.dailyWord ?? 0),
-                 dailyCombat: isNewDay ? 0 : (t.dailyCombat ?? 0), 
-                 dailyMemory: isNewDay ? 0 : (t.dailyMemory ?? 0),
-                 lastLoot: isNewDay ? null : (t.lastLoot ?? null), 
-                 doublePointsUntil: t.doublePointsUntil ?? 0,
-                 lastSpin: isNewDay ? '' : (t.lastSpin ?? ''), 
-                 gif: t.gif ?? staticData.gif,
-                 upgrades: t.upgrades || {}, 
-                 usedCodes: t.usedCodes || [], 
-                 matrixEvent: t.matrixEvent || false
-             };
-          }).sort((a,b)=>b.points-a.points);
-
-          if(merged.length > 0) setTeams(merged);
-          if(fMission) setMission(fMission);
-          if(fAlert!==undefined) setRedAlertMode(fAlert);
-          if(fBossHp) setBossMaxHp(fBossHp); 
-          setBossDamageTaken(fBossDmg);
-          setOmegaEvent(fOmega);
-          setFuryMessage(fFury);
-          if(fShake) { setShaking(true); setTimeout(() => setShaking(false), 3000); playSfx('alarm'); }
-          setHistory((fHist||[]).reverse().slice(0,50));
         }
+
+        const today = new Date().toDateString();
+        
+        // CRUCIAL FIX: Siempre mapeamos sobre INITIAL_TEAMS para que ningún equipo desaparezca
+        const merged = INITIAL_TEAMS.map(staticData => {
+           const t = tArr.find(it => it.id === staticData.id) || {};
+           let isNewDay = t.lastDaily && t.lastDaily !== today;
+
+           return {
+               ...staticData,
+               points: t.points ?? staticData.points, 
+               shield: t.shield ?? staticData.shield,
+               badges: t.badges ?? staticData.badges,
+               prestige: t.prestige ?? staticData.prestige ?? 0,
+               dailyMath: isNewDay ? 0 : (t.dailyMath ?? 0), 
+               dailyWord: isNewDay ? 0 : (t.dailyWord ?? 0),
+               dailyCombat: isNewDay ? 0 : (t.dailyCombat ?? 0), 
+               dailyMemory: isNewDay ? 0 : (t.dailyMemory ?? 0),
+               lastLoot: isNewDay ? null : (t.lastLoot ?? null), 
+               doublePointsUntil: t.doublePointsUntil ?? 0,
+               lastSpin: isNewDay ? '' : (t.lastSpin ?? ''), 
+               gif: t.gif ?? staticData.gif,
+               upgrades: t.upgrades || {}, 
+               usedCodes: t.usedCodes || [], 
+               matrixEvent: t.matrixEvent || false
+           };
+        }).sort((a,b)=>b.points-a.points);
+
+        setTeams(merged);
+        if(fMission) setMission(fMission);
+        if(fAlert!==undefined) setRedAlertMode(fAlert);
+        if(fBossHp) setBossMaxHp(fBossHp); 
+        setBossDamageTaken(fBossDmg);
+        setOmegaEvent(fOmega);
+        setFuryMessage(fFury);
+        if(fShake) { setShaking(true); setTimeout(() => setShaking(false), 3000); playSfx('alarm'); }
+        setHistory((fHist||[]).reverse().slice(0,50));
+        
         setLoading(false);
       }, (error) => { console.error("Snapshot error:", error); setUseLocal(true); setLoading(false); });
       return () => unsub();
@@ -993,7 +1003,7 @@ function AvengersTracker() {
           if (valid) {
               playSfx('success'); triggerSecretConfetti();
               await safeUpdate(loggedInId, { usedCodes: [...(t.usedCodes || []), code] });
-              handleBadge(loggedInId, { iconKey: 'TerminalSquare', name: "Hacker Supremo", color: "text-cyan-500" });
+              handleBadge(loggedInId, { iconKey: 'TerminalSquare', name: "Hacker Supremo", color: "text-cyan-400" });
               logAction(`🕵️‍♂️ ${t.name} descubrió el código secreto: ${code}`);
           } else { showToast("Comando no reconocido.", "error"); }
       }
@@ -1113,13 +1123,37 @@ function AvengersTracker() {
               playSfx('success'); setTimeout(() => { 
                   const matchedCards = newCards.map(c => (c.id === newFlipped[0].id || c.id === newFlipped[1].id) ? { ...c, isMatched: true } : c); 
                   const newMatched = [...memoryState.matched, newFlipped[0].pairId]; 
-                  if (newMatched.length === 6) { handleTaskCompletion(loggedInId, 'memory'); closeAllModals(); triggerSecretConfetti(); handleBadge(loggedInId, { iconKey: 'Brain', name: "Erudito", color: "text-purple-400" }); } 
+                  if (newMatched.length === 6) { handleTaskCompletion(loggedInId, 'memory'); closeAllModals(); triggerSecretConfetti(); handleBadge(loggedInId, { iconKey: 'Brain', name: "Erudito", color: "text-cyan-400" }); } 
                   else { setMemoryState(prev => ({ ...prev, cards: matchedCards, flipped: [], lock: false, matched: newMatched })); } 
               }, 1000); 
           } else { 
               playSfx('error'); setTimeout(() => { const resetCards = newCards.map(c => (c.id === newFlipped[0].id || c.id === newFlipped[1].id) ? { ...c, isFlipped: false } : c); setMemoryState(prev => ({ ...prev, cards: resetCards, flipped: [], lock: false })); }, 1000); 
           } 
       } 
+  };
+
+  const toggleGauntletTarget = (id) => {
+    setGauntletTargets(prev => prev.includes(id) ? prev.filter(t => t !== id) : (prev.length < 3 ? [...prev, id] : prev));
+  };
+
+  const executeGauntletSnap = async () => {
+    const cost = gauntletTargets.length * 200;
+    if (!loggedInTeam || loggedInTeam.points < cost) return;
+    playSfx('epic'); speak("Yo soy inevitable.");
+    await handlePts(loggedInId, -cost, null, true);
+    for (const targetId of gauntletTargets) {
+        const t = teams.find(tm => tm.id === targetId);
+        if (t?.shield) {
+            await safeUpdate(targetId, { shield: false });
+            logAction(`${t.name} bloqueó el Guantelete`);
+        } else {
+            await handleManualEdit(targetId, 0);
+            logAction(`${loggedInTeam.name} aniquiló a ${t?.name}`);
+        }
+    }
+    triggerSecretConfetti(true);
+    setGauntletTargets([]);
+    closeAllModals();
   };
 
   const totalPoints = teams.reduce((a, b) => a + Math.max(0, b.points), 0);
@@ -1131,17 +1165,17 @@ function AvengersTracker() {
   const loggedInTeam = teams.find(t => t.id === loggedInId);
   const sortedTeams = [...teams].sort((a,b)=>b.points-a.points);
 
-  if (errorMsg) return <div className="p-10 text-red-500 bg-stone-950 h-screen font-mono">ERROR: {errorMsg}</div>;
-  if (loading) return <div className="p-10 text-amber-500 bg-stone-950 h-screen font-mono animate-pulse flex items-center justify-center text-xl">CARGANDO PROTOCOLOS ÁUREOS...</div>;
+  if (errorMsg) return <div className="p-10 text-red-500 bg-[#050b14] h-screen font-mono">ERROR: {errorMsg}</div>;
+  if (loading) return <div className="p-10 text-cyan-500 bg-[#050b14] h-screen font-mono animate-pulse flex items-center justify-center text-xl">CARGANDO PROTOCOLOS S.H.I.E.L.D...</div>;
 
   return (
-    <div className={`min-h-screen bg-[#0f0a00] text-amber-500 font-mono selection:bg-amber-500 selection:text-black pb-28 relative overflow-hidden flex flex-col transition-colors duration-500 ${redAlertMode ? 'border-4 border-red-600' : ''} ${shaking ? 'animate-[shake_0.5s_ease-in-out_infinite]' : ''}`}>
+    <div className={`min-h-screen bg-[#050b14] text-cyan-400 font-mono selection:bg-cyan-500 selection:text-black pb-28 relative overflow-hidden flex flex-col transition-colors duration-500 ${redAlertMode ? 'border-4 border-red-600' : ''} ${shaking ? 'animate-[shake_0.5s_ease-in-out_infinite]' : ''}`}>
       <Confeti active={confetti.active} x={confetti.x} y={confetti.y} massive={confetti.massive} />
       {toast && <Toast message={toast.message} type={toast.type} onClose={closeToast} />}
 
-      {/* GOLDEN BACKGROUND EFFECTS */}
-      <div className="fixed inset-0 z-0 opacity-15 pointer-events-none" style={{ backgroundImage: `linear-gradient(rgba(245,158,11,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(245,158,11,0.15) 1px, transparent 1px)`, backgroundSize: '50px 50px' }}></div>
-      <div className="fixed inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,rgba(245,158,11,0.1)_0%,transparent_50%),radial-gradient(circle_at_bottom_left,rgba(250,204,21,0.1)_0%,transparent_50%)]"></div>
+      {/* HOLOGRAPHIC BACKGROUND EFFECTS */}
+      <div className="fixed inset-0 z-0 opacity-15 pointer-events-none" style={{ backgroundImage: `linear-gradient(rgba(6,182,212,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.15) 1px, transparent 1px)`, backgroundSize: '50px 50px' }}></div>
+      <div className="fixed inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.15)_0%,transparent_50%),radial-gradient(circle_at_bottom_left,rgba(6,182,212,0.1)_0%,transparent_50%)]"></div>
 
       {/* ALERTA ROJA OVERLAY GIGANTE */}
       {redAlertMode && (
@@ -1171,45 +1205,45 @@ function AvengersTracker() {
          </div>
       )}
 
-      <header className={`relative z-20 w-full p-4 border-b flex flex-wrap justify-between items-center gap-4 ${redAlertMode ? 'bg-red-900/90 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)]' : 'bg-[#1a1100]/90 border-amber-500/40 shadow-[0_0_20px_rgba(245,158,11,0.2)]'}`}>
+      <header className={`relative z-20 w-full p-4 border-b flex flex-wrap justify-between items-center gap-4 ${redAlertMode ? 'bg-red-950/90 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)]' : 'bg-[#030712]/90 border-cyan-500/40 shadow-[0_0_20px_rgba(6,182,212,0.2)]'}`}>
         <div className="flex items-center gap-3">
           <div className="relative group cursor-pointer" onClick={handleLogoClick}>
-            <div className={`absolute inset-0 blur-lg opacity-40 group-hover:opacity-80 transition-opacity rounded-full ${redAlertMode ? 'bg-red-500' : 'bg-amber-500'}`}></div>
+            <div className={`absolute inset-0 blur-lg opacity-40 group-hover:opacity-80 transition-opacity rounded-full ${redAlertMode ? 'bg-red-500' : 'bg-blue-500'}`}></div>
             <img src="https://i.ibb.co/Ndt35H2Z/SHIELD-CSB.png" alt="S.H.I.E.L.D." className="w-10 h-10 object-contain relative z-10 active:scale-95 transition-transform" />
           </div>
           <div>
             <div className="flex items-baseline gap-2 font-mono">
-                <h1 className="text-xl font-black tracking-[0.2em] leading-none text-white drop-shadow-[0_0_5px_rgba(245,158,11,0.8)]">AVENGERS <span className={redAlertMode ? "text-red-500" : "text-amber-500"}>INITIATIVE</span></h1>
-                <span className="text-[9px] font-bold text-amber-500/70 bg-amber-900/30 px-1 rounded border border-amber-700/50">{APP_VERSION}</span>
+                <h1 className="text-xl font-black tracking-[0.2em] leading-none text-white drop-shadow-[0_0_5px_rgba(59,130,246,0.8)]">AVENGERS <span className={redAlertMode ? "text-red-500" : "text-blue-500"}>INITIATIVE</span></h1>
+                <span className="text-[9px] font-bold text-amber-400 bg-amber-900/30 px-1 rounded border border-amber-700/50">{APP_VERSION}</span>
             </div>
-            <div className="hidden md:block text-[10px] text-amber-300 mt-1 overflow-hidden whitespace-nowrap drop-shadow-sm flex items-center gap-2">
-                <span className="bg-amber-900/50 px-1.5 py-0.5 rounded border border-amber-500/50 text-white flex items-center gap-1">
+            <div className="hidden md:block text-[10px] text-cyan-300 mt-1 overflow-hidden whitespace-nowrap drop-shadow-sm flex items-center gap-2">
+                <span className="bg-cyan-900/50 px-1.5 py-0.5 rounded border border-cyan-500/50 text-white flex items-center gap-1">
                     {dailyModifier.icon} {dailyModifier.name}
                 </span>
-                <span className="italic opacity-80">{dailyModifier.desc}</span>
+                <span className="italic opacity-80 text-cyan-100">{dailyModifier.desc}</span>
             </div>
           </div>
         </div>
 
         <div className="flex gap-2 items-center flex-wrap justify-end">
             {useLocal && <span className="text-[10px] text-orange-500 font-mono bg-orange-900/20 px-2 py-1 rounded border border-orange-500/50 flex items-center gap-1 shadow-[0_0_10px_rgba(249,115,22,0.3)]"><WifiOff size={10}/> LOCAL</span>}
-            {questionAvailable && <button onClick={openDailyQuestion} className="animate-bounce bg-amber-900/50 border border-amber-500 px-3 py-1 rounded text-amber-300 text-xs font-bold flex gap-1 shadow-[0_0_10px_rgba(245,158,11,0.5)] hover:bg-amber-800/80 transition-colors"><Radio size={12}/> MENSAJE</button>}
+            {questionAvailable && <button onClick={openDailyQuestion} className="animate-bounce bg-cyan-900/50 border border-cyan-500 px-3 py-1 rounded text-cyan-300 text-xs font-bold flex gap-1 shadow-[0_0_10px_rgba(6,182,212,0.5)] hover:bg-cyan-800/80 transition-colors"><Radio size={12}/> MENSAJE</button>}
             
             {loggedInId && !isAdmin && (
                 <div className="flex gap-1 flex-wrap">
-                    <button onClick={startMathChallenge} className="bg-amber-900/30 border border-amber-500/50 px-3 py-1 rounded text-amber-300 text-xs font-bold flex gap-1 items-center hover:bg-amber-800/80 transition-colors shadow-[0_0_10px_rgba(245,158,11,0.2)] hover:shadow-[0_0_15px_rgba(245,158,11,0.5)]">
+                    <button onClick={startMathChallenge} className="bg-blue-900/30 border border-blue-500/50 px-3 py-1 rounded text-blue-300 text-xs font-bold flex gap-1 items-center hover:bg-blue-800/80 transition-colors shadow-[0_0_10px_rgba(59,130,246,0.2)] hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]">
                         <Calculator size={14}/> MATES
                     </button>
-                    <button onClick={startWordChallenge} className="bg-amber-900/30 border border-amber-500/50 px-3 py-1 rounded text-amber-300 text-xs font-bold flex gap-1 items-center hover:bg-amber-800/80 transition-colors shadow-[0_0_10px_rgba(245,158,11,0.2)] hover:shadow-[0_0_15px_rgba(245,158,11,0.5)]">
+                    <button onClick={startWordChallenge} className="bg-purple-900/30 border border-purple-500/50 px-3 py-1 rounded text-purple-300 text-xs font-bold flex gap-1 items-center hover:bg-purple-800/80 transition-colors shadow-[0_0_10px_rgba(168,85,247,0.2)] hover:shadow-[0_0_15px_rgba(168,85,247,0.5)]">
                         <Type size={14}/> DESCIFRAR
                     </button>
-                    <button onClick={startCombatChallenge} className="bg-amber-900/30 border border-amber-500/50 px-3 py-1 rounded text-amber-300 text-xs font-bold flex gap-1 items-center hover:bg-amber-800/80 transition-colors shadow-[0_0_10px_rgba(245,158,11,0.2)] hover:shadow-[0_0_15px_rgba(245,158,11,0.5)]">
+                    <button onClick={startCombatChallenge} className="bg-red-900/30 border border-red-500/50 px-3 py-1 rounded text-red-300 text-xs font-bold flex gap-1 items-center hover:bg-red-800/80 transition-colors shadow-[0_0_10px_rgba(239,68,68,0.2)] hover:shadow-[0_0_15px_rgba(239,68,68,0.5)]">
                         <Target size={14}/> COMBATE
                     </button>
-                    <button onClick={startMemoryChallenge} className="bg-amber-900/30 border border-amber-500/50 px-3 py-1 rounded text-amber-300 text-xs font-bold flex gap-1 items-center hover:bg-amber-800/80 transition-colors shadow-[0_0_10px_rgba(245,158,11,0.2)] hover:shadow-[0_0_15px_rgba(245,158,11,0.5)]">
+                    <button onClick={startMemoryChallenge} className="bg-emerald-900/30 border border-emerald-500/50 px-3 py-1 rounded text-emerald-300 text-xs font-bold flex gap-1 items-center hover:bg-emerald-800/80 transition-colors shadow-[0_0_10px_rgba(16,185,129,0.2)] hover:shadow-[0_0_15px_rgba(16,185,129,0.5)]">
                         <Grid3X3 size={14}/> MEMORIA
                     </button>
-                    <button onClick={openStarkRoulette} className="bg-amber-900/30 border border-amber-500/50 px-3 py-1 rounded text-amber-300 text-xs font-bold flex gap-1 items-center hover:bg-amber-800/80 transition-colors animate-pulse shadow-[0_0_10px_rgba(245,158,11,0.2)] hover:shadow-[0_0_15px_rgba(245,158,11,0.5)]">
+                    <button onClick={openStarkRoulette} className="bg-orange-900/30 border border-orange-500/50 px-3 py-1 rounded text-orange-300 text-xs font-bold flex gap-1 items-center hover:bg-orange-800/80 transition-colors animate-pulse shadow-[0_0_10px_rgba(249,115,22,0.2)] hover:shadow-[0_0_15px_rgba(249,115,22,0.5)]">
                         <Disc size={14}/> RULETA
                     </button>
                 </div>
@@ -1218,49 +1252,49 @@ function AvengersTracker() {
             {isAdmin ? (
                 <div className="flex gap-1 flex-wrap justify-end">
                   <button onClick={triggerOmegaAlert} className="p-2 rounded border bg-red-900/50 border-red-500/50 text-red-400 hover:bg-red-500 hover:text-white transition-colors animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.4)]" title="ALERTA OMEGA"><AlertOctagon size={16}/></button>
-                  <button onClick={backupData} className="p-2 rounded border bg-[#1a1100]/50 border-amber-500/40 text-amber-400 hover:text-amber-300 hover:bg-amber-900/50 transition-colors" title="Guardar Copia"><Save size={16}/></button>
-                  <button onClick={restoreData} className="p-2 rounded border bg-[#1a1100]/50 border-amber-500/40 text-amber-400 hover:text-amber-300 hover:bg-amber-900/50 transition-colors" title="Restaurar Copia"><Upload size={16}/></button>
-                  <button onClick={resetDailyLimits} className="p-2 rounded border bg-[#1a1100]/50 border-amber-500/40 text-amber-400 hover:text-amber-300 hover:bg-amber-900/50 transition-colors" title="Recargar Días"><RefreshCw size={16}/></button>
+                  <button onClick={backupData} className="p-2 rounded border bg-[#0a0f1a]/50 border-cyan-500/40 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-900/50 transition-colors" title="Guardar Copia"><Save size={16}/></button>
+                  <button onClick={restoreData} className="p-2 rounded border bg-[#0a0f1a]/50 border-cyan-500/40 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-900/50 transition-colors" title="Restaurar Copia"><Upload size={16}/></button>
+                  <button onClick={resetDailyLimits} className="p-2 rounded border bg-[#0a0f1a]/50 border-cyan-500/40 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-900/50 transition-colors" title="Recargar Días"><RefreshCw size={16}/></button>
                   <button onClick={handleBossAttack} className="p-2 rounded border bg-red-900/30 border-red-500/50 text-red-400 hover:scale-110 transition-transform animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.2)]" title="ATAQUE DE THANOS"><Skull size={16}/></button>
-                  <button onClick={()=>setModal('fury')} className="p-2 rounded border bg-[#1a1100]/50 border-amber-500/40 text-amber-400 hover:text-amber-200 transition-colors" title="Mensaje Director"><MessageSquare size={16}/></button>
+                  <button onClick={()=>setModal('fury')} className="p-2 rounded border bg-[#0a0f1a]/50 border-cyan-500/40 text-cyan-400 hover:text-cyan-200 transition-colors" title="Mensaje Director"><MessageSquare size={16}/></button>
                   <button onClick={startDuel} className="p-2 rounded border bg-orange-900/20 border-orange-500/50 text-orange-400 hover:text-orange-300 shadow-[0_0_10px_rgba(249,115,22,0.2)] transition-colors"><Swords size={16}/></button>
                   <button onClick={triggerMultiverse} className="p-2 rounded border bg-purple-900/20 border-purple-500/50 text-purple-400 hover:text-purple-300 animate-pulse shadow-[0_0_10px_rgba(168,85,247,0.2)] transition-colors"><Dices size={16}/></button>
-                  <button onClick={openCerebroMenu} className="p-2 rounded border bg-amber-900/20 border-amber-500/50 text-amber-400 hover:text-amber-200 shadow-[0_0_10px_rgba(245,158,11,0.2)] transition-colors" title="NEXO: Elegir Alumno/Equipo"><Brain size={16}/></button>
-                  <button onClick={toggleAlert} className={`p-2 rounded border ${redAlertMode ? 'bg-red-900/80 border-red-400 text-red-200 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-[#1a1100]/50 border-red-900/50 text-red-500 hover:bg-red-900/30 transition-colors'}`} title="ALERTA ROJA (EMERGENCIA)"><Siren size={16}/></button>
-                  <button onClick={()=>setModal('history')} className="p-2 rounded border bg-[#1a1100]/50 border-amber-500/40 text-amber-500 hover:text-amber-300 transition-colors"><History size={16}/></button>
-                  <button onClick={reset} className="p-2 rounded border bg-[#1a1100]/50 border-red-900/50 text-red-500 hover:bg-red-900/30 transition-colors"><Trash2 size={16}/></button>
-                  <button onClick={()=>{setIsAdmin(false); setLoggedInId(null);}} className="bg-red-900/30 border border-red-500/50 px-3 py-1 rounded text-xs font-bold text-red-400 hover:bg-red-900/60 transition-colors shadow-[0_0_10px_rgba(239,68,68,0.2)]">SALIR</button>
+                  <button onClick={openCerebroMenu} className="p-2 rounded border bg-cyan-900/30 border-cyan-500/50 text-cyan-400 hover:text-cyan-200 shadow-[0_0_10px_rgba(6,182,212,0.2)] transition-colors" title="NEXO: Elegir Alumno/Equipo"><Brain size={16}/></button>
+                  <button onClick={toggleAlert} className={`p-2 rounded border ${redAlertMode ? 'bg-red-900/80 border-red-400 text-red-200 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-[#0a0f1a]/50 border-red-900/50 text-red-500 hover:bg-red-900/30 transition-colors'}`} title="ALERTA ROJA (EMERGENCIA)"><Siren size={16}/></button>
+                  <button onClick={()=>setModal('history')} className="p-2 rounded border bg-[#0a0f1a]/50 border-cyan-500/40 text-cyan-400 hover:text-cyan-300 transition-colors"><History size={16}/></button>
+                  <button onClick={reset} className="p-2 rounded border bg-[#0a0f1a]/50 border-red-900/50 text-red-500 hover:bg-red-900/30 transition-colors"><Trash2 size={16}/></button>
+                  <button onClick={()=>{setIsAdmin(false); setLoggedInId(null);}} className="bg-cyan-900/30 border border-cyan-500/50 px-3 py-1 rounded text-xs font-bold text-cyan-400 hover:bg-cyan-900/60 transition-colors shadow-[0_0_10px_rgba(6,182,212,0.2)]">SALIR</button>
                 </div>
             ) : loggedInId ? (
-                <button onClick={()=>{setIsAdmin(false); setLoggedInId(null);}} className="bg-yellow-900/30 border border-yellow-500/50 px-3 py-1 rounded text-xs font-bold text-yellow-400 hover:bg-yellow-900/60 transition-colors shadow-[0_0_10px_rgba(250,204,21,0.2)]">SALIR</button>
+                <button onClick={()=>{setIsAdmin(false); setLoggedInId(null);}} className="bg-cyan-900/30 border border-cyan-500/50 px-3 py-1 rounded text-xs font-bold text-cyan-400 hover:bg-cyan-900/60 transition-colors shadow-[0_0_10px_rgba(6,182,212,0.2)]">SALIR</button>
             ) : (
-                <button onClick={()=>setModal('login')} className="bg-amber-900/30 border border-amber-500/50 px-3 py-1 rounded text-xs font-bold text-amber-400 hover:bg-amber-900/60 transition-colors shadow-[0_0_10px_rgba(245,158,11,0.2)]"><Lock size={12}/> ACCESO</button>
+                <button onClick={()=>setModal('login')} className="bg-cyan-900/30 border border-cyan-500/50 px-3 py-1 rounded text-xs font-bold text-cyan-400 hover:bg-cyan-900/60 transition-colors shadow-[0_0_10px_rgba(6,182,212,0.2)]"><Lock size={12}/> ACCESO</button>
             )}
-            <button onClick={() => setSound(!sound)} className={`p-2 rounded border ${sound ? 'bg-amber-900/40 border-amber-500 text-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.4)]' : 'bg-stone-950 border-amber-900/50 text-amber-700'}`}>{sound ? <Volume2 size={16}/> : <VolumeX size={16}/>}</button>
-            <button onClick={() => setModal('catalog')} className="flex gap-1 px-3 py-1.5 bg-[#1a1100]/80 border border-amber-700/50 rounded-sm text-amber-500 hover:text-amber-300 hover:border-amber-500/50 transition-colors text-xs font-bold uppercase"><Info size={14}/> INFO</button>
+            <button onClick={() => setSound(!sound)} className={`p-2 rounded border ${sound ? 'bg-cyan-900/40 border-cyan-500 text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.4)]' : 'bg-[#050b14] border-cyan-900/50 text-cyan-700'}`}>{sound ? <Volume2 size={16}/> : <VolumeX size={16}/>}</button>
+            <button onClick={() => setModal('catalog')} className="flex gap-1 px-3 py-1.5 bg-[#0a0f1a]/80 border border-cyan-700/50 rounded-sm text-cyan-500 hover:text-cyan-300 hover:border-cyan-500/50 transition-colors text-xs font-bold uppercase"><Info size={14}/> INFO</button>
         </div>
       </header>
 
       <main className="p-6 max-w-[1600px] mx-auto grid grid-cols-1 xl:grid-cols-4 gap-6 relative z-10">
         <aside className="xl:col-span-1 space-y-6">
-          <div className="bg-[#1a1100]/80 border border-amber-500/30 rounded-sm p-5 shadow-[0_0_20px_rgba(245,158,11,0.1)] flex flex-col relative overflow-hidden backdrop-blur-xl">
-             <div className="absolute top-0 right-0 w-20 h-20 bg-amber-500/5 rounded-bl-full pointer-events-none"></div>
-             <h3 className="text-lg font-black text-amber-400 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-amber-500/30 pb-2 drop-shadow-[0_0_5px_rgba(245,158,11,0.5)]"><TrendingUp size={20} /> Clasificación</h3>
+          <div className="bg-[#0a0f1a]/80 border border-cyan-500/30 rounded-sm p-5 shadow-[0_0_20px_rgba(6,182,212,0.1)] flex flex-col relative overflow-hidden backdrop-blur-xl">
+             <div className="absolute top-0 right-0 w-20 h-20 bg-cyan-500/10 rounded-bl-full pointer-events-none"></div>
+             <h3 className="text-lg font-black text-cyan-400 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-cyan-500/30 pb-2 drop-shadow-[0_0_5px_rgba(6,182,212,0.5)]"><TrendingUp size={20} /> Clasificación</h3>
              <div className="space-y-3 flex-1">
                 {sortedTeams.map((t, i) => {
                    const rInfo = getRankInfo(t.points);
                    const isNeg = t.points < 0;
-                   const clr = i === 0 ? "text-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]" : i === 1 ? "text-amber-200" : i === 2 ? "text-orange-400" : "text-amber-500";
+                   const clr = i === 0 ? "text-amber-300 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]" : i === 1 ? "text-cyan-200" : i === 2 ? "text-cyan-400" : "text-cyan-600";
                    const nextRankPct = Math.min(100, Math.max(0, ((t.points - (rInfo.next - rInfo.total)) / rInfo.total) * 100));
 
                    return (
                       <div key={t.id}>
-                         <div className="flex justify-between items-center mb-1 text-xs font-bold uppercase tracking-wide"><span className={`flex items-center gap-2 ${clr}`}>{i === 0 && <Crown size={12} className="animate-bounce" />} #{i + 1} {t.name} <span className="text-[9px] text-amber-600 ml-1 opacity-70 flex items-center gap-0.5"><Rocket size={8}/> {t.prestige}</span></span><span className={isNeg ? "text-red-400" : "text-amber-300 drop-shadow-[0_0_5px_rgba(245,158,11,0.5)]"}>{t.points}</span></div>
-                         <div className="h-1 bg-stone-950 rounded-full overflow-hidden mb-1 border border-amber-900/30"><div className={`h-full transition-all duration-1000 ${isNeg ? 'bg-red-600 shadow-[0_0_5px_rgba(220,38,38,0.8)]' : 'bg-amber-500 shadow-[0_0_5px_rgba(245,158,11,0.8)]'}`} style={{ width: `${Math.min(100, Math.max(0, (t.points / (bossMaxHp/3)) * 100))}%` }}></div></div>
+                         <div className="flex justify-between items-center mb-1 text-xs font-bold uppercase tracking-wide"><span className={`flex items-center gap-2 ${clr}`}>{i === 0 && <Crown size={12} className="animate-bounce text-amber-400" />} #{i + 1} {t.name} <span className="text-[9px] text-cyan-600 ml-1 opacity-70 flex items-center gap-0.5"><Rocket size={8}/> {t.prestige}</span></span><span className={isNeg ? "text-red-400" : "text-amber-400 drop-shadow-[0_0_5px_rgba(245,158,11,0.5)]"}>{t.points}</span></div>
+                         <div className="h-1 bg-[#050b14] rounded-full overflow-hidden mb-1 border border-cyan-900/30"><div className={`h-full transition-all duration-1000 ${isNeg ? 'bg-red-600 shadow-[0_0_5px_rgba(220,38,38,0.8)]' : 'bg-cyan-500 shadow-[0_0_5px_rgba(6,182,212,0.8)]'}`} style={{ width: `${Math.min(100, Math.max(0, (t.points / (bossMaxHp/3)) * 100))}%` }}></div></div>
                          {/* XP BAR */}
-                         <div className="h-0.5 bg-stone-950 rounded-full overflow-hidden w-full opacity-50"><div className="h-full bg-amber-400/50" style={{ width: `${nextRankPct}%` }}></div></div>
+                         <div className="h-0.5 bg-[#050b14] rounded-full overflow-hidden w-full opacity-50"><div className="h-full bg-cyan-400/50" style={{ width: `${nextRankPct}%` }}></div></div>
                          {t.doublePointsUntil > Date.now() && (
-                            <div className="text-[8px] font-bold text-yellow-400 animate-pulse mt-0.5 drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]">X2 PUNTOS ACTIVADO</div>
+                            <div className="text-[8px] font-bold text-amber-400 animate-pulse mt-0.5 drop-shadow-[0_0_5px_rgba(245,158,11,0.8)]">X2 PUNTOS ACTIVADO</div>
                          )}
                       </div>
                    );
@@ -1268,23 +1302,23 @@ function AvengersTracker() {
              </div>
           </div>
           
-          <div className="bg-[#1a1100]/80 border border-purple-500/40 rounded-sm p-5 shadow-[0_0_20px_rgba(168,85,247,0.15)] relative overflow-hidden backdrop-blur-xl group">
+          <div className="bg-[#0a0f1a]/80 border border-purple-500/40 rounded-sm p-5 shadow-[0_0_20px_rgba(168,85,247,0.15)] relative overflow-hidden backdrop-blur-xl group">
             <div className="relative z-10">
                <div className="flex items-center gap-3 mb-3">
                   <div className="w-12 h-12 rounded-full border-2 border-purple-500 overflow-hidden shadow-[0_0_15px_rgba(168,85,247,0.6)] bg-purple-900/50"><img src="https://i.ibb.co/7NjPsfgb/183d8eefe6fe041dd1169fdeaab016f8.gif" alt="Thanos" className="w-full h-full object-cover opacity-80 mix-blend-screen" /></div>
                   <div><h3 className="text-sm font-black text-purple-400 uppercase leading-none mb-1 drop-shadow-[0_0_5px_rgba(168,85,247,0.6)]">Amenaza: Thanos</h3><span className="text-xs font-mono text-purple-300">{totalPoints + bossDamageTaken}/{bossMaxHp} DAÑO</span></div>
                </div>
-               <div className="h-4 bg-stone-950 rounded-full overflow-hidden border border-purple-900/50 relative"><div className={`h-full transition-all duration-1000 flex items-center justify-center ${bossDefeated ? 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.8)]' : 'bg-gradient-to-r from-purple-600 to-red-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]'}`} style={{width: `${bossProgress}%`}}></div></div>
-               {bossDefeated && <p className="text-center text-xs font-bold text-amber-400 mt-2 animate-pulse drop-shadow-[0_0_5px_rgba(245,158,11,0.8)]">¡AMENAZA NEUTRALIZADA!</p>}
+               <div className="h-4 bg-[#050b14] rounded-full overflow-hidden border border-purple-900/50 relative"><div className={`h-full transition-all duration-1000 flex items-center justify-center ${bossDefeated ? 'bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.8)]' : 'bg-gradient-to-r from-purple-600 to-red-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]'}`} style={{width: `${bossProgress}%`}}></div></div>
+               {bossDefeated && <p className="text-center text-xs font-bold text-cyan-400 mt-2 animate-pulse drop-shadow-[0_0_5px_rgba(6,182,212,0.8)]">¡AMENAZA NEUTRALIZADA!</p>}
                {bossDefeated && isAdmin && (
-                  <button onClick={executeEndgame} className="mt-4 w-full py-2 bg-amber-500 hover:bg-amber-400 text-black font-black uppercase tracking-widest rounded shadow-[0_0_20px_rgba(245,158,11,0.8)] animate-pulse transition-all">EJECUTAR ENDGAME</button>
+                  <button onClick={executeEndgame} className="mt-4 w-full py-2 bg-yellow-500 hover:bg-yellow-400 text-black font-black uppercase tracking-widest rounded shadow-[0_0_20px_rgba(250,204,21,0.8)] animate-pulse transition-all">EJECUTAR ENDGAME</button>
                )}
             </div>
           </div>
 
-          <div onClick={() => isAdmin && setModal('mission')} className={`bg-[#1a1100]/80 border border-amber-500/30 rounded-sm p-5 shadow-[0_0_20px_rgba(245,158,11,0.1)] relative overflow-hidden group backdrop-blur-xl ${isAdmin?'cursor-pointer hover:border-amber-400/50 transition-colors':''}`}>
-             <h3 className="text-xs font-black text-amber-400 uppercase mb-2 flex gap-2 drop-shadow-[0_0_5px_rgba(245,158,11,0.5)]"><ClipboardList size={14}/> Misión Prioritaria</h3>
-             <p className="text-xs text-amber-100 font-mono leading-relaxed">"{mission}"</p>
+          <div onClick={() => isAdmin && setModal('mission')} className={`bg-[#0a0f1a]/80 border border-cyan-500/30 rounded-sm p-5 shadow-[0_0_20px_rgba(6,182,212,0.1)] relative overflow-hidden group backdrop-blur-xl ${isAdmin?'cursor-pointer hover:border-cyan-400/50 transition-colors':''}`}>
+             <h3 className="text-xs font-black text-cyan-400 uppercase mb-2 flex gap-2 drop-shadow-[0_0_5px_rgba(6,182,212,0.5)]"><ClipboardList size={14}/> Misión Prioritaria</h3>
+             <p className="text-xs text-cyan-100 font-mono leading-relaxed">"{mission}"</p>
           </div>
         </aside>
 
@@ -1300,7 +1334,7 @@ function AvengersTracker() {
             return (
               <div key={t.id} className={`relative group rounded p-[1px] transition-all ${isMine?'scale-[1.02] z-10':'hover:scale-[1.01]'}`}>
                 <div className={`absolute inset-0 rounded bg-gradient-to-b ${t.theme} opacity-30`}></div>
-                <div className={`h-full bg-stone-950/95 border ${isMine?'border-yellow-500 shadow-[0_0_20px_rgba(250,204,21,0.3)]':t.border + ' shadow-[0_0_20px_rgba(245,158,11,0.05)]'} p-4 rounded backdrop-blur-xl flex flex-col justify-between relative overflow-hidden`}>
+                <div className={`h-full bg-[#050b14]/95 border ${isMine?'border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.3)]':t.border + ' shadow-[0_0_20px_rgba(6,182,212,0.05)]'} p-4 rounded backdrop-blur-xl flex flex-col justify-between relative overflow-hidden`}>
                   <div className="absolute -right-0 -bottom-0 w-40 h-40 opacity-15 pointer-events-none transition-transform group-hover:scale-110" style={{mixBlendMode:'screen'}}><img src={t.gif} className="w-full h-full object-cover" onError={(e) => e.target.src="https://i.ibb.co/27K5dCBM/b751779a4a3bbc38f9268036cdb5af5a.gif"}/></div>
                   
                   {/* SHIELD OVERLAY */}
@@ -1313,17 +1347,17 @@ function AvengersTracker() {
                   <div>
                     <div className="flex justify-between items-start mb-3 relative z-10">
                       <div className="flex gap-2 items-center">
-                        <div className={`w-10 h-10 rounded-full border border-amber-500/30 bg-[#1a1100] overflow-hidden shadow-inner ${t.accent}`}><img src={t.gif} className="w-full h-full object-cover opacity-80 mix-blend-screen" onError={(e) => e.target.src="https://i.ibb.co/27K5dCBM/b751779a4a3bbc38f9268036cdb5af5a.gif"}/></div>
+                        <div className={`w-10 h-10 rounded-full border border-cyan-500/30 bg-[#0a0f1a] overflow-hidden shadow-inner ${t.accent}`}><img src={t.gif} className="w-full h-full object-cover opacity-80 mix-blend-screen" onError={(e) => e.target.src="https://i.ibb.co/27K5dCBM/b751779a4a3bbc38f9268036cdb5af5a.gif"}/></div>
                         <div className="flex flex-col">
                           <div className={`text-[8px] font-black uppercase tracking-widest ${rInfo.color} drop-shadow-md`}>{rInfo.title}</div>
                           <div className="flex items-center gap-2">
                              <h2 className="text-sm font-black uppercase tracking-wider text-white truncate max-w-[140px] leading-none drop-shadow-md">
                                  {t.name}
-                                 {t.prestige > 0 && <span className="ml-1.5 text-amber-400 drop-shadow-[0_0_5px_rgba(245,158,11,0.8)] text-xs">★{t.prestige}</span>}
+                                 {t.prestige > 0 && <span className="ml-1.5 text-cyan-400 drop-shadow-[0_0_5px_rgba(6,182,212,0.8)] text-xs">★{t.prestige}</span>}
                              </h2>
                              {isUnderdog && (
                                 <span className="bg-amber-500 text-black text-[7px] px-1 py-0.5 rounded-sm animate-pulse font-bold shadow-[0_0_10px_rgba(245,158,11,0.8)]" title="Refuerzos de S.H.I.E.L.D. en camino (+1 Punto Extra)">
-                                   🔥 BONUS
+                                    🔥 BONUS
                                 </span>
                              )}
                           </div>
@@ -1339,13 +1373,13 @@ function AvengersTracker() {
                                 defaultValue={t.points}
                                 onBlur={(e) => handleManualEdit(t.id, e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleManualEdit(t.id, e.target.value)}
-                                className="w-16 bg-black border border-amber-500 rounded text-center text-sm font-mono text-amber-400 focus:shadow-[0_0_10px_rgba(245,158,11,0.5)] outline-none"
+                                className="w-16 bg-black border border-cyan-500 rounded text-center text-sm font-mono text-cyan-400 focus:shadow-[0_0_10px_rgba(6,182,212,0.5)] outline-none"
                               />
                           ) : (
                               <span className={`text-3xl font-black font-mono tracking-tighter ${t.points<0?'text-red-400 drop-shadow-[0_0_10px_rgba(248,113,113,0.5)]':'text-amber-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]'}`}>{t.points}</span>
                           )}
                           {isAdmin && (
-                              <button onClick={() => setEditMode({...editMode, [t.id]: true})} className="opacity-50 hover:opacity-100 text-amber-600 hover:text-amber-400 transition-colors">
+                              <button onClick={() => setEditMode({...editMode, [t.id]: true})} className="opacity-50 hover:opacity-100 text-cyan-600 hover:text-cyan-400 transition-colors">
                                   <Edit3 size={12}/>
                               </button>
                           )}
@@ -1354,28 +1388,28 @@ function AvengersTracker() {
                     
                     {/* WAKANDA LOOT EFFECT BADGE */}
                     {t.lastLoot && (
-                        <div className={`absolute top-2 right-12 z-20 px-2 py-1 rounded text-[9px] font-bold uppercase animate-pulse shadow-lg ${t.lastLoot === 'bad' ? 'bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.8)]' : 'bg-amber-600 text-white shadow-[0_0_15px_rgba(245,158,11,0.8)]'}`}>
+                        <div className={`absolute top-2 right-12 z-20 px-2 py-1 rounded text-[9px] font-bold uppercase animate-pulse shadow-lg ${t.lastLoot === 'bad' ? 'bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.8)]' : 'bg-cyan-600 text-white shadow-[0_0_15px_rgba(6,182,212,0.8)]'}`}>
                             {t.lastLoot === 'bad' ? '¡MALDICIÓN!' : '¡SUERTE!'}
                         </div>
                     )}
 
                     {/* DAILY ENERGY CELLS (NEON STYLE) */}
                     <div className="flex flex-col gap-1.5 mb-3 mt-4">
-                        <div className="flex items-center gap-2 text-[9px] text-amber-700">
-                          <Calculator size={10} className="text-amber-400 drop-shadow-[0_0_2px_rgba(245,158,11,0.8)]"/>
-                          <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-4 h-1.5 rounded-sm border ${i<(t.dailyMath||0)?'bg-amber-400 border-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.8)]':'bg-stone-900 border-amber-900/50'}`}></div>)}</div>
+                        <div className="flex items-center gap-2 text-[9px] text-cyan-700">
+                          <Calculator size={10} className="text-blue-400 drop-shadow-[0_0_2px_rgba(59,130,246,0.8)]"/>
+                          <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-4 h-1.5 rounded-sm border ${i<(t.dailyMath||0)?'bg-blue-400 border-blue-300 shadow-[0_0_8px_rgba(59,130,246,0.8)]':'bg-[#0a0f1a] border-[#1a2333]'}`}></div>)}</div>
                         </div>
-                        <div className="flex items-center gap-2 text-[9px] text-amber-700">
+                        <div className="flex items-center gap-2 text-[9px] text-cyan-700">
                           <Type size={10} className="text-purple-500 drop-shadow-[0_0_2px_rgba(168,85,247,0.8)]"/>
-                          <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-4 h-1.5 rounded-sm border ${i<(t.dailyWord||0)?'bg-purple-500 border-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.8)]':'bg-stone-900 border-amber-900/50'}`}></div>)}</div>
+                          <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-4 h-1.5 rounded-sm border ${i<(t.dailyWord||0)?'bg-purple-500 border-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.8)]':'bg-[#0a0f1a] border-[#1a2333]'}`}></div>)}</div>
                         </div>
-                        <div className="flex items-center gap-2 text-[9px] text-amber-700">
+                        <div className="flex items-center gap-2 text-[9px] text-cyan-700">
                           <Target size={10} className="text-red-500 drop-shadow-[0_0_2px_rgba(239,68,68,0.8)]"/>
-                          <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-4 h-1.5 rounded-sm border ${i<(t.dailyCombat||0)?'bg-red-500 border-red-400 shadow-[0_0_8px_rgba(239,68,68,0.8)]':'bg-stone-900 border-amber-900/50'}`}></div>)}</div>
+                          <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-4 h-1.5 rounded-sm border ${i<(t.dailyCombat||0)?'bg-red-500 border-red-400 shadow-[0_0_8px_rgba(239,68,68,0.8)]':'bg-[#0a0f1a] border-[#1a2333]'}`}></div>)}</div>
                         </div>
-                        <div className="flex items-center gap-2 text-[9px] text-amber-700">
-                          <Grid3X3 size={10} className="text-cyan-500 drop-shadow-[0_0_2px_rgba(6,182,212,0.8)]"/>
-                          <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-4 h-1.5 rounded-sm border ${i<(t.dailyMemory||0)?'bg-cyan-500 border-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]':'bg-stone-900 border-amber-900/50'}`}></div>)}</div>
+                        <div className="flex items-center gap-2 text-[9px] text-cyan-700">
+                          <Grid3X3 size={10} className="text-emerald-500 drop-shadow-[0_0_2px_rgba(16,185,129,0.8)]"/>
+                          <div className="flex gap-1">{[...Array(4)].map((_, i) => <div key={i} className={`w-4 h-1.5 rounded-sm border ${i<(t.dailyMemory||0)?'bg-emerald-500 border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)]':'bg-[#0a0f1a] border-[#1a2333]'}`}></div>)}</div>
                         </div>
                     </div>
 
@@ -1385,7 +1419,7 @@ function AvengersTracker() {
                             {t.badges.map((b, idx) => {
                                 const BIcon = b.iconKey && BADGE_ICONS[b.iconKey] ? BADGE_ICONS[b.iconKey] : Star;
                                 return (
-                                    <div key={idx} className={`p-1 rounded bg-[#1a1100] border border-amber-900/50 ${b.color || 'text-yellow-400'} shadow-inner flex items-center justify-center`} title={b.name}>
+                                    <div key={idx} className={`p-1 rounded bg-[#0a0f1a] border border-cyan-900/50 ${b.color || 'text-cyan-400'} shadow-inner flex items-center justify-center`} title={b.name}>
                                         <BIcon size={14} />
                                     </div>
                                 );
@@ -1397,37 +1431,37 @@ function AvengersTracker() {
                        {t.points >= 300 && <Award size={14} className="text-purple-500 drop-shadow-[0_0_5px_rgba(168,85,247,0.8)]" />}
                        {t.points >= 500 && <Award size={14} className="text-yellow-500 drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]" />}
                     </div>
-                    <div className="flex justify-between bg-[#1a1100]/80 p-1 rounded mb-3 border border-amber-900/40 relative z-10 shadow-inner">{INFINITY_STONES.map((s,i)=>(<div key={i} title={s.name} className={t.points>=s.threshold?s.color:'text-amber-900'}><Hexagon size={12} fill="currentColor"/></div>))}</div>
-                    <div className="mb-4 relative z-10 pl-2 border-l border-amber-900/50">
-                        <div className="text-[9px] uppercase tracking-widest opacity-60 font-bold text-amber-500 mb-1">OPERATIVOS Y ROLES</div>
+                    <div className="flex justify-between bg-[#0a0f1a]/80 p-1 rounded mb-3 border border-cyan-900/40 relative z-10 shadow-inner">{INFINITY_STONES.map((s,i)=>(<div key={i} title={s.name} className={t.points>=s.threshold?s.color:'text-cyan-900'}><Hexagon size={12} fill="currentColor"/></div>))}</div>
+                    <div className="mb-4 relative z-10 pl-2 border-l border-cyan-900/50">
+                        <div className="text-[9px] uppercase tracking-widest opacity-60 font-bold text-cyan-500 mb-1">OPERATIVOS Y ROLES</div>
                         <div className="grid grid-cols-2 gap-1 mt-1">
                             {t.members?.map((m, idx) => (
-                                <div key={idx} className="bg-amber-900/20 border border-amber-500/30 rounded px-2 py-1 text-[10px] font-mono shadow-[0_0_8px_rgba(245,158,11,0.1)] flex flex-col justify-center">
-                                    <span className="text-[8px] text-amber-500/80 mb-0.5">{ROLES[idx]}</span>
-                                    <span className="text-amber-200 truncate">{m}</span>
+                                <div key={idx} className="bg-cyan-900/20 border border-cyan-500/30 rounded px-2 py-1 text-[10px] font-mono shadow-[0_0_8px_rgba(6,182,212,0.1)] flex flex-col justify-center">
+                                    <span className="text-[8px] text-cyan-500/80 mb-0.5">{ROLES[idx]}</span>
+                                    <span className="text-cyan-200 truncate">{m}</span>
                                 </div>
                             ))}
                         </div>
                     </div>
                   </div>
                   <div className="relative z-10 mt-auto">
-                    <div className="mb-4 relative pl-3 border-l-2 border-amber-500/30 group-hover:border-amber-400/60 transition-colors"><p className={`text-xs italic font-medium leading-tight ${t.accent} opacity-90 drop-shadow-sm`}>"{t.quote}"</p></div>
+                    <div className="mb-4 relative pl-3 border-l-2 border-cyan-500/30 group-hover:border-cyan-400/60 transition-colors"><p className={`text-xs italic font-medium leading-tight ${t.accent} opacity-90 drop-shadow-sm`}>"{t.quote}"</p></div>
                     {/* Admin and User buttons */}
                     {isAdmin && (
                       <div className="grid gap-1">
-                        <div className="flex gap-1">{[1,5,10].map(v => <button key={v} onClick={(e)=>handlePts(t.id, v, e)} className={`${CTRL_BTN_CLASS} bg-amber-900/30 text-amber-400 border-amber-500/50 hover:bg-amber-500 hover:text-black hover:shadow-[0_0_10px_rgba(245,158,11,0.8)]`}>+{v}</button>)}</div>
+                        <div className="flex gap-1">{[1,5,10].map(v => <button key={v} onClick={(e)=>handlePts(t.id, v, e)} className={`${CTRL_BTN_CLASS} bg-cyan-900/30 text-cyan-400 border-cyan-500/50 hover:bg-cyan-500 hover:text-black hover:shadow-[0_0_10px_rgba(6,182,212,0.8)]`}>+{v}</button>)}</div>
                         <div className="flex gap-1">{[-1,-5,-10].map(v => <button key={v} onClick={(e)=>handlePts(t.id, v, e)} className={`${CTRL_BTN_CLASS} bg-red-900/30 text-red-400 border-red-500/50 hover:bg-red-500 hover:text-black hover:shadow-[0_0_10px_rgba(239,68,68,0.8)]`}>{v}</button>)}</div>
                         <div className="flex gap-1 mt-1">
-                          <button onClick={()=>openShop(t)} className={`${CTRL_BTN_CLASS} bg-yellow-900/30 text-yellow-400 border-yellow-500/50 hover:bg-yellow-500 hover:text-black flex justify-center gap-1 hover:shadow-[0_0_10px_rgba(250,204,21,0.8)]`}><ShoppingCart size={12}/> TIENDA</button>
-                          <button onClick={()=>{setSelTeam(t); setPenalty(null); setModal('penalty');}} className={`${CTRL_BTN_CLASS} flex items-center justify-center gap-1 ${isNeg ? 'bg-purple-900/30 text-purple-400 border-purple-500/50 hover:bg-purple-500 hover:text-white hover:shadow-[0_0_10px_rgba(168,85,247,0.8)]' : 'bg-stone-900 text-amber-800 border-amber-900/50 cursor-not-allowed'}`}><Gavel size={12}/> SANCIÓN</button>
+                          <button onClick={()=>openShop(t)} className={`${CTRL_BTN_CLASS} bg-cyan-900/30 text-cyan-400 border-cyan-500/50 hover:bg-cyan-500 hover:text-black flex justify-center gap-1 hover:shadow-[0_0_10px_rgba(6,182,212,0.8)]`}><ShoppingCart size={12}/> TIENDA</button>
+                          <button onClick={()=>{setSelTeam(t); setPenalty(null); setModal('penalty');}} className={`${CTRL_BTN_CLASS} flex items-center justify-center gap-1 ${isNeg ? 'bg-purple-900/30 text-purple-400 border-purple-500/50 hover:bg-purple-500 hover:text-white hover:shadow-[0_0_10px_rgba(168,85,247,0.8)]' : 'bg-[#0a0f1a] text-cyan-800 border-cyan-900/50 cursor-not-allowed'}`}><Gavel size={12}/> SANCIÓN</button>
                         </div>
                         <div className="grid grid-cols-2 gap-1 mt-1">
-                            <button onClick={()=>setModal('badges_' + t.id)} className={`${CTRL_BTN_CLASS} bg-cyan-900/30 text-cyan-400 border-cyan-500/50 hover:bg-cyan-500 hover:text-black hover:shadow-[0_0_10px_rgba(34,211,238,0.8)]`}>MEDALLA</button>
+                            <button onClick={()=>setModal('badges_' + t.id)} className={`${CTRL_BTN_CLASS} bg-cyan-900/30 text-cyan-400 border-cyan-500/50 hover:bg-cyan-500 hover:text-black hover:shadow-[0_0_10px_rgba(6,182,212,0.8)]`}>MEDALLA</button>
                             <button onClick={()=>triggerMatrixEvent(t.id)} className={`${CTRL_BTN_CLASS} bg-fuchsia-900/50 text-fuchsia-400 border-fuchsia-500 hover:bg-fuchsia-500 hover:text-white hover:shadow-[0_0_15px_rgba(217,70,239,0.8)] flex justify-center gap-1 animate-pulse`}><Pill size={12}/> ANOMALÍA</button>
                         </div>
                       </div>
                     )}
-                    {isMine && !isAdmin && <button onClick={()=>openShop(t)} className="w-full py-2 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-xs rounded uppercase shadow-[0_0_15px_rgba(250,204,21,0.4)] hover:shadow-[0_0_20px_rgba(250,204,21,0.8)] transition-all tracking-wider">ARMERÍA Y MEJORAS</button>}
+                    {isMine && !isAdmin && <button onClick={()=>openShop(t)} className="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-black font-bold text-xs rounded uppercase shadow-[0_0_15px_rgba(6,182,212,0.4)] hover:shadow-[0_0_20px_rgba(6,182,212,0.8)] transition-all tracking-wider">ARMERÍA Y MEJORAS</button>}
                   </div>
                 </div>
               </div>
@@ -1438,33 +1472,33 @@ function AvengersTracker() {
         {/* TERMINAL FLOTANTE (EASTER EGGS) */}
         <div className="fixed bottom-12 right-6 z-50 flex items-end justify-end">
             {terminalOpen && (
-                <div className="mb-2 bg-black border border-amber-400 p-2 rounded shadow-[0_0_15px_rgba(245,158,11,0.3)] flex gap-2 animate-in slide-in-from-bottom-2">
-                    <span className="text-amber-500 font-bold">&gt;_</span>
+                <div className="mb-2 bg-black border border-cyan-400 p-2 rounded shadow-[0_0_15px_rgba(6,182,212,0.3)] flex gap-2 animate-in slide-in-from-bottom-2">
+                    <span className="text-cyan-500 font-bold">&gt;_</span>
                     <input 
                         type="text" 
                         autoFocus
                         value={terminalInput}
                         onChange={(e)=>setTerminalInput(e.target.value)}
                         onKeyDown={handleTerminalSubmit}
-                        className="bg-transparent border-none outline-none text-amber-300 font-mono w-40 uppercase"
+                        className="bg-transparent border-none outline-none text-cyan-300 font-mono w-40 uppercase"
                         placeholder="COMANDO..."
                     />
                 </div>
             )}
             {loggedInId && !isAdmin && (
-                <button onClick={()=>setTerminalOpen(!terminalOpen)} className="bg-stone-900 border border-amber-700 text-amber-500 hover:text-amber-300 hover:border-amber-400 p-3 rounded-full transition-all shadow-[0_0_10px_rgba(245,158,11,0.1)] hover:shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+                <button onClick={()=>setTerminalOpen(!terminalOpen)} className="bg-[#0a0f1a] border border-cyan-700 text-cyan-500 hover:text-cyan-300 hover:border-cyan-400 p-3 rounded-full transition-all shadow-[0_0_10px_rgba(6,182,212,0.1)] hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]">
                     <TerminalSquare size={20} />
                 </button>
             )}
         </div>
 
         {/* FOOTER TICKER */}
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-stone-950 border-t border-amber-900/50 h-8 flex items-center overflow-hidden">
-          <div className="bg-stone-900 px-4 h-full flex items-center z-10 border-r border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.2)]">
-            <span className="font-bold text-[10px] uppercase tracking-widest text-amber-400 whitespace-nowrap flex items-center gap-2"><Activity size={12} className="animate-pulse text-amber-500" /> S.H.I.E.L.D. COMMS</span>
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#050b14] border-t border-cyan-900/50 h-8 flex items-center overflow-hidden">
+          <div className="bg-[#0a0f1a] px-4 h-full flex items-center z-10 border-r border-cyan-500/30 shadow-[0_0_10px_rgba(6,182,212,0.2)]">
+            <span className="font-bold text-[10px] uppercase tracking-widest text-cyan-400 whitespace-nowrap flex items-center gap-2"><Activity size={12} className="animate-pulse text-cyan-500" /> S.H.I.E.L.D. COMMS</span>
           </div>
           <div className="flex-1 overflow-hidden relative h-full flex items-center">
-             <div className="absolute whitespace-nowrap animate-[marquee_25s_linear_infinite] text-[10px] font-mono text-amber-200/70 uppercase tracking-widest w-full">
+             <div className="absolute whitespace-nowrap animate-[marquee_25s_linear_infinite] text-[10px] font-mono text-cyan-200/70 uppercase tracking-widest w-full">
                {TICKER_MESSAGES[tickerIdx]}
              </div>
           </div>
@@ -1476,7 +1510,7 @@ function AvengersTracker() {
       {/* BOSS ATTACK MODAL */}
       {modal === 'bossAttack' && bossAttackState.active && (
          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4">
-             <div className="bg-[#0f0a00] border-4 border-red-600 p-6 rounded-lg w-full max-w-lg shadow-[0_0_50px_rgba(220,38,38,0.5)] relative overflow-hidden animate-in zoom-in duration-300">
+             <div className="bg-[#050b14] border-4 border-red-600 p-6 rounded-lg w-full max-w-lg shadow-[0_0_50px_rgba(220,38,38,0.5)] relative overflow-hidden animate-in zoom-in duration-300">
                  
                  <div className="flex justify-between items-center mb-6 border-b border-red-900/50 pb-4">
                      <h3 className="text-2xl font-black text-red-500 uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_10px_rgba(248,113,113,0.8)]">
@@ -1490,7 +1524,7 @@ function AvengersTracker() {
                          <span>Gema {bossAttackState.currentIdx + 1}/6</span>
                          <span>Fallos: <span className="text-red-500">{bossAttackState.mistakes}</span></span>
                      </div>
-                     <div className="h-2 bg-[#1a1100] rounded-full overflow-hidden shadow-inner border border-red-900/30">
+                     <div className="h-2 bg-[#0a0f1a] rounded-full overflow-hidden shadow-inner border border-red-900/30">
                          <div 
                             className="h-full transition-all duration-500 shadow-[0_0_10px_rgba(255,255,255,0.5)]" 
                             style={{ 
@@ -1501,7 +1535,7 @@ function AvengersTracker() {
                      </div>
                  </div>
 
-                 <div className="bg-[#1a1100] p-6 rounded border border-red-900/50 mb-6 text-center min-h-[8rem] flex items-center justify-center shadow-inner">
+                 <div className="bg-[#0a0f1a] p-6 rounded border border-red-900/50 mb-6 text-center min-h-[8rem] flex items-center justify-center shadow-inner">
                      <p className="text-xl font-bold text-red-100 leading-relaxed">
                          {bossAttackState.questions[bossAttackState.currentIdx]?.q}
                      </p>
@@ -1523,7 +1557,7 @@ function AvengersTracker() {
                  </div>
                  
                  <div className="mt-4 text-center">
-                    <p className="text-[10px] text-red-500/50 font-mono">RESPUESTA: <span className="text-slate-300 font-bold">{bossAttackState.questions[bossAttackState.currentIdx]?.a}</span></p>
+                    <p className="text-[10px] text-red-500/50 font-mono">RESPUESTA: <span className="text-[#0a0f1a] font-bold">{bossAttackState.questions[bossAttackState.currentIdx]?.a}</span></p>
                  </div>
              </div>
          </div>
@@ -1532,16 +1566,16 @@ function AvengersTracker() {
       {/* MATH CHALLENGE MODAL */}
       {modal === 'mathChallenge' && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4">
-              <div className="bg-[#0f0a00] border-2 border-amber-500 p-6 rounded-sm w-full max-w-sm shadow-[0_0_30px_rgba(245,158,11,0.2)] relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-amber-500/50 animate-pulse"></div>
-                  <h3 className="text-xl font-black text-amber-500 mb-1 flex items-center gap-2 drop-shadow-[0_0_5px_rgba(245,158,11,0.5)]"><Brain size={24}/> ENTRENAMIENTO MATEMÁTICO</h3>
+              <div className="bg-[#050b14] border-2 border-blue-500 p-6 rounded-sm w-full max-w-sm shadow-[0_0_30px_rgba(59,130,246,0.2)] relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-blue-500/50 animate-pulse"></div>
+                  <h3 className="text-xl font-black text-blue-500 mb-1 flex items-center gap-2 drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]"><Brain size={24}/> ENTRENAMIENTO MATEMÁTICO</h3>
                   <div className="flex justify-between items-center mb-4">
-                      <p className="text-[10px] font-mono text-amber-700">NIVEL {mathState.level} | FASE {mathState.currentIdx + 1} / 5</p>
+                      <p className="text-[10px] font-mono text-blue-700">NIVEL {mathState.level} | FASE {mathState.currentIdx + 1} / 5</p>
                       {streak > 1 && <div className="text-orange-500 text-xs font-bold flex items-center animate-pulse drop-shadow-[0_0_5px_rgba(249,115,22,0.8)]"><Flame size={12}/> x{streak}</div>}
                   </div>
 
-                  <div className="bg-[#1a1100] p-6 rounded border border-amber-900/50 mb-6 text-center flex flex-col gap-2 shadow-inner">
-                      <p className="text-4xl font-mono font-bold text-amber-300 tracking-widest drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]">
+                  <div className="bg-[#0a0f1a] p-6 rounded border border-blue-900/50 mb-6 text-center flex flex-col gap-2 shadow-inner">
+                      <p className="text-4xl font-mono font-bold text-blue-300 tracking-widest drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]">
                           {mathState.questions[mathState.currentIdx]?.q}
                       </p>
                   </div>
@@ -1551,14 +1585,14 @@ function AvengersTracker() {
                       value={mathInput} 
                       onChange={(e) => setMathInput(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && submitMathAnswer()}
-                      className="w-full bg-black border border-amber-700 p-3 text-amber-400 text-center font-bold text-xl mb-4 focus:border-amber-400 outline-none focus:shadow-[0_0_15px_rgba(245,158,11,0.3)] transition-shadow"
+                      className="w-full bg-black border border-blue-700 p-3 text-blue-400 text-center font-bold text-xl mb-4 focus:border-blue-400 outline-none focus:shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-shadow"
                       placeholder="Resultado"
                       autoFocus
                   />
                   
                   <div className="flex gap-2">
-                      <button onClick={closeAllModals} className="flex-1 py-3 text-xs text-amber-700 hover:text-amber-500 transition-colors">ABORTAR</button>
-                      <button onClick={submitMathAnswer} className="flex-1 bg-amber-600 hover:bg-amber-500 text-black font-bold py-3 rounded uppercase hover:shadow-[0_0_15px_rgba(245,158,11,0.6)] transition-shadow">CONFIRMAR</button>
+                      <button onClick={closeAllModals} className="flex-1 py-3 text-xs text-blue-700 hover:text-blue-500 transition-colors">ABORTAR</button>
+                      <button onClick={submitMathAnswer} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded uppercase hover:shadow-[0_0_15px_rgba(59,130,246,0.6)] transition-shadow">CONFIRMAR</button>
                   </div>
               </div>
           </div>
@@ -1567,11 +1601,11 @@ function AvengersTracker() {
       {/* WORD CHALLENGE MODAL */}
       {modal === 'wordChallenge' && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4">
-              <div className="bg-[#0f0a00] border-2 border-purple-500 p-6 rounded-sm w-full max-w-sm shadow-[0_0_30px_rgba(168,85,247,0.2)] relative overflow-hidden">
+              <div className="bg-[#050b14] border-2 border-purple-500 p-6 rounded-sm w-full max-w-sm shadow-[0_0_30px_rgba(168,85,247,0.2)] relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-1 bg-purple-500/50 animate-pulse"></div>
                   <h3 className="text-xl font-black text-purple-500 mb-4 flex items-center gap-2 drop-shadow-[0_0_5px_rgba(192,132,252,0.5)]"><Binary size={24}/> DESCIFRADO HYDRA</h3>
                   
-                  <div className="bg-[#1a1100] p-6 rounded border border-purple-900/50 mb-6 text-center shadow-inner">
+                  <div className="bg-[#0a0f1a] p-6 rounded border border-purple-900/50 mb-6 text-center shadow-inner">
                       <p className="text-3xl font-mono font-bold text-purple-300 tracking-[0.5em] animate-pulse drop-shadow-[0_0_10px_rgba(192,132,252,0.8)]">
                           {wordState.scrambled}
                       </p>
@@ -1599,14 +1633,14 @@ function AvengersTracker() {
       {/* COMBAT CHALLENGE MODAL */}
       {modal === 'combatChallenge' && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4">
-              <div className="bg-[#0f0a00] border-2 border-red-500 p-6 rounded-sm w-full max-w-sm shadow-[0_0_30px_rgba(239,68,68,0.2)] relative overflow-hidden">
+              <div className="bg-[#050b14] border-2 border-red-500 p-6 rounded-sm w-full max-w-sm shadow-[0_0_30px_rgba(239,68,68,0.2)] relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-1 bg-red-500/50 animate-pulse"></div>
                   <h3 className="text-xl font-black text-red-500 mb-4 flex items-center gap-2 drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]"><Target size={24}/> SIMULACIÓN COMBATE</h3>
                   <div className="flex justify-between items-center mb-4">
                       <p className="text-[10px] font-mono text-red-700">OBJETIVO {combatState.currentIdx + 1} / 5</p>
                   </div>
                   
-                  <div className="bg-[#1a1100] p-6 rounded border border-red-900/50 mb-6 text-center shadow-inner">
+                  <div className="bg-[#0a0f1a] p-6 rounded border border-red-900/50 mb-6 text-center shadow-inner">
                       <p className="text-lg font-bold text-red-300 leading-relaxed drop-shadow-[0_0_5px_rgba(248,113,113,0.3)]">
                           {combatState.questions[combatState.currentIdx]?.q}
                       </p>
@@ -1633,10 +1667,10 @@ function AvengersTracker() {
       {/* MEMORY CHALLENGE MODAL */}
       {modal === 'memoryChallenge' && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4">
-              <div className="bg-[#0f0a00] border-2 border-cyan-500 p-6 rounded-sm w-full max-w-3xl shadow-[0_0_30px_rgba(34,211,238,0.2)] relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-cyan-500/50 animate-pulse"></div>
-                  <h3 className="text-xl font-black text-cyan-500 mb-4 flex items-center gap-2 drop-shadow-[0_0_5px_rgba(103,232,249,0.5)]"><Grid3X3 size={24}/> PROTOCOLO SINCRONIZACIÓN</h3>
-                  <p className="text-xs text-cyan-800 mb-4 font-mono">EMPAREJA LOS CONCEPTOS</p>
+              <div className="bg-[#050b14] border-2 border-emerald-500 p-6 rounded-sm w-full max-w-3xl shadow-[0_0_30px_rgba(16,185,129,0.2)] relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500/50 animate-pulse"></div>
+                  <h3 className="text-xl font-black text-emerald-500 mb-4 flex items-center gap-2 drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]"><Grid3X3 size={24}/> PROTOCOLO SINCRONIZACIÓN</h3>
+                  <p className="text-xs text-emerald-800 mb-4 font-mono">EMPAREJA LOS CONCEPTOS</p>
 
                   <div className="grid grid-cols-4 gap-3">
                       {memoryState.cards.map((card) => (
@@ -1645,20 +1679,20 @@ function AvengersTracker() {
                               onClick={() => handleCardClick(card.id)}
                               className={`h-24 rounded border flex items-center justify-center cursor-pointer transition-all duration-300 relative overflow-hidden ${
                                   card.isMatched ? 'bg-emerald-900/50 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]' :
-                                  card.isFlipped ? 'bg-cyan-900/50 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.5)]' : 
-                                  'bg-[#1a1100] border-amber-900/30 hover:border-amber-700/50'
+                                  card.isFlipped ? 'bg-emerald-900/50 border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 
+                                  'bg-[#0a0f1a] border-emerald-900/30 hover:border-emerald-700/50'
                               }`}
                           >
                               {card.isFlipped || card.isMatched ? (
                                   <p className="text-xs font-bold text-white text-center p-2 leading-tight drop-shadow-md">{card.content}</p>
                               ) : (
-                                  <Shield size={32} className="text-amber-900/30" />
+                                  <Shield size={32} className="text-emerald-900/30" />
                               )}
                           </div>
                       ))}
                   </div>
 
-                  <button onClick={closeAllModals} className="mt-6 w-full py-3 bg-[#1a1100] border border-amber-900/50 hover:bg-amber-900/30 text-amber-500 text-xs font-bold uppercase rounded transition-colors">CANCELAR</button>
+                  <button onClick={closeAllModals} className="mt-6 w-full py-3 bg-[#0a0f1a] border border-emerald-900/50 hover:bg-emerald-900/30 text-emerald-500 text-xs font-bold uppercase rounded transition-colors">CANCELAR</button>
               </div>
           </div>
       )}
@@ -1667,30 +1701,30 @@ function AvengersTracker() {
       {modal === 'cerebro' && cerebro.active && (
         <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4">
           <div className="absolute inset-0" onClick={()=>{if(!cerebro.searching) closeAllModals()}}></div>
-          <div className="relative z-10 text-center bg-[#0f0a00] p-8 rounded-xl border border-amber-500/50 max-w-lg w-full mx-4 shadow-[0_0_50px_rgba(245,158,11,0.2)]">
+          <div className="relative z-10 text-center bg-[#050b14] p-8 rounded-xl border border-cyan-500/50 max-w-lg w-full mx-4 shadow-[0_0_50px_rgba(6,182,212,0.2)]">
             
             {!cerebro.type ? (
                <>
-                 <Brain size={80} className="mx-auto text-amber-500 mb-6 animate-pulse drop-shadow-[0_0_15px_rgba(245,158,11,0.8)]" />
-                 <h2 className="text-2xl font-black text-amber-400 uppercase tracking-widest mb-6 drop-shadow-[0_0_5px_rgba(245,158,11,0.5)] font-mono">PROTOCOLO NEXO</h2>
-                 <p className="text-sm text-amber-600 mb-8 font-mono">Seleccione el objetivo del rastreo:</p>
+                 <Brain size={80} className="mx-auto text-cyan-500 mb-6 animate-pulse drop-shadow-[0_0_15px_rgba(6,182,212,0.8)]" />
+                 <h2 className="text-2xl font-black text-cyan-400 uppercase tracking-widest mb-6 drop-shadow-[0_0_5px_rgba(6,182,212,0.5)] font-mono">PROTOCOLO NEXO</h2>
+                 <p className="text-sm text-cyan-600 mb-8 font-mono">Seleccione el objetivo del rastreo:</p>
                  <div className="grid grid-cols-2 gap-4">
                     <button 
                         onClick={(e) => { e.stopPropagation(); activateCerebro('member'); }}
-                        className="py-6 bg-[#1a1100] hover:bg-amber-900/30 border border-amber-800/50 hover:border-amber-500 text-amber-500 font-black uppercase tracking-widest rounded transition-all active:scale-95 flex flex-col items-center gap-2 hover:shadow-[0_0_20px_rgba(245,158,11,0.3)] font-mono"
+                        className="py-6 bg-[#0a0f1a] hover:bg-cyan-900/30 border border-cyan-800/50 hover:border-cyan-500 text-cyan-500 font-black uppercase tracking-widest rounded transition-all active:scale-95 flex flex-col items-center gap-2 hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] font-mono"
                     >
                         <User size={32}/> OPERATIVO
                     </button>
                     <button 
                         onClick={(e) => { e.stopPropagation(); activateCerebro('team'); }}
-                        className="py-6 bg-[#1a1100] hover:bg-amber-900/30 border border-amber-800/50 hover:border-amber-500 text-amber-500 font-black uppercase tracking-widest rounded transition-all active:scale-95 flex flex-col items-center gap-2 hover:shadow-[0_0_20px_rgba(245,158,11,0.3)] font-mono"
+                        className="py-6 bg-[#0a0f1a] hover:bg-cyan-900/30 border border-cyan-800/50 hover:border-cyan-500 text-cyan-500 font-black uppercase tracking-widest rounded transition-all active:scale-95 flex flex-col items-center gap-2 hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] font-mono"
                     >
                         <Users size={32}/> ESCUADRÓN
                     </button>
                  </div>
                  <button 
                     onClick={(e) => { e.stopPropagation(); closeAllModals(); }}
-                    className="mt-6 text-amber-800 text-xs hover:text-amber-500 underline font-mono transition-colors"
+                    className="mt-6 text-cyan-800 text-xs hover:text-cyan-500 underline font-mono transition-colors"
                 >
                     CANCELAR RASTREO
                 </button>
@@ -1698,27 +1732,27 @@ function AvengersTracker() {
             ) : (
                <>
                  <div className={`mb-6 ${cerebro.searching ? 'animate-spin' : ''}`}>
-                    {cerebro.type === 'team' ? <Users size={64} className="mx-auto text-amber-500 drop-shadow-[0_0_15px_rgba(245,158,11,0.8)]"/> : <Brain size={64} className="mx-auto text-amber-500 drop-shadow-[0_0_15px_rgba(245,158,11,0.8)]"/>}
+                    {cerebro.type === 'team' ? <Users size={64} className="mx-auto text-cyan-500 drop-shadow-[0_0_15px_rgba(6,182,212,0.8)]"/> : <Brain size={64} className="mx-auto text-cyan-500 drop-shadow-[0_0_15px_rgba(6,182,212,0.8)]"/>}
                  </div>
-                 <h2 className="text-xl font-black text-amber-400 uppercase tracking-widest mb-4 font-mono">
+                 <h2 className="text-xl font-black text-cyan-400 uppercase tracking-widest mb-4 font-mono">
                     {cerebro.searching ? "RASTREANDO..." : (cerebro.type === 'team' ? "ESCUADRÓN LOCALIZADO" : "SUJETO LOCALIZADO")}
                  </h2>
                  
-                 <div className="text-3xl md:text-5xl font-mono font-black text-amber-300 mb-8 min-h-[4rem] flex items-center justify-center p-4 bg-black rounded border border-amber-800 shadow-inner drop-shadow-[0_0_10px_rgba(245,158,11,0.3)]">
-                    {cerebro.target || <span className="animate-pulse text-amber-800">...</span>}
+                 <div className="text-3xl md:text-5xl font-mono font-black text-cyan-300 mb-8 min-h-[4rem] flex items-center justify-center p-4 bg-black rounded border border-cyan-800 shadow-inner drop-shadow-[0_0_10px_rgba(6,182,212,0.3)]">
+                    {cerebro.target || <span className="animate-pulse text-cyan-800">...</span>}
                  </div>
                 
                  {!cerebro.searching && (
                     <div className="grid grid-cols-2 gap-4">
                         <button 
                             onClick={(e) => { e.stopPropagation(); activateCerebro(cerebro.type); }}
-                            className="py-3 bg-amber-700 hover:bg-amber-600 text-black font-bold uppercase tracking-widest rounded shadow-[0_0_15px_rgba(245,158,11,0.3)] transition-all active:scale-95 flex items-center justify-center gap-2 font-mono"
+                            className="py-3 bg-cyan-700 hover:bg-cyan-600 text-black font-bold uppercase tracking-widest rounded shadow-[0_0_15px_rgba(6,182,212,0.3)] transition-all active:scale-95 flex items-center justify-center gap-2 font-mono"
                         >
                             <RefreshCw size={16}/> RE-ESCANEAR
                         </button>
                         <button 
                             onClick={(e) => { e.stopPropagation(); closeAllModals(); }}
-                            className="py-3 bg-[#1a1100] border border-amber-800 hover:bg-amber-900/40 text-amber-500 font-bold uppercase tracking-widest rounded transition-all active:scale-95 font-mono"
+                            className="py-3 bg-[#0a0f1a] border border-cyan-800 hover:bg-cyan-900/40 text-cyan-500 font-bold uppercase tracking-widest rounded transition-all active:scale-95 font-mono"
                         >
                             CERRAR
                         </button>
@@ -1746,14 +1780,14 @@ function AvengersTracker() {
       {/* MATRIX PILL EVENT MODAL */}
       {modal === 'matrixPill' && matrixTarget && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4">
-              <div className="bg-[#0f0a00] border-2 border-amber-400 p-8 rounded-lg w-full max-w-lg text-center shadow-[0_0_50px_rgba(245,158,11,0.3)] relative overflow-hidden">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(245,158,11,0.1),transparent_70%)] animate-pulse"></div>
+              <div className="bg-[#050b14] border-2 border-cyan-400 p-8 rounded-lg w-full max-w-lg text-center shadow-[0_0_50px_rgba(6,182,212,0.3)] relative overflow-hidden">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.1),transparent_70%)] animate-pulse"></div>
                   
                   {!pillResult ? (
                       <div className="relative z-10">
-                          <Zap size={64} className="mx-auto text-amber-400 mb-6 animate-pulse drop-shadow-[0_0_15px_rgba(245,158,11,0.8)]" />
-                          <h3 className="text-2xl font-black text-amber-300 uppercase tracking-widest mb-4">ANOMALÍA DETECTADA</h3>
-                          <p className="text-sm text-amber-100 mb-8 font-mono">El sistema ha interceptado al equipo <span className="font-bold text-white">{matrixTarget.name}</span>. Deben tomar una decisión ahora.</p>
+                          <Zap size={64} className="mx-auto text-cyan-400 mb-6 animate-pulse drop-shadow-[0_0_15px_rgba(6,182,212,0.8)]" />
+                          <h3 className="text-2xl font-black text-cyan-300 uppercase tracking-widest mb-4">ANOMALÍA DETECTADA</h3>
+                          <p className="text-sm text-cyan-100 mb-8 font-mono">El sistema ha interceptado al equipo <span className="font-bold text-white">{matrixTarget.name}</span>. Deben tomar una decisión ahora.</p>
                           
                           <div className="grid grid-cols-2 gap-6">
                               <button onClick={() => resolveMatrixPill('red')} className="group flex flex-col items-center gap-3 p-6 border-2 border-red-900 bg-red-950/30 hover:bg-red-900 hover:border-red-500 rounded-lg transition-all shadow-[0_0_15px_rgba(239,68,68,0.2)] hover:shadow-[0_0_30px_rgba(239,68,68,0.6)]">
@@ -1769,8 +1803,8 @@ function AvengersTracker() {
                   ) : (
                       <div className="animate-in zoom-in relative z-10">
                           <h3 className="text-2xl font-black text-white mb-4">RESULTADO DE LA ELECCIÓN</h3>
-                          <p className="text-xl font-mono text-amber-400 mb-8">{pillResult}</p>
-                          <button onClick={closeAllModals} className="px-8 py-3 bg-stone-950 border border-amber-500 text-amber-400 hover:bg-amber-500 hover:text-black font-bold rounded uppercase transition-colors">VOLVER AL NEXO</button>
+                          <p className="text-xl font-mono text-cyan-400 mb-8">{pillResult}</p>
+                          <button onClick={closeAllModals} className="px-8 py-3 bg-[#0a0f1a] border border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-black font-bold rounded uppercase transition-colors">VOLVER AL NEXO</button>
                       </div>
                   )}
               </div>
@@ -1780,14 +1814,14 @@ function AvengersTracker() {
       {/* OMEGA CHALLENGE MODAL */}
       {modal === 'omegaChallenge' && omegaQuestion && omegaEvent && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
-              <div className="bg-[#0f0a00] border-2 border-red-500 p-6 rounded-sm w-full max-w-md shadow-[0_0_30px_rgba(239,68,68,0.2)] relative overflow-hidden">
+              <div className="bg-[#050b14] border-2 border-red-500 p-6 rounded-sm w-full max-w-md shadow-[0_0_30px_rgba(239,68,68,0.2)] relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-1 bg-red-500/50 animate-pulse"></div>
                   <h3 className="text-xl font-black text-red-500 mb-1 flex items-center gap-2 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]"><Target size={24}/> OBJETIVO COMPARTIDO</h3>
                   <div className="flex justify-between items-center mb-4">
                       <p className="text-[10px] font-mono text-red-400">Daño Global: {omegaEvent.current} / {omegaEvent.target}</p>
                   </div>
 
-                  <div className="bg-[#1a1100] p-6 rounded border border-red-900/50 mb-6 text-center flex flex-col gap-2 shadow-inner">
+                  <div className="bg-[#0a0f1a] p-6 rounded border border-red-900/50 mb-6 text-center flex flex-col gap-2 shadow-inner">
                       <p className="text-lg font-mono font-bold text-red-300 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]">
                           {omegaQuestion.q}
                       </p>
@@ -1814,7 +1848,7 @@ function AvengersTracker() {
       {/* --- MODALS (STARK ROULETTE) --- */}
       {modal === 'roulette' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
-              <div className="bg-[#0f0a00] border-2 border-orange-500 p-8 rounded-lg w-full max-w-sm text-center shadow-[0_0_50px_rgba(249,115,22,0.3)] relative overflow-hidden">
+              <div className="bg-[#050b14] border-2 border-orange-500 p-8 rounded-lg w-full max-w-sm text-center shadow-[0_0_50px_rgba(249,115,22,0.3)] relative overflow-hidden">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(249,115,22,0.1),transparent_70%)]"></div>
                   <Disc size={64} className={`mx-auto text-orange-500 mb-6 ${starkSpinning ? 'animate-spin' : ''}`} />
                   <h3 className="text-2xl font-black text-orange-500 uppercase tracking-widest mb-2 drop-shadow-[0_0_10px_rgba(249,115,22,0.8)]">RULETA STARK</h3>
@@ -1825,7 +1859,7 @@ function AvengersTracker() {
                           <p className={`text-xl font-bold mb-2 ${starkPrize.type === 'bad' ? 'text-red-500' : starkPrize.type === 'good' ? 'text-amber-400' : 'text-amber-200'}`}>
                               {starkPrize.text}
                           </p>
-                          <button onClick={closeAllModals} className="mt-6 px-8 py-3 bg-[#1a1100] border border-amber-500/50 hover:bg-amber-900/30 text-amber-400 font-bold rounded uppercase transition-colors">ACEPTAR</button>
+                          <button onClick={closeAllModals} className="mt-6 px-8 py-3 bg-[#0a0f1a] border border-cyan-500/50 hover:bg-cyan-900/30 text-cyan-400 font-bold rounded uppercase transition-colors">ACEPTAR</button>
                       </div>
                   ) : (
                       <button 
@@ -1844,49 +1878,49 @@ function AvengersTracker() {
       {modal === 'shop' && selTeam && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/95 backdrop-blur-sm" onClick={closeAllModals}></div>
-          <div className="relative bg-[#0f0a00] border-2 border-yellow-500 w-full max-w-2xl rounded-sm overflow-hidden shadow-[0_0_50px_rgba(250,204,21,0.3)]">
+          <div className="relative bg-[#050b14] border-2 border-cyan-500 w-full max-w-2xl rounded-sm overflow-hidden shadow-[0_0_50px_rgba(6,182,212,0.3)]">
             
-            <div className="bg-yellow-900/10 p-6 border-b border-yellow-500/30 flex justify-between items-center">
+            <div className="bg-cyan-900/10 p-6 border-b border-cyan-500/30 flex justify-between items-center">
               <div>
-                  <h3 className="text-xl font-black text-yellow-500 uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]"><ShoppingCart size={20} /> Panel de Mejoras</h3>
-                  <div className="flex items-center gap-4 mt-2 text-sm font-mono"><span className="text-yellow-700">Equipo: <span className="text-yellow-500 font-bold">{selTeam.name}</span></span><span className="text-yellow-700">Saldo: <span className="text-yellow-400 font-bold text-lg drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">{selTeam.points}</span></span></div>
+                  <h3 className="text-xl font-black text-cyan-500 uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_5px_rgba(6,182,212,0.5)]"><ShoppingCart size={20} /> Panel de Mejoras</h3>
+                  <div className="flex items-center gap-4 mt-2 text-sm font-mono"><span className="text-cyan-700">Equipo: <span className="text-cyan-500 font-bold">{selTeam.name}</span></span><span className="text-cyan-700">Saldo: <span className="text-amber-400 font-bold text-lg drop-shadow-[0_0_5px_rgba(245,158,11,0.5)]">{selTeam.points}</span></span></div>
               </div>
-              <button onClick={closeAllModals} className="text-yellow-800 hover:text-yellow-500 transition-colors">✕</button>
+              <button onClick={closeAllModals} className="text-cyan-800 hover:text-cyan-500 transition-colors">✕</button>
             </div>
 
-            <div className="flex border-b border-yellow-900/50 bg-[#1a1100]">
-               <button onClick={() => setShopTab('rewards')} className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-colors ${shopTab === 'rewards' ? 'text-yellow-400 border-b-2 border-yellow-500 bg-yellow-900/20' : 'text-yellow-800 hover:text-yellow-600'}`}>Recompensas</button>
-               <button onClick={() => setShopTab('tech')} className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-colors ${shopTab === 'tech' ? 'text-amber-400 border-b-2 border-amber-500 bg-amber-900/20' : 'text-amber-800 hover:text-amber-600'}`}>Tecnología</button>
+            <div className="flex border-b border-cyan-900/50 bg-[#0a0f1a]">
+               <button onClick={() => setShopTab('rewards')} className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-colors ${shopTab === 'rewards' ? 'text-cyan-400 border-b-2 border-cyan-500 bg-cyan-900/20' : 'text-cyan-800 hover:text-cyan-600'}`}>Recompensas</button>
+               <button onClick={() => setShopTab('tech')} className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-colors ${shopTab === 'tech' ? 'text-cyan-400 border-b-2 border-cyan-500 bg-cyan-900/20' : 'text-cyan-800 hover:text-cyan-600'}`}>Tecnología</button>
             </div>
 
             <div className="p-6 grid gap-4 max-h-[50vh] overflow-y-auto">
               {shopTab === 'rewards' ? (
                 <>
                   <div className="mb-4 bg-purple-900/10 border border-purple-500/50 p-4 rounded-sm flex justify-between items-center animate-pulse shadow-[0_0_15px_rgba(168,85,247,0.1)]"><div className="flex gap-4"><div className="bg-purple-500/20 p-3 rounded-sm text-purple-400 border border-purple-500/30"><Package size={24}/></div><div><h4 className="font-bold text-purple-400 font-mono drop-shadow-[0_0_5px_rgba(192,132,252,0.5)]">CAJA DE WAKANDA</h4><p className="text-xs text-purple-600 font-mono">¿Te atreves? Resultado aleatorio.</p></div></div><button onClick={() => openLootBox(selTeam.id)} disabled={selTeam.points < (dailyModifier.effect === 'CHEAP_LOOT' ? 25 : 50)} className={`px-6 py-2 rounded-sm font-bold font-mono text-sm border ${selTeam.points >= (dailyModifier.effect === 'CHEAP_LOOT' ? 25 : 50) ? 'bg-purple-900/30 hover:bg-purple-600 text-purple-300 hover:text-white border-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.3)] transition-all' : 'bg-transparent text-purple-900 border-purple-900/50 cursor-not-allowed'}`}>{dailyModifier.effect === 'CHEAP_LOOT' ? 25 : 50} PTS</button></div>
-                  {lootResult && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95"><div className="text-center animate-in zoom-in"><Package size={64} className="mx-auto text-yellow-500 mb-4 animate-bounce drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]" /><h2 className="text-3xl font-black text-yellow-400 mb-2 font-mono">{lootResult.text}</h2><button onClick={()=>setLootResult(null)} className="mt-8 px-6 py-2 bg-[#1a1100] border border-yellow-700 text-yellow-500 hover:bg-yellow-900/30 rounded text-xs uppercase font-mono transition-colors">Cerrar</button></div></div>}
-                  {REWARDS_LIST.map((reward) => (<div key={reward.id} className="group relative bg-[#1a1100] border border-green-900/50 hover:border-yellow-500/50 rounded-sm p-4 transition-all hover:bg-yellow-900/10 flex justify-between items-center"><div className="flex items-start gap-4"><div className="bg-yellow-900/20 p-3 rounded-sm text-yellow-600 group-hover:text-yellow-400 group-hover:scale-110 transition-all border border-yellow-900/30 group-hover:border-yellow-500/50"><Zap size={20} /></div><div><h4 className="font-bold text-green-500 group-hover:text-yellow-400 transition-colors uppercase tracking-wide font-mono">{reward.name}</h4><p className="text-xs text-green-700 group-hover:text-yellow-600 mt-1 font-mono transition-colors">{reward.desc}</p></div></div><button onClick={() => handleBuy(selTeam.id, reward.cost, reward)} disabled={selTeam.points < reward.cost} className={`px-6 py-2 rounded-sm font-bold font-mono text-sm border transition-all duration-300 ${selTeam.points >= reward.cost ? 'bg-yellow-900/20 text-yellow-500 border-yellow-600 hover:bg-yellow-500 hover:text-black shadow-[0_0_10px_rgba(250,204,21,0.2)] hover:shadow-[0_0_15px_rgba(250,204,21,0.6)]' : 'bg-transparent text-green-900 border-green-900/50 cursor-not-allowed'}`}>{reward.cost} PTS</button></div>))}
+                  {lootResult && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95"><div className="text-center animate-in zoom-in"><Package size={64} className="mx-auto text-amber-500 mb-4 animate-bounce drop-shadow-[0_0_15px_rgba(245,158,11,0.8)]" /><h2 className="text-3xl font-black text-amber-400 mb-2 font-mono">{lootResult.text}</h2><button onClick={()=>setLootResult(null)} className="mt-8 px-6 py-2 bg-[#0a0f1a] border border-cyan-700 text-cyan-500 hover:bg-cyan-900/30 rounded text-xs uppercase font-mono transition-colors">Cerrar</button></div></div>}
+                  {REWARDS_LIST.map((reward) => (<div key={reward.id} className="group relative bg-[#0a0f1a] border border-cyan-900/50 hover:border-cyan-500/50 rounded-sm p-4 transition-all hover:bg-cyan-900/10 flex justify-between items-center"><div className="flex items-start gap-4"><div className="bg-cyan-900/20 p-3 rounded-sm text-cyan-600 group-hover:text-cyan-400 group-hover:scale-110 transition-all border border-cyan-900/30 group-hover:border-cyan-500/50"><Zap size={20} /></div><div><h4 className="font-bold text-cyan-500 group-hover:text-cyan-400 transition-colors uppercase tracking-wide font-mono">{reward.name}</h4><p className="text-xs text-cyan-700 group-hover:text-cyan-600 mt-1 font-mono transition-colors">{reward.desc}</p></div></div><button onClick={() => handleBuy(selTeam.id, reward.cost, reward)} disabled={selTeam.points < reward.cost} className={`px-6 py-2 rounded-sm font-bold font-mono text-sm border transition-all duration-300 ${selTeam.points >= reward.cost ? 'bg-cyan-900/20 text-cyan-500 border-cyan-600 hover:bg-cyan-500 hover:text-black shadow-[0_0_10px_rgba(6,182,212,0.2)] hover:shadow-[0_0_15px_rgba(6,182,212,0.6)]' : 'bg-transparent text-cyan-900 border-cyan-900/50 cursor-not-allowed'}`}>{reward.cost} PTS</button></div>))}
                 </>
               ) : (
                 <>
                   <div className="mb-4 text-center">
-                      <p className="text-xs text-amber-500 font-mono">Inversiones a largo plazo para mejorar el rendimiento del equipo.</p>
+                      <p className="text-xs text-cyan-500 font-mono">Inversiones a largo plazo para mejorar el rendimiento del equipo.</p>
                   </div>
                   {UPGRADES_LIST.map((upg) => {
                      const isOwned = selTeam.upgrades && selTeam.upgrades[upg.id];
                      return (
-                        <div key={upg.id} className={`group relative bg-[#1a1100] border rounded-sm p-4 transition-all flex justify-between items-center ${isOwned ? 'border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.2)]' : 'border-amber-900/50 hover:border-amber-500/50'}`}>
+                        <div key={upg.id} className={`group relative bg-[#0a0f1a] border rounded-sm p-4 transition-all flex justify-between items-center ${isOwned ? 'border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.2)]' : 'border-cyan-900/50 hover:border-cyan-500/50'}`}>
                           <div className="flex items-start gap-4">
-                              <div className={`p-3 rounded-sm transition-all border ${isOwned ? 'bg-amber-500/20 text-amber-400 border-amber-500/50' : 'bg-amber-900/20 text-amber-700 border-amber-900/30'}`}>{ICONS[upg.iconKey] && React.createElement(ICONS[upg.iconKey], { size: 20 })}</div>
+                              <div className={`p-3 rounded-sm transition-all border ${isOwned ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/50' : 'bg-cyan-900/20 text-cyan-700 border-cyan-900/30'}`}>{ICONS[upg.iconKey] && React.createElement(ICONS[upg.iconKey], { size: 20 })}</div>
                               <div>
-                                  <h4 className={`font-bold uppercase tracking-wide font-mono ${isOwned ? 'text-amber-400' : 'text-amber-600'}`}>{upg.name}</h4>
-                                  <p className="text-xs text-amber-700 mt-1 font-mono">{upg.desc}</p>
-                                  {isOwned && <p className="text-[10px] text-amber-500 font-bold mt-2 uppercase animate-pulse">INSTALADO Y ACTIVO</p>}
+                                  <h4 className={`font-bold uppercase tracking-wide font-mono ${isOwned ? 'text-cyan-400' : 'text-cyan-600'}`}>{upg.name}</h4>
+                                  <p className="text-xs text-cyan-700 mt-1 font-mono">{upg.desc}</p>
+                                  {isOwned && <p className="text-[10px] text-cyan-500 font-bold mt-2 uppercase animate-pulse">INSTALADO Y ACTIVO</p>}
                               </div>
                           </div>
                           {!isOwned ? (
-                             <button onClick={() => handleBuy(selTeam.id, upg.cost, upg)} disabled={selTeam.points < upg.cost} className={`px-6 py-2 rounded-sm font-bold font-mono text-sm border transition-all duration-300 ${selTeam.points >= upg.cost ? 'bg-amber-900/30 text-amber-400 border-amber-500 hover:bg-amber-500 hover:text-black shadow-[0_0_10px_rgba(245,158,11,0.3)]' : 'bg-transparent text-amber-900 border-amber-900/50 cursor-not-allowed'}`}>{upg.cost} PTS</button>
+                             <button onClick={() => handleBuy(selTeam.id, upg.cost, upg)} disabled={selTeam.points < upg.cost} className={`px-6 py-2 rounded-sm font-bold font-mono text-sm border transition-all duration-300 ${selTeam.points >= upg.cost ? 'bg-cyan-900/30 text-cyan-400 border-cyan-500 hover:bg-cyan-500 hover:text-black shadow-[0_0_10px_rgba(6,182,212,0.3)]' : 'bg-transparent text-cyan-900 border-cyan-900/50 cursor-not-allowed'}`}>{upg.cost} PTS</button>
                           ) : (
-                             <div className="px-6 py-2 rounded-sm font-bold font-mono text-sm border border-amber-500/50 bg-amber-500/10 text-amber-500">ADQUIRIDO</div>
+                             <div className="px-6 py-2 rounded-sm font-bold font-mono text-sm border border-cyan-500/50 bg-cyan-500/10 text-cyan-500">ADQUIRIDO</div>
                           )}
                         </div>
                      )
@@ -1902,16 +1936,16 @@ function AvengersTracker() {
       {modal === 'gauntlet' && loggedInTeam && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/95 backdrop-blur-sm" onClick={closeAllModals}></div>
-          <div className="relative bg-[#0f0a00] border-2 border-yellow-500 w-full max-w-2xl rounded-sm overflow-hidden shadow-[0_0_50px_rgba(250,204,21,0.3)] flex flex-col max-h-[90vh]">
-            <div className="bg-yellow-900/20 p-6 border-b border-yellow-500/20 flex justify-between items-center">
-              <h3 className="text-xl font-black text-yellow-500 uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]"><Hand size={24} /> El Guantelete del Infinito</h3>
-              <button onClick={closeAllModals} className="text-yellow-500/50 hover:text-yellow-400 transition-colors">✕</button>
+          <div className="relative bg-[#050b14] border-2 border-cyan-500 w-full max-w-2xl rounded-sm overflow-hidden shadow-[0_0_50px_rgba(6,182,212,0.3)] flex flex-col max-h-[90vh]">
+            <div className="bg-cyan-900/20 p-6 border-b border-cyan-500/20 flex justify-between items-center">
+              <h3 className="text-xl font-black text-cyan-500 uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]"><Hand size={24} /> El Guantelete del Infinito</h3>
+              <button onClick={closeAllModals} className="text-cyan-500/50 hover:text-cyan-400 transition-colors">✕</button>
             </div>
             <div className="p-6 overflow-y-auto">
               <div className="mb-6 bg-red-900/10 border border-red-500/20 p-4 rounded-sm text-center">
                 <p className="text-sm font-bold text-red-500 uppercase tracking-widest mb-1 drop-shadow-[0_0_5px_rgba(248,113,113,0.8)]">Poder Absoluto</p>
                 <p className="text-xs text-red-200">Selecciona <span className="font-bold text-white">hasta 3 equipos rivales</span> para reducir sus puntos a CERO.</p>
-                <p className="text-xs text-red-200 mt-1">Coste de energía: <span className="text-yellow-500 font-bold">200 PTS</span> por cada equipo seleccionado.</p>
+                <p className="text-xs text-red-200 mt-1">Coste de energía: <span className="text-cyan-500 font-bold">200 PTS</span> por cada equipo seleccionado.</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 {teams.filter(t => t.id !== loggedInTeam.id).map(rival => {
@@ -1920,14 +1954,14 @@ function AvengersTracker() {
                       <button 
                         key={rival.id} 
                         onClick={() => toggleGauntletTarget(rival.id)}
-                        className={`flex items-center gap-4 p-4 border rounded-sm transition-all group text-left ${isSelected ? 'bg-red-900/40 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.4)]' : 'bg-[#1a1100] border-amber-900/30 hover:border-yellow-500/50 hover:bg-yellow-900/20'}`}
+                        className={`flex items-center gap-4 p-4 border rounded-sm transition-all group text-left ${isSelected ? 'bg-red-900/40 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.4)]' : 'bg-[#0a0f1a] border-cyan-900/30 hover:border-cyan-500/50 hover:bg-cyan-900/20'}`}
                       >
                         <div className={`w-12 h-12 rounded-full border border-white/20 bg-black overflow-hidden shrink-0 ${rival.accent}`}>
                           <img src={rival.gif} className="w-full h-full object-cover opacity-80 mix-blend-screen" />
                         </div>
                         <div className="flex-1">
-                          <p className={`font-bold uppercase tracking-wider ${isSelected ? 'text-red-400 drop-shadow-[0_0_5px_rgba(248,113,113,0.8)]' : 'text-amber-300'}`}>{rival.name}</p>
-                          <p className="text-xs text-amber-600 font-mono">Puntos Actuales: <span className={rival.points > 0 ? "text-amber-400" : "text-red-500"}>{rival.points}</span></p>
+                          <p className={`font-bold uppercase tracking-wider ${isSelected ? 'text-red-400 drop-shadow-[0_0_5px_rgba(248,113,113,0.8)]' : 'text-cyan-300'}`}>{rival.name}</p>
+                          <p className="text-xs text-cyan-600 font-mono">Puntos Actuales: <span className={rival.points > 0 ? "text-amber-400" : "text-red-500"}>{rival.points}</span></p>
                           {isSelected && <p className="text-[10px] text-red-500 font-bold mt-1 animate-pulse">¡OBJETIVO FIJADO!</p>}
                         </div>
                         {isSelected && <Skull size={20} className="text-red-500 drop-shadow-[0_0_5px_rgba(248,113,113,0.8)]" />}
@@ -1937,14 +1971,14 @@ function AvengersTracker() {
               </div>
               
               <div className="flex gap-4 items-center">
-                 <div className="flex-1 bg-[#1a1100] p-4 rounded border border-amber-900/50 text-center shadow-inner">
-                    <p className="text-[10px] text-amber-600 uppercase tracking-widest mb-1">Coste de Energía</p>
-                    <p className="text-2xl font-mono font-bold text-yellow-500 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]">-{gauntletTargets.length * 200}</p>
+                 <div className="flex-1 bg-[#0a0f1a] p-4 rounded border border-cyan-900/50 text-center shadow-inner">
+                    <p className="text-[10px] text-cyan-600 uppercase tracking-widest mb-1">Coste de Energía</p>
+                    <p className="text-2xl font-mono font-bold text-cyan-500 drop-shadow-[0_0_10px_rgba(6,182,212,0.5)]">-{gauntletTargets.length * 200}</p>
                  </div>
                  <button 
                     onClick={executeGauntletSnap}
                     disabled={gauntletTargets.length === 0}
-                    className={`flex-1 py-4 font-black uppercase tracking-widest rounded transition-all ${gauntletTargets.length > 0 ? 'bg-yellow-500 hover:bg-yellow-400 text-black shadow-[0_0_20px_rgba(250,204,21,0.5)]' : 'bg-stone-900 border border-amber-900/30 text-amber-900 cursor-not-allowed'}`}
+                    className={`flex-1 py-4 font-black uppercase tracking-widest rounded transition-all ${gauntletTargets.length > 0 ? 'bg-cyan-500 hover:bg-cyan-400 text-black shadow-[0_0_20px_rgba(6,182,212,0.5)]' : 'bg-[#0a0f1a] border border-cyan-900/30 text-cyan-900 cursor-not-allowed'}`}
                  >
                     {gauntletTargets.length > 0 ? 'Ejecutar Chasquido' : 'Selecciona Objetivo'}
                  </button>
@@ -1958,10 +1992,10 @@ function AvengersTracker() {
       {modal === 'penalty' && selTeam && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/95 backdrop-blur-sm" onClick={closeAllModals}></div>
-          <div className="relative bg-[#050A05] border border-red-500/50 p-6 rounded-sm w-full max-w-lg shadow-[0_0_30px_rgba(220,38,38,0.2)]">
+          <div className="relative bg-[#050b14] border border-red-500/50 p-6 rounded-sm w-full max-w-lg shadow-[0_0_30px_rgba(220,38,38,0.2)]">
             <div className="bg-red-950/20 p-8 text-center border-b border-red-900/50"><div className="mx-auto bg-red-900/20 border border-red-500/30 w-20 h-20 rounded-full flex items-center justify-center mb-4 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.2)]"><Skull size={40} className="text-red-500 drop-shadow-[0_0_5px_rgba(248,113,113,0.8)]" /></div><h3 className="text-2xl font-black text-red-500 uppercase tracking-[0.2em] mb-2 drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]">Zona de Castigo</h3><p className="text-red-400/60 text-sm font-mono">Medidas disciplinarias para <span className="font-bold text-red-300">{selTeam.name}</span></p></div>
             <div className="p-8">
-              {!penalty ? (<button onClick={spinPenalty} className="w-full bg-red-900/30 border border-red-500/50 hover:bg-red-600 text-red-400 hover:text-black font-black py-5 rounded-sm shadow-[0_0_15px_rgba(220,38,38,0.2)] hover:shadow-[0_0_30px_rgba(220,38,38,0.6)] flex justify-center gap-3 transition-all"><RefreshCw size={20} /> GENERAR SANCIÓN</button>) : (<div className="animate-in zoom-in duration-300"><div className="bg-black/50 p-6 rounded-sm border border-red-500/30 mb-6 text-center shadow-inner"><p className="text-xs text-red-600 mb-3 uppercase tracking-widest font-mono">Sentencia:</p><div className={`text-xl font-bold font-mono p-2 rounded ${penalty==='BLOCKED'?'text-amber-400 border border-amber-500/50 bg-amber-900/10 shadow-[0_0_15px_rgba(245,158,11,0.2)]':'text-red-300 drop-shadow-md'}`}>{penalty==='BLOCKED'?'¡ESCUDO ACTIVADO! Sanción bloqueada.':penalty}</div></div><div className="flex gap-3"><button onClick={spinPenalty} className="flex-1 py-3 bg-[#1a1100] border border-red-900/50 hover:bg-red-900/20 text-red-500 rounded-sm font-bold text-xs uppercase transition-colors font-mono">Reintentar</button><button onClick={closeAllModals} className="flex-1 py-3 bg-red-700 hover:bg-red-600 text-black rounded-sm font-bold text-xs uppercase shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all hover:shadow-[0_0_20px_rgba(239,68,68,0.6)] font-mono">Ejecutar</button></div></div>)}
+              {!penalty ? (<button onClick={spinPenalty} className="w-full bg-red-900/30 border border-red-500/50 hover:bg-red-600 text-red-400 hover:text-black font-black py-5 rounded-sm shadow-[0_0_15px_rgba(220,38,38,0.2)] hover:shadow-[0_0_30px_rgba(220,38,38,0.6)] flex justify-center gap-3 transition-all"><RefreshCw size={20} /> GENERAR SANCIÓN</button>) : (<div className="animate-in zoom-in duration-300"><div className="bg-black/50 p-6 rounded-sm border border-red-500/30 mb-6 text-center shadow-inner"><p className="text-xs text-red-600 mb-3 uppercase tracking-widest font-mono">Sentencia:</p><div className={`text-xl font-bold font-mono p-2 rounded ${penalty==='BLOCKED'?'text-cyan-400 border border-cyan-500/50 bg-cyan-900/10 shadow-[0_0_15px_rgba(6,182,212,0.2)]':'text-red-300 drop-shadow-md'}`}>{penalty==='BLOCKED'?'¡ESCUDO ACTIVADO! Sanción bloqueada.':penalty}</div></div><div className="flex gap-3"><button onClick={spinPenalty} className="flex-1 py-3 bg-[#0a0f1a] border border-red-900/50 hover:bg-red-900/20 text-red-500 rounded-sm font-bold text-xs uppercase transition-colors font-mono">Reintentar</button><button onClick={closeAllModals} className="flex-1 py-3 bg-red-700 hover:bg-red-600 text-black rounded-sm font-bold text-xs uppercase shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all hover:shadow-[0_0_20px_rgba(239,68,68,0.6)] font-mono">Ejecutar</button></div></div>)}
             </div>
           </div>
         </div>
@@ -1971,11 +2005,11 @@ function AvengersTracker() {
       {modal === 'catalog' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/95 backdrop-blur-sm" onClick={closeAllModals}></div>
-          <div className="relative bg-[#050A05] border border-amber-500/40 w-full max-w-6xl rounded-sm overflow-hidden shadow-[0_0_30px_rgba(245,158,11,0.15)] flex flex-col max-h-[90vh]">
-            <div className="bg-[#1a1100] p-6 border-b border-amber-800/50 flex justify-between items-center"><h3 className="text-2xl font-black text-amber-500 uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_5px_rgba(245,158,11,0.5)]"><Info size={24} className="text-amber-400" /> Archivos</h3><button onClick={closeAllModals} className="text-amber-800 hover:text-amber-400 transition-colors">✕</button></div>
+          <div className="relative bg-[#050b14] border border-cyan-500/40 w-full max-w-6xl rounded-sm overflow-hidden shadow-[0_0_30px_rgba(6,182,212,0.15)] flex flex-col max-h-[90vh]">
+            <div className="bg-[#0a0f1a] p-6 border-b border-cyan-800/50 flex justify-between items-center"><h3 className="text-2xl font-black text-cyan-500 uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_5px_rgba(6,182,212,0.5)]"><Info size={24} className="text-cyan-400" /> Archivos</h3><button onClick={closeAllModals} className="text-cyan-800 hover:text-cyan-400 transition-colors">✕</button></div>
             <div className="p-6 overflow-y-auto grid md:grid-cols-3 gap-8">
-              <div><h4 className="text-lg font-bold text-yellow-500 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-yellow-500/30 pb-2 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)] font-mono"><Zap size={18} /> Ventajas</h4><div className="space-y-3">{REWARDS_LIST.map((r) => (<div key={r.id} className="bg-yellow-900/5 border border-yellow-900/30 p-3 rounded-sm flex justify-between items-start"><div><p className="font-bold text-amber-400 text-sm font-mono">{r.name}</p><p className="text-xs text-amber-700 mt-0.5 font-mono">{r.desc}</p></div><span className="bg-yellow-900/20 text-yellow-500 border border-yellow-700/50 px-2 py-1 rounded-sm text-xs font-mono font-bold whitespace-nowrap">{r.cost} PTS</span></div>))}</div></div>
-              <div><h4 className="text-lg font-bold text-blue-400 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-blue-500/30 pb-2 drop-shadow-[0_0_5px_rgba(96,165,250,0.5)] font-mono"><Hexagon size={18} /> Gemas</h4><div className="space-y-3">{INFINITY_STONES.map((s, index) => (<div key={index} className="bg-[#1a1100] border border-amber-900/30 p-3 rounded-sm flex items-start gap-3"><div className={`mt-1 ${s.color.split(' ')[0]}`}><Hexagon size={16} fill="currentColor" /></div><div><p className={`font-bold text-sm uppercase font-mono ${s.color.split(' ')[0]}`}>Gema del {s.name} <span className="text-xs text-amber-700 ml-1">({s.threshold} pts)</span></p><p className="text-xs text-amber-600 mt-0.5 font-mono">{s.perk}</p></div></div>))}</div></div>
+              <div><h4 className="text-lg font-bold text-cyan-500 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-cyan-500/30 pb-2 drop-shadow-[0_0_5px_rgba(6,182,212,0.5)] font-mono"><Zap size={18} /> Ventajas</h4><div className="space-y-3">{REWARDS_LIST.map((r) => (<div key={r.id} className="bg-cyan-900/5 border border-cyan-900/30 p-3 rounded-sm flex justify-between items-start"><div><p className="font-bold text-cyan-400 text-sm font-mono">{r.name}</p><p className="text-xs text-cyan-700 mt-0.5 font-mono">{r.desc}</p></div><span className="bg-cyan-900/20 text-cyan-500 border border-cyan-700/50 px-2 py-1 rounded-sm text-xs font-mono font-bold whitespace-nowrap">{r.cost} PTS</span></div>))}</div></div>
+              <div><h4 className="text-lg font-bold text-blue-400 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-blue-500/30 pb-2 drop-shadow-[0_0_5px_rgba(96,165,250,0.5)] font-mono"><Hexagon size={18} /> Gemas</h4><div className="space-y-3">{INFINITY_STONES.map((s, index) => (<div key={index} className="bg-[#0a0f1a] border border-cyan-900/30 p-3 rounded-sm flex items-start gap-3"><div className={`mt-1 ${s.color.split(' ')[0]}`}><Hexagon size={16} fill="currentColor" /></div><div><p className={`font-bold text-sm uppercase font-mono ${s.color.split(' ')[0]}`}>Gema del {s.name} <span className="text-xs text-cyan-700 ml-1">({s.threshold} pts)</span></p><p className="text-xs text-cyan-600 mt-0.5 font-mono">{s.perk}</p></div></div>))}</div></div>
               <div><h4 className="text-lg font-bold text-red-500 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-red-500/30 pb-2 drop-shadow-[0_0_5px_rgba(248,113,113,0.5)] font-mono"><AlertTriangle size={18} /> Sanciones</h4><div className="space-y-3">{PENALTIES_LIST.map((p, index) => (<div key={index} className="bg-red-900/5 border border-red-900/30 p-3 rounded-sm flex items-start gap-3"><div className="bg-red-900/20 border border-red-700/50 p-1.5 rounded-sm text-red-500 mt-0.5"><Skull size={12} /></div><p className="text-sm text-red-400/80 leading-relaxed font-mono">{p}</p></div>))}</div></div>
             </div>
           </div>
@@ -1986,11 +2020,11 @@ function AvengersTracker() {
       {modal === 'login' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/95 backdrop-blur-sm" onClick={closeAllModals}></div>
-          <div className="relative bg-[#0f0a00] border border-amber-500/50 p-8 rounded-sm w-full max-w-md shadow-[0_0_30px_rgba(245,158,11,0.2)]">
-            <h3 className="text-xl font-black text-amber-500 uppercase tracking-widest mb-6 flex items-center gap-2"><Lock size={20} /> Acceso</h3>
+          <div className="relative bg-[#050b14] border border-cyan-500/50 p-8 rounded-sm w-full max-w-md shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+            <h3 className="text-xl font-black text-cyan-500 uppercase tracking-widest mb-6 flex items-center gap-2"><Lock size={20} /> Acceso</h3>
             <form onSubmit={checkPass} className="space-y-4">
-              <input type="password" value={pass} onChange={e=>setPass(e.target.value)} className="w-full bg-black border border-amber-800 rounded-sm p-4 text-center text-amber-400 tracking-[0.5em] focus:border-amber-500 outline-none transition-colors font-mono focus:shadow-[0_0_15px_rgba(245,158,11,0.3)]" placeholder="••••••••" autoFocus />
-              <div className="flex gap-2"><button type="button" onClick={closeAllModals} className="flex-1 bg-[#1a1100] border border-amber-900/50 hover:bg-amber-900/20 py-2 text-xs text-amber-600 font-bold transition-colors">CANCELAR</button><button type="submit" className="flex-1 bg-amber-700 hover:bg-amber-600 py-2 text-xs text-black font-bold transition-all shadow-[0_0_15px_rgba(245,158,11,0.3)]">ENTRAR</button></div>
+              <input type="password" value={pass} onChange={e=>setPass(e.target.value)} className="w-full bg-black border border-cyan-800 rounded-sm p-4 text-center text-cyan-400 tracking-[0.5em] focus:border-cyan-500 outline-none transition-colors font-mono focus:shadow-[0_0_15px_rgba(6,182,212,0.3)]" placeholder="••••••••" autoFocus />
+              <div className="flex gap-2"><button type="button" onClick={closeAllModals} className="flex-1 bg-[#0a0f1a] border border-cyan-900/50 hover:bg-cyan-900/20 py-2 text-xs text-cyan-600 font-bold transition-colors">CANCELAR</button><button type="submit" className="flex-1 bg-cyan-700 hover:bg-cyan-600 py-2 text-xs text-black font-bold transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)]">ENTRAR</button></div>
             </form>
           </div>
         </div>
