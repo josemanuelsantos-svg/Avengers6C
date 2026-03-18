@@ -600,32 +600,54 @@ function AvengersTracker() {
 
         const today = new Date().toDateString();
         
-        // CRUCIAL FIX: Siempre mapeamos sobre INITIAL_TEAMS para que ningún equipo desaparezca
-        const merged = INITIAL_TEAMS.map(staticData => {
-           const t = tArr.find(it => it.id === staticData.id) || {};
-           let isNewDay = t.lastDaily && t.lastDaily !== today;
+        setTeams(prevTeams => {
+            let shouldSyncLocal = false;
+            const merged = prevTeams.map(prevTeam => {
+               const t = tArr.find(it => it.id === prevTeam.id);
+               
+               // Si Firebase no tiene el equipo (está en blanco), MANTENEMOS la memoria local
+               // donde están tus puntos viejos guardados.
+               if (!t) {
+                   shouldSyncLocal = true;
+                   return prevTeam;
+               }
 
-           return {
-               ...staticData,
-               points: t.points ?? staticData.points, 
-               shield: t.shield ?? staticData.shield,
-               badges: t.badges ?? staticData.badges,
-               prestige: t.prestige ?? staticData.prestige ?? 0,
-               dailyMath: isNewDay ? 0 : (t.dailyMath ?? 0), 
-               dailyWord: isNewDay ? 0 : (t.dailyWord ?? 0),
-               dailyCombat: isNewDay ? 0 : (t.dailyCombat ?? 0), 
-               dailyMemory: isNewDay ? 0 : (t.dailyMemory ?? 0),
-               lastLoot: isNewDay ? null : (t.lastLoot ?? null), 
-               doublePointsUntil: t.doublePointsUntil ?? 0,
-               lastSpin: isNewDay ? '' : (t.lastSpin ?? ''), 
-               gif: t.gif ?? staticData.gif,
-               upgrades: t.upgrades || {}, 
-               usedCodes: t.usedCodes || [], 
-               matrixEvent: t.matrixEvent || false
-           };
-        }).sort((a,b)=>b.points-a.points);
+               let isNewDay = t.lastDaily && t.lastDaily !== today;
 
-        setTeams(merged);
+               return {
+                   ...prevTeam,
+                   points: t.points ?? prevTeam.points, 
+                   shield: t.shield ?? prevTeam.shield,
+                   badges: t.badges ?? prevTeam.badges,
+                   prestige: t.prestige ?? prevTeam.prestige ?? 0,
+                   dailyMath: isNewDay ? 0 : (t.dailyMath ?? prevTeam.dailyMath ?? 0), 
+                   dailyWord: isNewDay ? 0 : (t.dailyWord ?? prevTeam.dailyWord ?? 0),
+                   dailyCombat: isNewDay ? 0 : (t.dailyCombat ?? prevTeam.dailyCombat ?? 0), 
+                   dailyMemory: isNewDay ? 0 : (t.dailyMemory ?? prevTeam.dailyMemory ?? 0),
+                   lastLoot: isNewDay ? null : (t.lastLoot ?? prevTeam.lastLoot ?? null), 
+                   doublePointsUntil: t.doublePointsUntil ?? prevTeam.doublePointsUntil ?? 0,
+                   lastSpin: isNewDay ? '' : (t.lastSpin ?? prevTeam.lastSpin ?? ''), 
+                   gif: t.gif ?? prevTeam.gif,
+                   upgrades: t.upgrades || prevTeam.upgrades || {}, 
+                   usedCodes: t.usedCodes || prevTeam.usedCodes || [], 
+                   matrixEvent: t.matrixEvent ?? prevTeam.matrixEvent ?? false
+               };
+            }).sort((a,b)=>b.points-a.points);
+
+            // Subir silenciosamente a Firebase para forzar la sincronización de los puntos viejos
+            if (shouldSyncLocal && db) {
+                setTimeout(() => {
+                    merged.forEach(team => {
+                        if (!tArr.find(it => it.id === team.id)) {
+                            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'avengers_teams', team.id), team, { merge: true }).catch(()=>{});
+                        }
+                    });
+                }, 1000);
+            }
+
+            return merged;
+        });
+
         if(fMission) setMission(fMission);
         if(fAlert!==undefined) setRedAlertMode(fAlert);
         if(fBossHp) setBossMaxHp(fBossHp); 
