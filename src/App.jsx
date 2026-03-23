@@ -949,9 +949,9 @@ function AvengersTracker() {
   // --- OMEGA EVENT ---
   const triggerOmegaAlert = async () => {
       if(!isAdmin) return;
-      if (!window.confirm("¿Lanzar ALERTA OMEGA? Todos los equipos deberán colaborar para responder 20 preguntas en 10 minutos.")) return;
-      playSfx('alarm'); speak("Alerta Omega. Invasión masiva detectada. Se requiere cooperación de todos los escuadrones.");
-      await safeUpdate('mission_control', { omegaEvent: { active: true, target: 20, current: 0, expiresAt: Date.now() + 600000 } });
+      if (!window.confirm("¿Lanzar ALERTA OMEGA (EXTREMA)? Todos los equipos deberán colaborar para responder 50 preguntas en 5 minutos. ¡OJO: Los fallos restan progreso!")) return;
+      playSfx('alarm'); speak("Alerta Omega nivel extremo. Invasión masiva detectada. Se requiere cooperación perfecta de todos los escuadrones.");
+      await safeUpdate('mission_control', { omegaEvent: { active: true, target: 50, current: 0, expiresAt: Date.now() + 300000 } });
   };
   const openOmegaQuestion = () => { setOmegaQuestion(ACADEMIC_QUESTIONS[Math.floor(Math.random() * ACADEMIC_QUESTIONS.length)]); setOmegaInput(""); setModal('omegaChallenge'); };
   const submitOmegaAnswer = async () => {
@@ -966,7 +966,9 @@ function AvengersTracker() {
           safeUpdate('mission_control', { omegaEvent: updatedOmega });
           if (newCurrent >= omegaEvent.target) omegaEventWin();
       } else {
-          playSfx('error'); showToast("Incorrecto. Intenta otra coordenada.", "error"); setOmegaInput("");
+          playSfx('error'); showToast("Incorrecto. ¡Penalización global (-1)!", "error"); setOmegaInput("");
+          const newCurrent = Math.max(0, (omegaEvent.current || 0) - 1);
+          safeUpdate('mission_control', { omegaEvent: { ...omegaEvent, current: newCurrent } });
       }
   };
   const omegaEventWin = async () => {
