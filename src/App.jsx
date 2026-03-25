@@ -11,7 +11,7 @@ import {
   Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon, Settings, Save, Upload, Disc, Edit3, TerminalSquare, Pill, Rocket
 } from 'lucide-react';
 
-const APP_VERSION = "v14.2.0 (S.H.I.E.L.D. PROTOCOL - SECRETS UNLOCKED)";
+const APP_VERSION = "v15.0.0 (S.H.I.E.L.D. PROTOCOL - MULTIPLE THREATS)";
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
 const firebaseConfig = typeof __firebase_config !== 'undefined' 
@@ -335,6 +335,13 @@ const COMBAT_QUESTIONS = {
   ]
 };
 
+const BOSSES = [
+  { id: 'loki', name: 'Loki', baseHp: 2000, img: 'https://i.ibb.co/Ps65bscK/loki.gif', textColor: 'text-emerald-400', borderColor: 'border-emerald-500', panelBorder: 'border-emerald-500/40', bgColor: 'bg-emerald-900/50', barBorder: 'border-emerald-900/50', glowShadow: 'shadow-[0_0_15px_rgba(16,185,129,0.6)]', panelShadow: 'shadow-[0_0_20px_rgba(16,185,129,0.15)]', barGradient: 'bg-gradient-to-r from-emerald-600 to-green-500', dropShadow: 'drop-shadow-[0_0_5px_rgba(16,185,129,0.6)]' },
+  { id: 'ultron', name: 'Ultrón', baseHp: 3500, img: 'https://i.ibb.co/tpVWKW0d/marvel-future-fight-infinity-ultron.gif', textColor: 'text-blue-400', borderColor: 'border-blue-500', panelBorder: 'border-blue-500/40', bgColor: 'bg-blue-900/50', barBorder: 'border-blue-900/50', glowShadow: 'shadow-[0_0_15px_rgba(59,130,246,0.6)]', panelShadow: 'shadow-[0_0_20px_rgba(59,130,246,0.15)]', barGradient: 'bg-gradient-to-r from-blue-600 to-cyan-500', dropShadow: 'drop-shadow-[0_0_5px_rgba(59,130,246,0.6)]' },
+  { id: 'thanos', name: 'Thanos', baseHp: 5000, img: 'https://i.ibb.co/7NjPsfgb/183d8eefe6fe041dd1169fdeaab016f8.gif', textColor: 'text-purple-400', borderColor: 'border-purple-500', panelBorder: 'border-purple-500/40', bgColor: 'bg-purple-900/50', barBorder: 'border-purple-900/50', glowShadow: 'shadow-[0_0_15px_rgba(168,85,247,0.6)]', panelShadow: 'shadow-[0_0_20px_rgba(168,85,247,0.15)]', barGradient: 'bg-gradient-to-r from-purple-600 to-red-500', dropShadow: 'drop-shadow-[0_0_5px_rgba(168,85,247,0.6)]' },
+  { id: 'drdoom', name: 'Doctor Doom', baseHp: 8000, img: 'https://i.ibb.co/67dZ8jpD/doctor-doom-transparent-marvel-comics.gif', textColor: 'text-slate-300', borderColor: 'border-slate-500', panelBorder: 'border-slate-500/40', bgColor: 'bg-slate-700/50', barBorder: 'border-slate-800/50', glowShadow: 'shadow-[0_0_15px_rgba(148,163,184,0.6)]', panelShadow: 'shadow-[0_0_20px_rgba(148,163,184,0.15)]', barGradient: 'bg-gradient-to-r from-slate-500 to-emerald-700', dropShadow: 'drop-shadow-[0_0_5px_rgba(148,163,184,0.6)]' }
+];
+
 const BOSS_BASE_HP = 5000;
 const ICONS = { cpu: Cpu, shield: Shield, zap: Zap, atom: Atom, target: Target, eye: Eye, atom_upg: Atom, eye_upg: Eye };
 
@@ -478,6 +485,9 @@ function AvengersTracker() {
   
   const [dailyModifier, setDailyModifier] = useState(DAILY_MODIFIERS[0]);
 
+  // BOSS STATE
+  const [activeBossIdx, setActiveBossIdx] = useState(0); // Inicia en Loki por defecto
+
   // OMEGA EVENT
   const [omegaEvent, setOmegaEvent] = useState(null);
   const [omegaInput, setOmegaInput] = useState("");
@@ -581,6 +591,7 @@ function AvengersTracker() {
           if(data.bossMaxHp !== undefined) setBossMaxHp(data.bossMaxHp);
           if(data.omegaEvent !== undefined) setOmegaEvent(data.omegaEvent);
           if(data.bossDamageTaken !== undefined) setBossDamageTaken(data.bossDamageTaken);
+          if(data.activeBossIdx !== undefined) setActiveBossIdx(data.activeBossIdx);
       } else {
           setTeams(prev => prev.map(t => t.id === docId ? {...t, ...data} : t).sort((a,b)=>b.points-a.points));
       }
@@ -598,7 +609,7 @@ function AvengersTracker() {
 
       const today = new Date().toDateString();
       const lastRunDate = localStorage.getItem('avengers_last_run_date_endg');
-      const currentMax = parseFloat(localStorage.getItem('avengers_boss_hp_endg')) || BOSS_BASE_HP;
+      const currentMax = parseFloat(localStorage.getItem('avengers_boss_hp_endg')) || BOSSES[activeBossIdx].baseHp;
       
       if (lastRunDate !== today && teams.length > 0) {
           const mod = DAILY_MODIFIERS[dayOfYear % DAILY_MODIFIERS.length];
@@ -627,14 +638,14 @@ function AvengersTracker() {
     if (useLocal || !user || !db) { if (useLocal) setLoading(false); return; }
     try {
       const unsub = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'avengers_teams'), (snap) => {
-        const tArr = []; let fMission=null, fAlert=false, fHist=[], fFury=null, fShake=false, fBossHp=null, fOmega=null, fBossDmg=0;
+        const tArr = []; let fMission=null, fAlert=false, fHist=[], fFury=null, fShake=false, fBossHp=null, fOmega=null, fBossDmg=0, fBossIdx=0;
         
         if (!snap.empty) {
           snap.docs.forEach(d => {
             if (d.id === 'mission_control') { 
                 const data=d.data(); 
                 fMission=data.text; fAlert=data.alert; fHist=data.history||[]; fFury=data.furyMsg; fShake=data.shaking; fBossHp=data.bossMaxHp;
-                fOmega=data.omegaEvent || null; fBossDmg=data.bossDamageTaken || 0;
+                fOmega=data.omegaEvent || null; fBossDmg=data.bossDamageTaken || 0; fBossIdx=data.activeBossIdx ?? 0;
             }
             else { tArr.push({ id: d.id, ...d.data() }); }
           });
@@ -696,6 +707,7 @@ function AvengersTracker() {
         if(fMission) setMission(fMission);
         if(fAlert!==undefined) setRedAlertMode(fAlert);
         if(fBossHp) setBossMaxHp(fBossHp); 
+        setActiveBossIdx(fBossIdx);
         setBossDamageTaken(fBossDmg);
         setOmegaEvent(fOmega);
         setFuryMessage(fFury);
@@ -727,15 +739,15 @@ function AvengersTracker() {
                   clearInterval(interval);
                   if (isAdmin) {
                       safeUpdate('mission_control', { omegaEvent: { ...omegaEvent, active: false }, bossDamageTaken: bossDamageTaken - 100 });
-                      logAction("ALERTA OMEGA FINALIZADA (Tiempo Agotado). Thanos se cura 100 HP.");
-                      showToast("Evento Omega Fracasado. Thanos se cura.", "error");
+                      logAction(`ALERTA OMEGA FINALIZADA (Tiempo Agotado). ${BOSSES[activeBossIdx].name} se cura 100 HP.`);
+                      showToast(`Evento Omega Fracasado. ${BOSSES[activeBossIdx].name} se cura.`, "error");
                   }
                   setOmegaTimeLeft(0);
               } else { setOmegaTimeLeft(remaining); }
           }, 1000);
           return () => clearInterval(interval);
       }
-  }, [omegaEvent, isAdmin, bossDamageTaken]);
+  }, [omegaEvent, isAdmin, bossDamageTaken, activeBossIdx]);
 
   // Ticker Timer
   useEffect(() => {
@@ -957,7 +969,7 @@ function AvengersTracker() {
 
   const handleBossAttack = () => { 
       if (teams.length === 0) return; 
-      setShaking(true); playSfx('alarm'); speak("Thanos ataca."); 
+      setShaking(true); playSfx('alarm'); speak(`${BOSSES[activeBossIdx].name} ataca.`); 
       const randomTeam = teams[Math.floor(Math.random() * teams.length)]; 
       const randomQuestions = [...ACADEMIC_QUESTIONS].sort(() => 0.5 - Math.random()).slice(0, 6); 
       setBossAttackState({ active: true, team: randomTeam, questions: randomQuestions, currentIdx: 0, mistakes: 0 }); 
@@ -982,7 +994,7 @@ function AvengersTracker() {
 
       if (bossAttackState.currentIdx < 5) { setBossAttackState(prev => ({ ...prev, currentIdx: prev.currentIdx + 1, mistakes: newMistakes })); } 
       else { 
-          if (newMistakes === 0) { handlePts(bossAttackState.team.id, 50, null, true); speak("Amenaza neutralizada."); showToast("¡THANOS REPELIDO! +50 Puntos", "success"); triggerSecretConfetti(); } 
+          if (newMistakes === 0) { handlePts(bossAttackState.team.id, 50, null, true); speak("Amenaza neutralizada."); showToast(`¡${BOSSES[activeBossIdx].name.toUpperCase()} REPELIDO! +50 Puntos`, "success"); triggerSecretConfetti(); } 
           else { speak("Defensa fallida."); showToast("Ataque finalizado con daños.", "info"); } 
           closeAllModals();
       } 
@@ -1018,12 +1030,26 @@ function AvengersTracker() {
       }
   };
   const omegaEventWin = async () => {
-      speak("Invasión neutralizada. Thanos ha sufrido daños críticos."); triggerSecretConfetti();
+      speak(`Invasión neutralizada. ${BOSSES[activeBossIdx].name} ha sufrido daños críticos.`); triggerSecretConfetti();
       await safeUpdate('mission_control', { omegaEvent: { ...omegaEvent, active: false }, bossDamageTaken: bossDamageTaken + 200 });
       teams.forEach(t => handlePts(t.id, 50, null, true));
-      logAction("🛡️ EVENTO OMEGA SUPERADO: Todos ganan +50 Pts. Thanos pierde 200 HP.");
+      logAction(`🛡️ EVENTO OMEGA SUPERADO: Todos ganan +50 Pts. ${BOSSES[activeBossIdx].name} pierde 200 HP.`);
   };
   
+  const cycleBoss = async () => {
+      if (!isAdmin) return;
+      const nextIdx = (activeBossIdx + 1) % BOSSES.length;
+      const newBoss = BOSSES[nextIdx];
+      await safeUpdate('mission_control', { 
+          activeBossIdx: nextIdx, 
+          bossMaxHp: newBoss.baseHp, 
+          bossDamageTaken: 0 
+      });
+      speak(`Nueva amenaza detectada: ${newBoss.name}`);
+      logAction(`El director cambió la amenaza a ${newBoss.name}`);
+      showToast(`Amenaza cambiada a ${newBoss.name}`, "success");
+  };
+
   // --- MATRIX PILL EVENT ---
   const triggerMatrixEvent = async (teamId) => {
       if(!isAdmin) return;
@@ -1247,6 +1273,8 @@ function AvengersTracker() {
   const leaderId = teams.length > 0 ? [...teams].sort((a,b)=>b.points-a.points)[0].id : null;
   const loggedInTeam = teams.find(t => t.id === loggedInId);
   const sortedTeams = [...teams].sort((a,b)=>b.points-a.points);
+  
+  const currentBoss = BOSSES[activeBossIdx];
 
   if (errorMsg) return <div className="p-10 text-red-500 bg-[#050b14] h-screen font-mono">ERROR: {errorMsg}</div>;
   if (loading) return <div className="p-10 text-cyan-500 bg-[#050b14] h-screen font-mono animate-pulse flex items-center justify-center text-xl">CARGANDO PROTOCOLOS S.H.I.E.L.D...</div>;
@@ -1385,13 +1413,25 @@ function AvengersTracker() {
              </div>
           </div>
           
-          <div className="bg-[#0a0f1a]/80 border border-purple-500/40 rounded-sm p-5 shadow-[0_0_20px_rgba(168,85,247,0.15)] relative overflow-hidden backdrop-blur-xl group">
+          <div className={`bg-[#0a0f1a]/80 border ${currentBoss.panelBorder} rounded-sm p-5 relative overflow-hidden backdrop-blur-xl group ${currentBoss.panelShadow}`}>
             <div className="relative z-10">
                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-full border-2 border-purple-500 overflow-hidden shadow-[0_0_15px_rgba(168,85,247,0.6)] bg-purple-900/50"><img src="https://i.ibb.co/7NjPsfgb/183d8eefe6fe041dd1169fdeaab016f8.gif" alt="Thanos" className="w-full h-full object-cover opacity-80 mix-blend-screen" /></div>
-                  <div><h3 className="text-sm font-black text-purple-400 uppercase leading-none mb-1 drop-shadow-[0_0_5px_rgba(168,85,247,0.6)]">Amenaza: Thanos</h3><span className="text-xs font-mono text-purple-300">{totalPoints + bossDamageTaken}/{bossMaxHp} DAÑO</span></div>
+                  <div className={`w-12 h-12 rounded-full border-2 ${currentBoss.borderColor} overflow-hidden ${currentBoss.glowShadow} ${currentBoss.bgColor}`}>
+                      <img src={currentBoss.img} alt={currentBoss.name} className="w-full h-full object-cover opacity-80 mix-blend-screen" />
+                  </div>
+                  <div className="flex-1">
+                      <div className="flex justify-between items-start">
+                          <h3 className={`text-sm font-black ${currentBoss.textColor} uppercase leading-none mb-1 ${currentBoss.dropShadow}`}>Amenaza: {currentBoss.name}</h3>
+                          {isAdmin && (
+                              <button onClick={cycleBoss} className="text-cyan-600 hover:text-cyan-400 ml-2 bg-slate-900/50 rounded border border-cyan-800 p-1" title="Cambiar Villano"><RefreshCw size={12}/></button>
+                          )}
+                      </div>
+                      <span className={`text-xs font-mono ${currentBoss.textColor} opacity-80`}>{totalPoints + bossDamageTaken}/{bossMaxHp} DAÑO</span>
+                  </div>
                </div>
-               <div className="h-4 bg-[#050b14] rounded-full overflow-hidden border border-purple-900/50 relative"><div className={`h-full transition-all duration-1000 flex items-center justify-center ${bossDefeated ? 'bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.8)]' : 'bg-gradient-to-r from-purple-600 to-red-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]'}`} style={{width: `${bossProgress}%`}}></div></div>
+               <div className={`h-4 bg-[#050b14] rounded-full overflow-hidden border ${currentBoss.barBorder} relative`}>
+                  <div className={`h-full transition-all duration-1000 flex items-center justify-center ${bossDefeated ? 'bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.8)]' : currentBoss.barGradient + ' ' + currentBoss.glowShadow}`} style={{width: `${bossProgress}%`}}></div>
+               </div>
                {bossDefeated && <p className="text-center text-xs font-bold text-cyan-400 mt-2 animate-pulse drop-shadow-[0_0_5px_rgba(6,182,212,0.8)]">¡AMENAZA NEUTRALIZADA!</p>}
                {bossDefeated && isAdmin && (
                   <button onClick={executeEndgame} className="mt-4 w-full py-2 bg-yellow-500 hover:bg-yellow-400 text-black font-black uppercase tracking-widest rounded shadow-[0_0_20px_rgba(250,204,21,0.8)] animate-pulse transition-all">EJECUTAR ENDGAME</button>
@@ -1593,13 +1633,13 @@ function AvengersTracker() {
       {/* BOSS ATTACK MODAL */}
       {modal === 'bossAttack' && bossAttackState.active && (
          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4">
-             <div className="bg-[#050b14] border-4 border-red-600 p-6 rounded-lg w-full max-w-lg shadow-[0_0_50px_rgba(220,38,38,0.5)] relative overflow-hidden animate-in zoom-in duration-300">
+             <div className={`bg-[#050b14] border-4 ${currentBoss.borderColor} p-6 rounded-lg w-full max-w-lg ${currentBoss.panelShadow} relative overflow-hidden animate-in zoom-in duration-300`}>
                  
-                 <div className="flex justify-between items-center mb-6 border-b border-red-900/50 pb-4">
-                     <h3 className="text-2xl font-black text-red-500 uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_10px_rgba(248,113,113,0.8)]">
+                 <div className={`flex justify-between items-center mb-6 border-b ${currentBoss.barBorder} pb-4`}>
+                     <h3 className={`text-2xl font-black ${currentBoss.textColor} uppercase tracking-widest flex items-center gap-2 ${currentBoss.dropShadow}`}>
                          <Skull size={32} className="animate-pulse"/> PROTOCOLO DEFENSA
                      </h3>
-                     <div className="text-xs font-mono text-red-300/50">OBJETIVO: {bossAttackState.team?.name}</div>
+                     <div className={`text-xs font-mono ${currentBoss.textColor} opacity-50`}>OBJETIVO: {bossAttackState.team?.name}</div>
                  </div>
 
                  <div className="mb-8">
