@@ -11,7 +11,7 @@ import {
   Type, Binary, Battery, BatteryCharging, Lightbulb, Book, BatteryFull, Hand, Grid3X3, AlertOctagon, Settings, Save, Upload, Disc, Edit3, TerminalSquare, Pill, Rocket
 } from 'lucide-react';
 
-const APP_VERSION = "v14.1.0 (S.H.I.E.L.D. PROTOCOL - NEON SPECTRUM)";
+const APP_VERSION = "v14.2.0 (S.H.I.E.L.D. PROTOCOL - SECRETS UNLOCKED)";
 
 // --- 1. CONFIGURACIÓN FIREBASE (HÍBRIDA) ---
 const firebaseConfig = typeof __firebase_config !== 'undefined' 
@@ -1071,6 +1071,16 @@ function AvengersTracker() {
               await safeUpdate(loggedInId, { upgrades: { ...t.upgrades, reactorArc: true, oraculo: true } }); showToast("PROTOCOL UNLOCKED: Tecnologías conseguidas", "success"); valid = true;
           } else if (code === 'STAN_LEE_LIVES' || code === 'EXCELSIOR') {
               handlePts(loggedInId, 100, null, true); showToast("¡EXCELSIOR! +100 Puntos", "success"); valid = true;
+          } else if (code === 'AVENGERS_ASSEMBLE' || code === 'ASSEMBLE') {
+              handlePts(loggedInId, 75, null, true); showToast("¡VENGADORES REUNÍOS! +75 Puntos", "success"); valid = true;
+          } else if (code === 'WAKANDA_FOREVER') {
+              await safeUpdate(loggedInId, { shield: true }); handlePts(loggedInId, 25, null, true); showToast("WAKANDA POR SIEMPRE: Escudo y +25 Pts", "success"); valid = true;
+          } else if (code === 'I_AM_IRON_MAN') {
+              await safeUpdate(loggedInId, { upgrades: { ...t.upgrades, reactorArc: true } }); handlePts(loggedInId, 50, null, true); showToast("I AM IRON MAN: Reactor Arc y +50 Pts", "success"); valid = true;
+          } else if (code === 'WHATEVER_IT_TAKES') {
+              handlePts(loggedInId, 60, null, true); showToast("CUESTE LO QUE CUESTE: +60 Puntos", "success"); valid = true;
+          } else if (code === 'ON_YOUR_LEFT') {
+              handleBadge(loggedInId, { iconKey: 'Zap', name: "A tu izquierda", color: "text-blue-400" }); handlePts(loggedInId, 20, null, true); showToast("A TU IZQUIERDA: Medalla y +20 Pts", "success"); valid = true;
           }
 
           if (valid) {
@@ -1287,7 +1297,7 @@ function AvengersTracker() {
           <div>
             <div className="flex items-baseline gap-2 font-mono">
                 <h1 className="text-xl font-black tracking-[0.2em] leading-none text-white drop-shadow-[0_0_5px_rgba(59,130,246,0.8)]">AVENGERS <span className={redAlertMode ? "text-red-500" : "text-blue-500"}>INITIATIVE</span></h1>
-                <span className="text-[9px] font-bold text-amber-400 bg-amber-900/30 px-1 rounded border border-amber-700/50">{APP_VERSION}</span>
+                <span className="text-[9px] font-bold text-cyan-400 bg-cyan-900/30 px-1.5 py-0.5 rounded border border-cyan-700/50 flex items-center gap-1"><Sparkles size={10} className="text-cyan-300 animate-pulse"/> {APP_VERSION}</span>
             </div>
             <div className="hidden md:block text-[10px] text-cyan-300 mt-1 overflow-hidden whitespace-nowrap drop-shadow-sm flex items-center gap-2">
                 <span className="bg-cyan-900/50 px-1.5 py-0.5 rounded border border-cyan-500/50 text-white flex items-center gap-1">
