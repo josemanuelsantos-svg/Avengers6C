@@ -248,7 +248,49 @@ const ACADEMIC_QUESTIONS = [
   { q: "¿Océano que baña la costa este de EE.UU.?", a: "Atlántico" },
   { q: "¿Estación del año donde caen las hojas?", a: "Otoño" },
   { q: "¿Cuántos años es un lustro?", a: "5" },
-  { q: "¿Qué significan las siglas ONU?", a: "Organización de Naciones Unidas" }
+  { q: "¿Qué significan las siglas ONU?", a: "Organización de Naciones Unidas" },
+  
+  // --- 40 NUEVAS PREGUNTAS COMPLEJAS (6º PRIMARIA) ---
+  { q: "¿Cuál es la raíz cuadrada de 144?", a: "12" },
+  { q: "¿Qué porcentaje representa la mitad?", a: "50" },
+  { q: "¿Cómo se llama el triángulo con tres lados desiguales?", a: "Escaleno" },
+  { q: "¿Río más largo de la península ibérica?", a: "Tajo" },
+  { q: "¿En qué año comenzó la Revolución Francesa?", a: "1789" },
+  { q: "¿Qué cordillera separa España de Francia?", a: "Pirineos" },
+  { q: "¿Cómo se llama el proceso por el que las plantas hacen su alimento?", a: "Fotosíntesis" },
+  { q: "¿Qué órgano humano produce la bilis?", a: "Hígado" },
+  { q: "¿Qué hueso principal protege el cerebro?", a: "Cráneo" },
+  { q: "¿Paso de estado líquido a gaseoso?", a: "Evaporación" },
+  { q: "¿En qué año pisó el hombre la Luna por primera vez?", a: "1969" },
+  { q: "¿Cuál es la capital de Canadá?", a: "Ottawa" },
+  { q: "¿Quién escribió 'Don Quijote de la Mancha'?", a: "Cervantes" },
+  { q: "¿Animales que comen plantas y carne?", a: "Omnívoros" },
+  { q: "¿Capa de la Tierra formada por toda su agua?", a: "Hidrosfera" },
+  { q: "¿Cuántos gramos hay en un kilogramo?", a: "1000" },
+  { q: "¿Cómo se llama un polígono de 7 lados?", a: "Heptágono" },
+  { q: "¿Cuál es el océano más grande del mundo?", a: "Pacífico" },
+  { q: "¿Qué gas expulsamos al exhalar?", a: "CO2" },
+  { q: "¿Qué antigua civilización luchaba en el Coliseo?", a: "Romana" },
+  { q: "¿Tipo de palabra que califica al sustantivo?", a: "Adjetivo" },
+  { q: "¿Antónimo de 'artificial'?", a: "Natural" },
+  { q: "¿En qué provincia andaluza está la Alhambra?", a: "Granada" },
+  { q: "¿Qué planeta tiene los anillos más grandes y visibles?", a: "Saturno" },
+  { q: "¿Cuántos centímetros tiene un metro?", a: "100" },
+  { q: "¿Ángulo que mide más de 90º pero menos de 180º?", a: "Obtuso" },
+  { q: "¿Qué civilización construyó las pirámides de Guiza?", a: "Egipcia" },
+  { q: "¿Moneda oficial del Reino Unido?", a: "Libra" },
+  { q: "¿Cómo se dice 'hermano' en inglés?", a: "Brother" },
+  { q: "¿Estrecho que separa España de África?", a: "Gibraltar" },
+  { q: "¿Quién propuso la teoría de la relatividad?", a: "Einstein" },
+  { q: "¿Parte de la célula que controla sus funciones?", a: "Núcleo" },
+  { q: "¿En qué continente está el río Nilo?", a: "África" },
+  { q: "¿Cuánto es 3 al cubo (3³)?", a: "27" },
+  { q: "¿Científico que formuló la ley de la gravedad?", a: "Newton" },
+  { q: "¿Instrumento que mide la intensidad de un terremoto?", a: "Sismógrafo" },
+  { q: "¿'Pájaro' es aguda, llana o esdrújula?", a: "Esdrújula" },
+  { q: "¿Cuál es la raíz cuadrada de 100?", a: "10" },
+  { q: "¿País europeo con forma de bota?", a: "Italia" },
+  { q: "¿Cuánto es 25 x 4?", a: "100" }
 ];
 
 const HYDRA_WORDS = [
@@ -293,7 +335,7 @@ const COMBAT_QUESTIONS = {
   ]
 };
 
-const BOSS_BASE_HP = 1500;
+const BOSS_BASE_HP = 5000;
 const ICONS = { cpu: Cpu, shield: Shield, zap: Zap, atom: Atom, target: Target, eye: Eye, atom_upg: Atom, eye_upg: Eye };
 
 const CTRL_BTN_CLASS = "flex-1 py-1.5 rounded-sm text-[10px] font-bold font-mono transition-all uppercase tracking-wider active:scale-95 border cursor-pointer select-none";
@@ -949,9 +991,9 @@ function AvengersTracker() {
   // --- OMEGA EVENT ---
   const triggerOmegaAlert = async () => {
       if(!isAdmin) return;
-      if (!window.confirm("¿Lanzar ALERTA OMEGA (EXTREMA)? Todos los equipos deberán colaborar para responder 50 preguntas en 5 minutos. ¡OJO: Los fallos restan progreso!")) return;
-      playSfx('alarm'); speak("Alerta Omega nivel extremo. Invasión masiva detectada. Se requiere cooperación perfecta de todos los escuadrones.");
-      await safeUpdate('mission_control', { omegaEvent: { active: true, target: 50, current: 0, expiresAt: Date.now() + 300000 } });
+      if (!window.confirm("¿Lanzar ALERTA OMEGA (PESADILLA)? Todos los equipos deberán colaborar para responder 60 preguntas en 4 minutos. ¡OJO: Los fallos restan 2 de progreso global Y quitan 5 puntos al equipo que falle!")) return;
+      playSfx('alarm'); speak("Alerta Omega, protocolo Pesadilla. Invasión masiva detectada. El mínimo error será severamente castigado.");
+      await safeUpdate('mission_control', { omegaEvent: { active: true, target: 60, current: 0, expiresAt: Date.now() + 240000 } });
   };
   const openOmegaQuestion = () => { setOmegaQuestion(ACADEMIC_QUESTIONS[Math.floor(Math.random() * ACADEMIC_QUESTIONS.length)]); setOmegaInput(""); setModal('omegaChallenge'); };
   const submitOmegaAnswer = async () => {
@@ -966,9 +1008,13 @@ function AvengersTracker() {
           safeUpdate('mission_control', { omegaEvent: updatedOmega });
           if (newCurrent >= omegaEvent.target) omegaEventWin();
       } else {
-          playSfx('error'); showToast("Incorrecto. ¡Penalización global (-1)!", "error"); setOmegaInput("");
-          const newCurrent = Math.max(0, (omegaEvent.current || 0) - 1);
+          playSfx('error'); showToast("¡ERROR CRÍTICO! -2 Progreso y -5 Puntos.", "error"); setOmegaInput("");
+          const newCurrent = Math.max(0, (omegaEvent.current || 0) - 2);
           safeUpdate('mission_control', { omegaEvent: { ...omegaEvent, current: newCurrent } });
+          if (loggedInId && !isAdmin) {
+              handlePts(loggedInId, -5, null, true);
+              logAction(`${teams.find(t=>t.id===loggedInId)?.name} falló en Alerta Omega (-5 pts)`);
+          }
       }
   };
   const omegaEventWin = async () => {
@@ -1217,9 +1263,9 @@ function AvengersTracker() {
 
       {/* OMEGA EVENT BANNER (GLOBAL) */}
       {omegaEvent?.active && (
-         <div className="relative z-40 bg-red-900/90 border-b-4 border-red-500 text-center py-3 shadow-[0_0_30px_rgba(239,68,68,0.5)]">
-             <h2 className="text-2xl font-black text-white uppercase tracking-[0.2em] animate-pulse drop-shadow-md">🚨 ALERTA OMEGA: DEFENSA GLOBAL 🚨</h2>
-             <p className="text-red-200 font-bold mb-1">Daño infligido: {omegaEvent.current} / {omegaEvent.target}</p>
+         <div className="relative z-40 bg-red-950/95 border-b-4 border-red-600 text-center py-3 shadow-[0_0_40px_rgba(220,38,38,0.7)]">
+             <h2 className="text-2xl md:text-3xl font-black text-red-500 uppercase tracking-[0.2em] animate-pulse drop-shadow-[0_0_10px_rgba(220,38,38,0.8)]">🚨 ALERTA OMEGA: PESADILLA 🚨</h2>
+             <p className="text-red-200 font-bold mb-1 text-sm md:text-base">Daño infligido: {omegaEvent.current} / {omegaEvent.target} <span className="text-red-400 text-xs ml-2">(Fallos = -2 Progreso y -5 Pts Equipo)</span></p>
              <p className="text-xs text-red-300 font-mono mb-2">TIEMPO RESTANTE: {Math.floor(omegaTimeLeft / 60000)}:{(Math.floor((omegaTimeLeft % 60000) / 1000)).toString().padStart(2, '0')}</p>
              <div className="w-full max-w-2xl mx-auto h-2 bg-black rounded-full overflow-hidden mb-3 border border-red-500/50">
                  <div className="h-full bg-red-500 transition-all duration-300" style={{width: `${(omegaEvent.current/omegaEvent.target)*100}%`}}></div>
@@ -1843,9 +1889,9 @@ function AvengersTracker() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
               <div className="bg-[#050b14] border-2 border-red-500 p-6 rounded-sm w-full max-w-md shadow-[0_0_30px_rgba(239,68,68,0.2)] relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-1 bg-red-500/50 animate-pulse"></div>
-                  <h3 className="text-xl font-black text-red-500 mb-1 flex items-center gap-2 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]"><Target size={24}/> OBJETIVO COMPARTIDO</h3>
+                  <h3 className="text-xl font-black text-red-500 mb-1 flex items-center gap-2 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]"><Skull size={24} className="animate-pulse"/> PROTOCOLO PESADILLA</h3>
                   <div className="flex justify-between items-center mb-4">
-                      <p className="text-[10px] font-mono text-red-400">Daño Global: {omegaEvent.current} / {omegaEvent.target}</p>
+                      <p className="text-[10px] font-mono text-red-400 font-bold">FALLAR RESTA 2 PROGRESO Y -5 PUNTOS DE EQUIPO</p>
                   </div>
 
                   <div className="bg-[#0a0f1a] p-6 rounded border border-red-900/50 mb-6 text-center flex flex-col gap-2 shadow-inner">
