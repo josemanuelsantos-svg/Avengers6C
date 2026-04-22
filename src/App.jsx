@@ -290,7 +290,76 @@ const ACADEMIC_QUESTIONS = [
   { q: "¿'Pájaro' es aguda, llana o esdrújula?", a: "Esdrújula" },
   { q: "¿Cuál es la raíz cuadrada de 100?", a: "10" },
   { q: "¿País europeo con forma de bota?", a: "Italia" },
-  { q: "¿Cuánto es 25 x 4?", a: "100" }
+  { q: "¿Cuánto es 25 x 4?", a: "100" },
+
+  // --- 40 NUEVAS PREGUNTAS AVANZADAS (2º ESO) ---
+  { q: "¿En qué año cayó el Imperio Romano de Occidente?", a: "476" },
+  { q: "¿Quién pintó 'Las Meninas'?", a: "Velázquez" },
+  { q: "¿Capital de Nueva Zelanda?", a: "Wellington" },
+  { q: "¿En qué país actual se encuentra la antigua Mesopotamia?", a: "Irak" },
+  { q: "¿Montaña más alta de África?", a: "Kilimanjaro" },
+  { q: "¿Qué guerra mundial comenzó en 1939?", a: "Segunda" },
+  { q: "¿Cuál es el río más largo de Europa?", a: "Volga" },
+  { q: "¿Fórmula química del dióxido de carbono?", a: "CO2" },
+  { q: "¿Símbolo químico del sodio?", a: "Na" },
+  { q: "¿Órgano principal del sistema nervioso central?", a: "Cerebro" },
+  { q: "¿Partícula subatómica con carga positiva?", a: "Protón" },
+  { q: "¿Fuerza que atrae los objetos hacia la Tierra?", a: "Gravedad" },
+  { q: "¿Energía que tiene un cuerpo en movimiento?", a: "Cinética" },
+  { q: "¿Capa de gas que envuelve la Tierra?", a: "Atmósfera" },
+  { q: "¿Valor de Pi con dos decimales?", a: "3.14" },
+  { q: "¿Cuánto es 2 elevado a la quinta (2⁵)?", a: "32" },
+  { q: "¿Cómo se llama un polígono de 12 lados?", a: "Dodecágono" },
+  { q: "¿Cuál es el 20% de 200?", a: "40" },
+  { q: "¿Raíz cuadrada de 225?", a: "15" },
+  { q: "¿Solución de la ecuación x + 5 = 12?", a: "7" },
+  { q: "¿Cuántos grados suman los ángulos interiores de un triángulo?", a: "180" },
+  { q: "¿Cómo se llama el lado más largo de un triángulo rectángulo?", a: "Hipotenusa" },
+  { q: "¿Mínimo común múltiplo de 4 y 6?", a: "12" },
+  { q: "¿Quién escribió 'La Odisea'?", a: "Homero" },
+  { q: "¿Qué tipo de palabra es 'rápidamente'?", a: "Adverbio" },
+  { q: "¿Libro sagrado del Islam?", a: "Corán" },
+  { q: "¿Figura literaria que da cualidades humanas a animales?", a: "Personificación" },
+  { q: "¿Participio del verbo 'escribir'?", a: "Escrito" },
+  { q: "¿Pintor de 'La noche estrellada' (Apellido)?", a: "Van Gogh" },
+  { q: "¿Pintor de la Capilla Sixtina?", a: "Miguel Ángel" },
+  { q: "¿Compositor de la Novena Sinfonía?", a: "Beethoven" },
+  { q: "¿A qué género literario pertenece un poema?", a: "Lírico" },
+  { q: "¿Planeta más caluroso del sistema solar?", a: "Venus" },
+  { q: "¿Estrecho que separa Asia de América?", a: "Bering" },
+  { q: "¿Símbolo químico del Potasio?", a: "K" },
+  { q: "¿Estado del agua a 100 grados centígrados?", a: "Gaseoso" },
+  { q: "¿Continente donde está la cordillera del Himalaya?", a: "Asia" },
+  { q: "¿Primer presidente de Estados Unidos (Apellido)?", a: "Washington" },
+  { q: "¿Instrumento para medir la temperatura?", a: "Termómetro" },
+  { q: "¿Nombre de la galaxia en la que vivimos?", a: "Vía Láctea" },
+  
+  // --- 25 NUEVAS PREGUNTAS GRAMÁTICA INGLÉS (TIEMPOS VERBALES) ---
+  { q: "Past Simple del verbo 'Bring'", a: "Brought" },
+  { q: "Past Participle del verbo 'Choose'", a: "Chosen" },
+  { q: "Present Perfect auxiliar: 'She ___ finished'", a: "Has" },
+  { q: "Past Continuous auxiliar: 'They ___ playing'", a: "Were" },
+  { q: "Past Perfect auxiliar: 'I ___ eaten already'", a: "Had" },
+  { q: "Present Continuous: 'He is ___' (run)", a: "Running" },
+  { q: "Present Simple 3ª persona: 'He ___' (study)", a: "Studies" },
+  { q: "Past Simple del verbo 'Think'", a: "Thought" },
+  { q: "Past Participle del verbo 'Break'", a: "Broken" },
+  { q: "Past Participle del verbo 'Fall'", a: "Fallen" },
+  { q: "Present Perfect: 'He ___ gone'", a: "Has" },
+  { q: "Past Perfect: 'I had ___' (see)", a: "Seen" },
+  { q: "Past Continuous auxiliar: 'We ___ sleeping'", a: "Were" },
+  { q: "Future Simple auxiliar: 'I ___ call you tomorrow'", a: "Will" },
+  { q: "Present Simple negativo (She): 'She ___ play'", a: "Doesn't" },
+  { q: "Present Simple negativo (We): 'We ___ play'", a: "Don't" },
+  { q: "Past Simple negativo (I): 'I ___ go'", a: "Didn't" },
+  { q: "Past Participle del verbo 'Fly'", a: "Flown" },
+  { q: "Present Perfect: 'I have ___' (write)", a: "Written" },
+  { q: "Past Simple del verbo 'Feel'", a: "Felt" },
+  { q: "Past Simple del verbo 'Leave'", a: "Left" },
+  { q: "Present Continuous: 'They are ___' (swim)", a: "Swimming" },
+  { q: "Present Perfect: '___ you ever been to Rome?'", a: "Have" },
+  { q: "Preposición de inicio: 'I have lived here ___ 2010'", a: "Since" },
+  { q: "Preposición de duración: 'I have studied ___ 3 hours'", a: "For" }
 ];
 
 const HYDRA_WORDS = [
@@ -522,8 +591,6 @@ function AvengersTracker() {
   const [starkSpinning, setStarkSpinning] = useState(false);
   const [starkPrize, setStarkPrize] = useState(null);
 
-  const [gauntletTargets, setGauntletTargets] = useState([]);
-
   const closeToast = useCallback(() => setToast(null), []);
 
   const closeAllModals = useCallback(() => {
@@ -535,7 +602,6 @@ function AvengersTracker() {
     setBossAttackState(prev => ({ ...prev, active: false }));
     setMemoryState(prev => ({ ...prev, active: false }));
     setStarkPrize(null);
-    setGauntletTargets([]);
     setPillResult(null);
     setMatrixTarget(null);
   }, [modal]);
@@ -872,14 +938,8 @@ function AvengersTracker() {
       else if(type === 'combat') update.dailyCombat = newDaily;
       else if(type === 'memory') update.dailyMemory = newDaily;
 
-      let roleBonus = 0;
-      let roleName = "";
-      if (type === 'word') { roleBonus = 1; roleName = "Hacker"; }
-      if (type === 'math') { roleBonus = 1; roleName = "Científico"; }
-      if (type === 'combat') { roleBonus = 1; roleName = "Guerrero"; }
-      
-      let ptsToAdd = 1 + roleBonus; 
-      let messageParts = [`+${ptsToAdd} ${roleBonus ? '(Bonus ' + roleName + ')' : 'Base'}`];
+      let ptsToAdd = 1; 
+      let messageParts = [`+1 Base`];
 
       // Mutadores
       if (dailyModifier.effect === 'DOUBLE_MATH' && type === 'math') { ptsToAdd *= 2; messageParts.push("x2 FIEBRE MATES"); }
@@ -1008,11 +1068,25 @@ function AvengersTracker() {
       await safeUpdate('mission_control', { omegaEvent: { active: true, target: 60, current: 0, expiresAt: Date.now() + 240000 } });
   };
   const openOmegaQuestion = () => { setOmegaQuestion(ACADEMIC_QUESTIONS[Math.floor(Math.random() * ACADEMIC_QUESTIONS.length)]); setOmegaInput(""); setModal('omegaChallenge'); };
+  
+  const handleOmegaFlee = async () => {
+      if (loggedInId && !isAdmin) {
+          playSfx('error');
+          await handlePts(loggedInId, -50, null, true);
+          showToast("¡DESERCIÓN CASTIGADA! -50 Puntos.", "error");
+          logAction(`${teams.find(t=>t.id===loggedInId)?.name} huyó de la Alerta Omega cobardemente (-50 pts)`);
+      }
+      closeAllModals();
+  };
+
   const submitOmegaAnswer = async () => {
       if (actionLock.current) return; actionLock.current = true; setTimeout(() => { actionLock.current = false; }, 300);
       if (!omegaQuestion || !omegaEvent) return;
 
-      if (omegaInput.toUpperCase().trim() === omegaQuestion.a.toUpperCase()) {
+      // Normalizador para eliminar tildes y hacer la comprobación más permisiva
+      const normalize = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+
+      if (normalize(omegaInput) === normalize(omegaQuestion.a)) {
           playSfx('success'); showToast("¡Acierto validado para el grupo!", "success"); closeAllModals();
           const newCurrent = (omegaEvent.current || 0) + 1;
           const updatedOmega = { ...omegaEvent, current: newCurrent };
@@ -1107,6 +1181,16 @@ function AvengersTracker() {
               handlePts(loggedInId, 60, null, true); showToast("CUESTE LO QUE CUESTE: +60 Puntos", "success"); valid = true;
           } else if (code === 'ON_YOUR_LEFT') {
               handleBadge(loggedInId, { iconKey: 'Zap', name: "A tu izquierda", color: "text-blue-400" }); handlePts(loggedInId, 20, null, true); showToast("A TU IZQUIERDA: Medalla y +20 Pts", "success"); valid = true;
+          } else if (code === 'I_CAN_DO_THIS_ALL_DAY') {
+              await safeUpdate(loggedInId, { shield: true }); handlePts(loggedInId, 40, null, true); showToast("RESISTENCIA CAPITÁN: Escudo y +40 Pts", "success"); valid = true;
+          } else if (code === 'HULK_SMASH') {
+              handlePts(loggedInId, 50, null, true); showToast("¡HULK APLASTA!: +50 Puntos", "success"); valid = true;
+          } else if (code === 'WE_HAVE_A_HULK') {
+              handlePts(loggedInId, 80, null, true); showToast("TENEMOS UN HULK: +80 Puntos", "success"); valid = true;
+          } else if (code === 'DORMAMMU') {
+              handleBadge(loggedInId, { iconKey: 'Eye', name: "Bucle Temporal", color: "text-emerald-400" }); handlePts(loggedInId, 30, null, true); showToast("TRATO HECHO: Medalla y +30 Pts", "success"); valid = true;
+          } else if (code === 'I_AM_GROOT') {
+              handlePts(loggedInId, 25, null, true); showToast("YO SOY GROOT: +25 Puntos", "success"); valid = true;
           }
 
           if (valid) {
@@ -1241,27 +1325,29 @@ function AvengersTracker() {
       } 
   };
 
-  const toggleGauntletTarget = (id) => {
-    setGauntletTargets(prev => prev.includes(id) ? prev.filter(t => t !== id) : (prev.length < 3 ? [...prev, id] : prev));
-  };
-
   const executeGauntletSnap = async () => {
-    const cost = gauntletTargets.length * 200;
-    if (!loggedInTeam || loggedInTeam.points < cost) return;
+    if (!selTeam || selTeam.points < 700) return;
     playSfx('epic'); speak("Yo soy inevitable.");
-    await handlePts(loggedInId, -cost, null, true);
-    for (const targetId of gauntletTargets) {
-        const t = teams.find(tm => tm.id === targetId);
-        if (t?.shield) {
-            await safeUpdate(targetId, { shield: false });
-            logAction(`${t.name} bloqueó el Guantelete`);
+    
+    // El equipo que lo usa pierde la mitad de sus puntos
+    const penalty = Math.ceil(selTeam.points / 2);
+    await handlePts(selTeam.id, -penalty, null, true);
+
+    const rivals = teams.filter(t => t.id !== selTeam.id);
+    const shuffled = [...rivals].sort(() => 0.5 - Math.random());
+    const victims = shuffled.slice(0, 2);
+
+    for (const victim of victims) {
+        if (victim.shield) {
+            await safeUpdate(victim.id, { shield: false });
+            logAction(`${victim.name} bloqueó el Guantelete de ${selTeam.name}`);
         } else {
-            await handleManualEdit(targetId, 0);
-            logAction(`${loggedInTeam.name} aniquiló a ${t?.name}`);
+            await handlePts(victim.id, -victim.points, null, true); // Baja los puntos a 0
+            logAction(`${selTeam.name} redujo a 0 los puntos de ${victim.name}`);
         }
     }
     triggerSecretConfetti(true);
-    setGauntletTargets([]);
+    showToast("El universo ha sido reequilibrado.", "success");
     closeAllModals();
   };
 
@@ -1585,6 +1671,11 @@ function AvengersTracker() {
                       </div>
                     )}
                     {isMine && !isAdmin && <button onClick={()=>openShop(t)} className="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-black font-bold text-xs rounded uppercase shadow-[0_0_15px_rgba(6,182,212,0.4)] hover:shadow-[0_0_20px_rgba(6,182,212,0.8)] transition-all tracking-wider">ARMERÍA Y MEJORAS</button>}
+                    {(isMine || isAdmin) && t.points >= 700 && (
+                        <button onClick={() => { setSelTeam(t); setModal('gauntlet'); }} className="w-full mt-2 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-black text-xs rounded uppercase shadow-[0_0_15px_rgba(250,204,21,0.6)] hover:shadow-[0_0_25px_rgba(250,204,21,1)] transition-all tracking-wider flex justify-center items-center gap-2">
+                            <Hand size={14} className="animate-pulse"/> USAR GUANTELETE
+                        </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1961,7 +2052,7 @@ function AvengersTracker() {
                   />
                   
                   <div className="flex gap-2">
-                      <button onClick={closeAllModals} className="flex-1 py-3 text-xs text-red-600 hover:text-red-400 transition-colors">HUIR</button>
+                      <button onClick={handleOmegaFlee} className="flex-1 py-3 text-xs font-bold text-red-600 hover:text-red-400 hover:bg-red-950/30 rounded transition-colors uppercase border border-transparent hover:border-red-900/50">HUIR (-50 PTS)</button>
                       <button onClick={submitOmegaAnswer} className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded uppercase hover:shadow-[0_0_15px_rgba(239,68,68,0.6)] transition-shadow">ATACAR</button>
                   </div>
               </div>
@@ -2056,54 +2147,27 @@ function AvengersTracker() {
       )}
 
       {/* GUANTELETE MODAL */}
-      {modal === 'gauntlet' && loggedInTeam && (
+      {modal === 'gauntlet' && selTeam && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/95 backdrop-blur-sm" onClick={closeAllModals}></div>
-          <div className="relative bg-[#050b14] border-2 border-cyan-500 w-full max-w-2xl rounded-sm overflow-hidden shadow-[0_0_50px_rgba(6,182,212,0.3)] flex flex-col max-h-[90vh]">
-            <div className="bg-cyan-900/20 p-6 border-b border-cyan-500/20 flex justify-between items-center">
-              <h3 className="text-xl font-black text-cyan-500 uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]"><Hand size={24} /> El Guantelete del Infinito</h3>
-              <button onClick={closeAllModals} className="text-cyan-500/50 hover:text-cyan-400 transition-colors">✕</button>
+          <div className="relative bg-[#050b14] border-2 border-yellow-500 w-full max-w-md rounded-sm overflow-hidden shadow-[0_0_50px_rgba(250,204,21,0.3)] flex flex-col">
+            <div className="bg-yellow-900/20 p-6 border-b border-yellow-500/20 flex justify-between items-center">
+              <h3 className="text-xl font-black text-yellow-500 uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]"><Hand size={24} /> El Guantelete</h3>
+              <button onClick={closeAllModals} className="text-yellow-500/50 hover:text-yellow-400 transition-colors">✕</button>
             </div>
-            <div className="p-6 overflow-y-auto">
-              <div className="mb-6 bg-red-900/10 border border-red-500/20 p-4 rounded-sm text-center">
-                <p className="text-sm font-bold text-red-500 uppercase tracking-widest mb-1 drop-shadow-[0_0_5px_rgba(248,113,113,0.8)]">Poder Absoluto</p>
-                <p className="text-xs text-red-200">Selecciona <span className="font-bold text-white">hasta 3 equipos rivales</span> para reducir sus puntos a CERO.</p>
-                <p className="text-xs text-red-200 mt-1">Coste de energía: <span className="text-cyan-500 font-bold">200 PTS</span> por cada equipo seleccionado.</p>
+            <div className="p-6 text-center">
+              <Hand size={64} className="mx-auto text-yellow-500 mb-4 animate-pulse drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]" />
+              <p className="text-sm font-bold text-red-500 uppercase tracking-widest mb-2 drop-shadow-[0_0_5px_rgba(248,113,113,0.8)]">Poder Absoluto</p>
+              <p className="text-xs text-yellow-200 mb-4">Al chasquear los dedos, <span className="font-bold text-white">2 equipos rivales al azar</span> perderán todos sus puntos (bajarán a 0).</p>
+              <div className="bg-red-900/20 border border-red-500/30 p-3 rounded mb-6">
+                 <p className="text-xs text-red-400">El precio por usar este poder es alto:<br/><span className="font-bold text-white">Tu equipo perderá la mitad de sus puntos actuales.</span></p>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                {teams.filter(t => t.id !== loggedInTeam.id).map(rival => {
-                   const isSelected = gauntletTargets.includes(rival.id);
-                   return (
-                      <button 
-                        key={rival.id} 
-                        onClick={() => toggleGauntletTarget(rival.id)}
-                        className={`flex items-center gap-4 p-4 border rounded-sm transition-all group text-left ${isSelected ? 'bg-red-900/40 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.4)]' : 'bg-[#0a0f1a] border-cyan-900/30 hover:border-cyan-500/50 hover:bg-cyan-900/20'}`}
-                      >
-                        <div className={`w-12 h-12 rounded-full border border-white/20 bg-black overflow-hidden shrink-0 ${rival.accent}`}>
-                          <img src={rival.gif} className="w-full h-full object-cover opacity-80 mix-blend-screen" />
-                        </div>
-                        <div className="flex-1">
-                          <p className={`font-bold uppercase tracking-wider ${isSelected ? 'text-red-400 drop-shadow-[0_0_5px_rgba(248,113,113,0.8)]' : 'text-cyan-300'}`}>{rival.name}</p>
-                          <p className="text-xs text-cyan-600 font-mono">Puntos Actuales: <span className={rival.points > 0 ? "text-amber-400" : "text-red-500"}>{rival.points}</span></p>
-                          {isSelected && <p className="text-[10px] text-red-500 font-bold mt-1 animate-pulse">¡OBJETIVO FIJADO!</p>}
-                        </div>
-                        {isSelected && <Skull size={20} className="text-red-500 drop-shadow-[0_0_5px_rgba(248,113,113,0.8)]" />}
-                      </button>
-                   );
-                })}
-              </div>
-              
               <div className="flex gap-4 items-center">
-                 <div className="flex-1 bg-[#0a0f1a] p-4 rounded border border-cyan-900/50 text-center shadow-inner">
-                    <p className="text-[10px] text-cyan-600 uppercase tracking-widest mb-1">Coste de Energía</p>
-                    <p className="text-2xl font-mono font-bold text-cyan-500 drop-shadow-[0_0_10px_rgba(6,182,212,0.5)]">-{gauntletTargets.length * 200}</p>
-                 </div>
                  <button 
                     onClick={executeGauntletSnap}
-                    disabled={gauntletTargets.length === 0}
-                    className={`flex-1 py-4 font-black uppercase tracking-widest rounded transition-all ${gauntletTargets.length > 0 ? 'bg-cyan-500 hover:bg-cyan-400 text-black shadow-[0_0_20px_rgba(6,182,212,0.5)]' : 'bg-[#0a0f1a] border border-cyan-900/30 text-cyan-900 cursor-not-allowed'}`}
+                    className="flex-1 py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-black uppercase tracking-widest rounded shadow-[0_0_20px_rgba(250,204,21,0.5)] transition-all"
                  >
-                    {gauntletTargets.length > 0 ? 'Ejecutar Chasquido' : 'Selecciona Objetivo'}
+                    Chasquear los Dedos
                  </button>
               </div>
             </div>
